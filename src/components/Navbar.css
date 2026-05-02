@@ -1,0 +1,73 @@
+:root {
+  --nav-blue: #1d4ed8;
+  --nav-blue-dark: #1e3a8a;
+  --nav-yellow: #f59e0b;
+}
+
+/* NAVBAR */
+.saas-navbar {
+  background: linear-gradient(90deg, var(--nav-blue-dark), var(--nav-blue));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+/* CONTAINER */
+.nav-scroll-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* NAV ITEM */
+.nav-item {
+  color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 18px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+/* HOVER */
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--nav-yellow);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* 📱 MOBILE PERFECT */
+@media (max-width: 768px) {
+  .nav-scroll-container {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 6px 8px;
+    gap: 8px;
+    scroll-behavior: smooth;
+  }
+
+  .nav-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-scroll-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .nav-item {
+    font-size: 0.68rem; /* 🔥 perfect small text */
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+  }
+}

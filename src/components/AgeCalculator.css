@@ -1,0 +1,241 @@
+/* 🎨 THEME VARIABLES */
+:root {
+  --ac-blue: #2563eb;
+  --ac-blue-dark: #1e3a8a;
+  --ac-blue-soft: #eff6ff;
+  --ac-yellow: #f59e0b;
+  --ac-yellow-hover: #d97706;
+  --ac-dark: #0f172a;
+  --ac-muted: #64748b;
+  --ac-border: #e2e8f0;
+}
+
+/* 🌍 WRAPPER */
+.ac-wrapper {
+  padding: 15px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* 🃏 MAIN CARD (Ultra Compact) */
+.ac-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 380px; /* Reduced width for tight layout */
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.06);
+  border: 1px solid var(--ac-border);
+  box-sizing: border-box;
+}
+
+/* 🏷️ HEADER */
+.ac-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.ac-icon {
+  font-size: 1.5rem; /* Small icon */
+  background: var(--ac-blue-soft);
+  width: 40px; height: 40px;
+  display: flex; justify-content: center; align-items: center;
+  border-radius: 10px;
+  color: var(--ac-blue);
+}
+.ac-header-text {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ac-title {
+  margin: 0;
+  font-size: 0.95rem; /* Micro heading */
+  font-weight: 800;
+  color: var(--ac-dark);
+}
+.ac-subtitle {
+  margin: 0;
+  font-size: 0.65rem; /* Very small text */
+  color: var(--ac-muted);
+}
+
+/* 📝 INPUTS */
+.ac-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ac-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ac-input-group label {
+  font-size: 0.6rem; /* Ultra small label */
+  font-weight: 700;
+  color: var(--ac-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.ac-input-group input {
+  padding: 8px 10px;
+  border: 1px solid var(--ac-border);
+  border-radius: 8px;
+  font-size: 0.75rem; /* Small input text */
+  color: var(--ac-dark);
+  background: #f8fafc;
+  outline: none;
+  transition: 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.ac-input-group input:focus {
+  border-color: var(--ac-blue);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.ac-error {
+  color: #ef4444; font-size: 0.65rem; font-weight: 600;
+  background: #fef2f2; padding: 6px 10px; border-radius: 6px;
+  margin-bottom: 12px; border-left: 2px solid #ef4444;
+}
+
+/* 🔘 BUTTON */
+.ac-btn-calc {
+  width: 100%;
+  padding: 10px;
+  background: var(--ac-yellow);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem; /* Small button text */
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.2s ease;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
+}
+.ac-btn-calc:active { transform: scale(0.98); }
+
+/* 📊 RESULTS SECTION */
+.ac-results-container {
+  margin-top: 16px;
+  border-top: 1px dashed var(--ac-border);
+  padding-top: 16px;
+}
+
+/* Exact Age Box */
+.ac-age-display {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.ac-age-box {
+  background: linear-gradient(135deg, var(--ac-blue) 0%, var(--ac-blue-dark) 100%);
+  color: white;
+  padding: 10px;
+  border-radius: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+.ac-age-num {
+  font-size: 1.2rem; /* Scaled down number */
+  font-weight: 900;
+  line-height: 1.1;
+}
+.ac-age-lbl {
+  font-size: 0.55rem; /* Micro label */
+  font-weight: 600;
+  opacity: 0.8;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Small Stats Grid */
+.ac-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.ac-stat-box {
+  background: var(--ac-blue-soft);
+  padding: 8px 4px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #dbeafe;
+}
+.ac-stat-lbl {
+  display: block;
+  font-size: 0.5rem; /* Extremely small text */
+  color: var(--ac-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.ac-stat-val {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--ac-blue-dark);
+}
+
+/* Next Birthday Block */
+.ac-next-bday-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.ac-nb-icon {
+  font-size: 1.4rem;
+}
+.ac-nb-details h4 {
+  margin: 0 0 2px 0;
+  color: var(--ac-dark);
+  font-size: 0.7rem; /* Tiny text */
+}
+.ac-nb-details h4 strong {
+  color: var(--ac-yellow-hover);
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+.ac-nb-details p {
+  margin: 0;
+  font-size: 0.6rem;
+  color: var(--ac-muted);
+}
+
+/* Animations */
+.fade-in { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 📱 SUPER RESPONSIVE MOBILE TWEAKS */
+@media (max-width: 400px) {
+  .ac-card {
+    padding: 14px;
+  }
+  .ac-input-grid {
+    grid-template-columns: 1fr; /* Inputs stack on very small phones */
+    gap: 8px;
+  }
+  .ac-stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* Becomes 2x2 grid on tiny screens */
+  }
+  .ac-age-num { font-size: 1.1rem; }
+  .ac-next-bday-card {
+    padding: 8px;
+  }
+}

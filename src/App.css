@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif !important;
+}
+
+/* =========================================
+   ✨ PREMIUM APP LOADER (Micro-Typography & Glassmorphism)
+   ========================================= */
+
+.premium-loader-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f8fafc; /* Clean SaaS Slate background */
+  gap: 16px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.premium-loader {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Outer Blue Ring */
+.loader-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  animation: smoothSpin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+.loader-ring:nth-child(1) {
+  border-top-color: #2563eb; /* Brand Blue */
+  border-left-color: #2563eb;
+  animation-duration: 1.2s;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.2);
+}
+
+/* Inner Yellow Ring */
+.loader-ring:nth-child(2) {
+  border-bottom-color: #f59e0b; /* Brand Yellow */
+  border-right-color: #f59e0b;
+  animation-direction: reverse;
+  width: 70%;
+  height: 70%;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+/* Center Glowing Dot */
+.loader-dot {
+  width: 10px;
+  height: 10px;
+  background: #2563eb;
+  border-radius: 50%;
+  animation: pulseDot 1s ease-in-out infinite alternate;
+}
+
+/* 🔥 Micro-Typography for Text */
+.loader-text {
+  font-size: 0.55rem; /* Extremely small, premium text */
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 3px; /* Wide letter spacing looks very professional */
+  text-transform: uppercase;
+  animation: pulseText 1.5s ease-in-out infinite alternate;
+}
+
+/* Animations */
+@keyframes smoothSpin {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(1); background: #2563eb; box-shadow: 0 0 5px #2563eb; }
+  100% { transform: scale(1.4); background: #f59e0b; box-shadow: 0 0 12px #f59e0b; }
+}
+
+@keyframes pulseText {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* 🔥 Brand Logo Text in Loader */
+.loader-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.loader-brand {
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+}
+
+.brand-blue {
+  color: #2563eb; /* Logo Blue */
+}
+
+.brand-yellow {
+  color: #f59e0b; /* Logo Yellow */
+}
+
+/* 🔥 Micro-Typography for Marathi Loading Text */
+.loader-text {
+  font-size: 0.6rem; /* Extremely small, premium text */
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 2px; /* Wide letter spacing */
+  animation: pulseText 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulseText {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}

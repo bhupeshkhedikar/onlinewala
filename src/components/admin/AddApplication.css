@@ -1,0 +1,729 @@
+/* =========================================
+   SCOPED VARIABLES (Only apply inside .aa-wrapper)
+========================================= */
+.aa-wrapper {
+  --aa-primary: #1d4ed8;       /* Deep Royal Blue */
+  --aa-primary-hover: #1e3a8a;
+  --aa-accent: #f59e0b;        /* Vibrant Yellow/Amber */
+  --aa-accent-hover: #d97706;
+  --aa-bg: #f8fafc;            /* Light gray-blue background */
+  --aa-card: #ffffff;
+  --aa-text: #0f172a;
+  --aa-text-muted: #64748b;
+  --aa-border: #e2e8f0;
+  --aa-danger: #ef4444;
+  --aa-success: #10b981;
+  --aa-success-bg: #d1fae5;
+  --aa-warning-bg: #fef3c7;
+  --aa-radius: 12px;
+  --aa-radius-sm: 6px;
+  
+  width: 100%;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--aa-text);
+  background-color: var(--aa-bg);
+  padding: 16px;
+}
+
+.aa-wrapper *, .aa-wrapper *::before, .aa-wrapper *::after {
+  box-sizing: inherit;
+}
+
+/* =========================================
+   LAYOUT STRATEGY (Mobile First -> Desktop)
+========================================= */
+.aa-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .aa-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .aa-col-left {
+    flex: 0 0 420px; /* Fixed width form column on desktop */
+  }
+  .aa-col-right {
+    flex: 1;         /* Fluid list column */
+    min-width: 0;    /* Prevents flex-child from overflowing */
+  }
+}
+
+.aa-col-left, .aa-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* =========================================
+   CARDS & CONTAINERS
+========================================= */
+.aa-card {
+  background: var(--aa-card);
+  border-radius: var(--aa-radius);
+  padding: 20px;
+  border: 1px solid var(--aa-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.aa-heading {
+  margin: 0 0 20px 0;
+  font-size: 1.25rem;
+  color: var(--aa-primary);
+  border-bottom: 3px solid var(--aa-accent);
+  display: inline-block;
+  padding-bottom: 6px;
+  font-weight: 700;
+}
+
+.aa-subheading {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--aa-text);
+}
+
+/* =========================================
+   FORMS & INPUTS
+========================================= */
+.aa-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.aa-row-split {
+  display: flex;
+  gap: 12px;
+}
+.aa-row-split > * { flex: 1; }
+
+.aa-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--aa-text-muted);
+  margin-bottom: 6px;
+}
+
+.aa-input, .aa-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius-sm);
+  font-size: 0.95rem;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.aa-input:focus, .aa-select:focus {
+  border-color: var(--aa-primary);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+
+.aa-input-sm {
+  padding: 6px 8px;
+  font-size: 0.8rem;
+}
+
+.aa-file-input {
+  font-size: 0.85rem;
+  color: var(--aa-text-muted);
+}
+.aa-file-input::file-selector-button {
+  border: 1px solid var(--aa-border);
+  background: var(--aa-bg);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 12px;
+  color: var(--aa-text);
+  transition: background 0.2s;
+}
+.aa-file-input::file-selector-button:hover { background: #e2e8f0; }
+
+.aa-file-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: var(--aa-radius-sm);
+}
+
+/* =========================================
+   EXTRA SERVICES COMPONENT
+========================================= */
+.aa-extras-box {
+  background: #f1f5f9;
+  border: 1px dashed var(--aa-border);
+  border-radius: var(--aa-radius-sm);
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.aa-extras-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.aa-extra-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.aa-flex-1 { flex: 1; min-width: 0; }
+.aa-flex-2 { flex: 2; min-width: 0; }
+
+/* =========================================
+   TOTALS & BUTTONS
+========================================= */
+.aa-total-banner {
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid var(--aa-accent);
+  padding: 16px;
+  border-radius: var(--aa-radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.aa-total-banner h3 { margin: 0; color: var(--aa-primary); font-size: 1.5rem; }
+
+button { cursor: pointer; border: none; outline: none; transition: 0.2s ease; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.aa-btn-primary {
+  width: 100%;
+  background-color: var(--aa-primary);
+  color: #fff;
+  padding: 12px;
+  border-radius: var(--aa-radius-sm);
+  font-weight: 600;
+  font-size: 1rem;
+}
+.aa-btn-primary:hover:not(:disabled) { background-color: var(--aa-primary-hover); }
+
+.aa-btn-secondary {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background-color: var(--aa-accent);
+  color: #fff;
+  padding: 12px;
+  border-radius: var(--aa-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.aa-btn-secondary:hover { background-color: var(--aa-accent-hover); }
+
+.aa-btn-text { background: transparent; color: var(--aa-primary); font-weight: 600; font-size: 0.85rem; padding: 4px; }
+.aa-btn-text:hover { text-decoration: underline; }
+
+.aa-btn-del { background: rgba(239, 68, 68, 0.1); color: var(--aa-danger); width: 32px; height: 32px; border-radius: 4px; flex-shrink: 0; display:flex; align-items:center; justify-content:center;}
+.aa-btn-del:hover { background: var(--aa-danger); color: white; }
+
+.aa-btn-icon-red, .aa-btn-icon-blue { background: transparent; font-size: 1rem; padding: 4px 8px; border-radius: 4px; }
+.aa-btn-icon-red { color: var(--aa-danger); }
+.aa-btn-icon-red:hover { background: rgba(239, 68, 68, 0.1); }
+.aa-btn-icon-blue { color: var(--aa-primary); text-decoration: none; }
+.aa-btn-icon-blue:hover { background: rgba(29, 78, 216, 0.1); }
+
+
+/* =========================================
+   LIST ITEMS (Applications)
+========================================= */
+.aa-list { display: flex; flex-direction: column; gap: 12px; }
+.aa-empty { padding: 30px; text-align: center; color: var(--aa-text-muted); font-style: italic; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;}
+
+.aa-list-item {
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius-sm);
+  padding: 16px;
+  background: #fff;
+}
+.aa-list-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
+.aa-list-title { font-weight: 700; font-size: 1.05rem; }
+.aa-list-actions { display: flex; gap: 12px; align-items: center; }
+.aa-list-price { font-size: 1.25rem; font-weight: 700; color: var(--aa-primary); margin-bottom: 12px; }
+
+.aa-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; user-select: none; }
+.aa-badge-paid { background: var(--aa-success-bg); color: var(--aa-success); }
+.aa-badge-pending { background: var(--aa-warning-bg); color: #b45309; }
+
+.aa-list-extras { background: #f8fafc; padding: 10px; border-radius: 6px; font-size: 0.85rem; }
+.aa-list-extra-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--aa-border); padding: 4px 0;}
+.aa-list-extra-row:last-child { border-bottom: none; }
+
+/* =========================================
+   UPLOADER QUEUE
+========================================= */
+.aa-upload-queue { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.aa-queue-item { display: flex; gap: 12px; border: 1px solid var(--aa-border); padding: 10px; border-radius: var(--aa-radius-sm); align-items: center;}
+.aa-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; flex-shrink: 0;}
+.aa-thumb-placeholder { width: 50px; height: 50px; background: var(--aa-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border-radius: 4px; flex-shrink: 0;}
+.aa-queue-info { flex: 1; min-width: 0; }
+.aa-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 600; }
+.aa-queue-inputs { display: flex; gap: 8px; margin-bottom: 6px; }
+.aa-progress-bar { height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; margin-bottom: 4px;}
+.aa-progress-fill { height: 100%; background: var(--aa-accent); transition: width 0.2s;}
+.aa-status-text { font-size: 0.7rem; color: var(--aa-text-muted); }
+
+
+/* =========================================
+   DOCUMENTS GRID
+========================================= */
+.aa-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .aa-doc-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}
+
+.aa-doc-card {
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.aa-doc-visual {
+  height: 120px;
+  background: #e2e8f0;
+  cursor: pointer;
+  position: relative;
+}
+.aa-doc-visual img { width: 100%; height: 100%; object-fit: cover; }
+.aa-doc-pdf { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #cbd5e1; color: var(--aa-primary); font-weight: 800; font-size: 1.5rem;}
+
+.aa-doc-details { padding: 12px; display: flex; flex-direction: column; flex: 1;}
+.aa-doc-title { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;}
+.aa-doc-sub { font-size: 0.75rem; color: var(--aa-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px;}
+.aa-doc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto;}
+.aa-doc-size { font-size: 0.7rem; color: #94a3b8; }
+.aa-doc-btns { display: flex; gap: 4px; }
+
+
+/* =========================================
+   IMAGE/PDF VIEWER MODAL
+========================================= */
+.aa-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aa-modal-header {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  left: 16px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 10000;
+}
+
+.aa-zoom-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.1);
+  padding: 6px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+.aa-zoom-tools button { width: 32px; height: 32px; border-radius: 4px; background: rgba(255,255,255,0.2); color: white; font-weight: bold;}
+.aa-zoom-tools button:hover { background: rgba(255,255,255,0.3); }
+.aa-zoom-level { color: white; font-size: 0.85rem; font-weight: bold; width: 45px; text-align: center;}
+
+.aa-modal-close {
+  background: var(--aa-danger);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+}
+
+.aa-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  width: 48px;
+  height: 64px;
+  font-size: 1.5rem;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+.aa-nav-btn:hover { background: rgba(255,255,255,0.3); }
+.aa-nav-left { left: 0; border-radius: 0 8px 8px 0; }
+.aa-nav-right { right: 0; border-radius: 8px 0 0 8px; }
+
+.aa-viewer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 80px 60px;
+}
+.aa-viewer img { max-width: 100%; max-height: 100%; transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1); transform-origin: center;}
+.aa-viewer iframe { width: 100%; max-width: 1000px; height: 85vh; border: none; background: white; border-radius: 8px; }
+
+@media (max-width: 768px) {
+  .aa-viewer { padding: 80px 16px; }
+  .aa-nav-btn { width: 36px; height: 48px; font-size: 1.2rem; }
+}
+/* =========================================
+   LAYOUT STRATEGY (Auto-Responsive Fix)
+========================================= */
+.aa-layout {
+  display: flex;
+  flex-wrap: wrap; /* This is the magic property that fixes the scrollbar */
+  gap: 20px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.aa-col-left {
+  /* Takes up at least 350px. If space is tight, it stacks. */
+  flex: 1 1 350px; 
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.aa-col-right {
+  /* Takes up a bit more space when side-by-side */
+  flex: 1.5 1 400px; 
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.aa-doc-meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aa-doc-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--aa-bg);
+  color: var(--aa-primary);
+  border: 1px solid var(--aa-border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+/* =========================================
+   DOCUMENTS GRID (Fixed to 3 per row)
+========================================= */
+.aa-doc-grid {
+  display: grid;
+  /* 'repeat(3, 1fr)' forces exactly 3 equal-width columns */
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 16px;
+}
+
+/* Fallback for very small mobile screens so it doesn't look squished */
+@media (max-width: 600px) {
+  .aa-doc-grid { 
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on phones */
+  }
+}
+@media (max-width: 400px) {
+  .aa-doc-grid { 
+    grid-template-columns: 1fr; /* 1 column on tiny phones */
+  }
+}
+
+.aa-list-title-group { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 2px;
+}
+
+.aa-list-date { 
+  font-size: 0.75rem; 
+  color: var(--aa-text-muted); 
+  font-weight: 500;
+}
+/* =========================================
+   DOCUMENTS GRID (Fixed Overlap & Layout)
+========================================= */
+.aa-doc-grid {
+  display: grid;
+  /* minmax(0, 1fr) is the magic fix that prevents cards from overlapping their columns */
+  grid-template-columns: repeat(3, minmax(0, 1fr)); 
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .aa-doc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 400px) {
+  .aa-doc-grid { grid-template-columns: 1fr; }
+}
+
+.aa-doc-card {
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  min-width: 0; /* Prevents flexbox children from breaking the card width */
+}
+
+.aa-doc-visual {
+  height: 120px;
+  width: 100%;
+  background: #e2e8f0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden; /* Ensures the image doesn't bleed out */
+}
+
+.aa-doc-visual img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  object-position: top; /* 'top' is better for documents so you see the header, not the blank middle */
+}
+
+.aa-doc-pdf { 
+  position: absolute; 
+  inset: 0; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background: #cbd5e1; 
+  color: var(--aa-primary); 
+  font-weight: 800; 
+  font-size: 1.5rem;
+}
+
+.aa-doc-details { 
+  padding: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  flex: 1;
+  min-width: 0; /* Prevents text from breaking out */
+}
+
+.aa-doc-title { 
+  font-weight: 600; 
+  font-size: 0.9rem; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  margin-bottom: 2px;
+}
+
+.aa-doc-sub { 
+  font-size: 0.75rem; 
+  color: var(--aa-text-muted); 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  margin-bottom: 12px;
+}
+
+/* Updated Footer Layout */
+.aa-doc-footer { 
+  display: flex; 
+  flex-wrap: wrap; /* Allows wrapping if space is extremely tight */
+  justify-content: space-between; 
+  align-items: flex-end; 
+  margin-top: auto;
+  gap: 8px; /* Adds breathing room so buttons don't clip */
+}
+
+.aa-doc-meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.aa-doc-size { 
+  font-size: 0.7rem; 
+  color: #94a3b8; 
+}
+
+.aa-doc-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--aa-bg);
+  color: var(--aa-primary);
+  border: 1px solid var(--aa-border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.aa-doc-btns { 
+  display: flex; 
+  gap: 4px; 
+  flex-shrink: 0; /* Prevents buttons from being squished */
+}
+/* =========================================
+   PRINT STYLES (Bulletproof Flow Method)
+========================================= */
+.aa-print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 1cm; /* Let the browser handle standard paper margins */
+  }
+
+  /* 1. HIDE ALL APP UI Elements */
+  /* This hides your forms, sidebars, modals, and lists */
+  .aa-layout, .aa-modal {
+    display: none !important;
+  }
+
+  /* 2. RESET THE BODY & WRAPPERS */
+  /* This removes any fixed heights that cause blank extra pages */
+  html, body, #root, .App, .aa-wrapper {
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    overflow: visible !important;
+    display: block !important; /* Overrides flexbox if root uses it */
+  }
+
+  /* 3. SHOW THE INVOICE IN NORMAL FLOW */
+  .aa-print-only {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* --- Invoice Template Styling --- */
+  .aa-invoice {
+    width: 100%;
+    max-width: 1800px;
+    overflow: hidden;
+    margin: 0 auto;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #000;
+  }
+
+  .aa-invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #000;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+  }
+
+  .aa-invoice-header h1 {
+    font-size: 2.5rem;
+    color: #000;
+    margin: 0;
+    letter-spacing: 2px;
+  }
+
+  .aa-invoice-meta p {
+    margin: 4px 0;
+    font-size: 0.95rem;
+    text-align: right;
+  }
+
+  .aa-invoice-customer {
+    margin-bottom: 40px;
+  }
+  
+  .aa-invoice-customer p {
+    margin: 4px 0;
+  }
+
+  .aa-invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+
+  .aa-invoice-table th {
+    background-color: #f0f0f0 !important; 
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #000;
+    color: #000;
+  }
+
+  .aa-invoice-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .aa-invoice-total {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #000;
+  }
+
+  .aa-invoice-total h2 {
+    color: #000;
+    margin: 0;
+  }
+
+  .aa-invoice-footer {
+    text-align: center;
+    color: #000;
+    font-size: 0.85rem;
+    border-top: 1px dashed #000;
+    padding-top: 20px;
+  }
+}
+/* Prevent extra blank pages */
+    html, body, #root, .App, .aa-wrapper {
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: white !important;
+    }
+/* Remove the old @media (min-width: 1024px) block entirely! */

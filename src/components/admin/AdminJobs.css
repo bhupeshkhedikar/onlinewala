@@ -1,0 +1,105 @@
+/* 🎨 PREMIUM ADMIN CSS */
+:root {
+  --admin-blue: #2563eb;
+  --admin-bg: #f8fafc;
+  --admin-card: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-text: #0f172a;
+  --admin-muted: #64748b;
+}
+
+.aj-container {
+  padding: 30px; background: var(--admin-bg); min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.aj-header { margin-bottom: 24px; }
+.aj-header h2 { margin: 0; color: var(--admin-text); font-size: 1.5rem; }
+.aj-header p { margin: 4px 0 0 0; color: var(--admin-muted); font-size: 0.85rem; }
+
+.aj-grid {
+  display: grid; grid-template-columns: 1.8fr 1fr; gap: 24px;
+}
+
+.aj-card {
+  background: var(--admin-card); border-radius: 16px; padding: 24px;
+  border: 1px solid var(--admin-border); box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.aj-card h3 { margin: 0 0 20px 0; font-size: 1.1rem; color: var(--admin-text); border-bottom: 1px solid var(--admin-border); padding-bottom: 10px; }
+
+.aj-form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+
+.aj-input-group { display: flex; flex-direction: column; gap: 6px; }
+.aj-input-group.full-width { grid-column: span 2; }
+
+.aj-input-group label { font-size: 0.7rem; font-weight: 600; color: var(--admin-muted); text-transform: uppercase; }
+.aj-input-group input, .aj-input-group textarea {
+  padding: 10px 12px; border-radius: 8px; border: 1px solid var(--admin-border);
+  font-size: 0.8rem; background: #f8fafc; transition: 0.2s; outline: none; font-family: inherit;
+}
+.aj-input-group input:focus, .aj-input-group textarea:focus {
+  border-color: var(--admin-blue); background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.aj-toggle { margin: 20px 0; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--admin-text); cursor: pointer; }
+
+.aj-btn-submit {
+  width: 100%; padding: 12px; background: var(--admin-blue); color: white; border: none;
+  border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+.aj-btn-submit:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+.aj-empty { text-align: center; color: var(--admin-muted); font-size: 0.85rem; padding: 20px; }
+
+.aj-job-list { display: flex; flex-direction: column; gap: 12px; }
+.aj-job-item {
+  display: flex; justify-content: space-between; align-items: center; padding: 12px;
+  border: 1px solid var(--admin-border); border-radius: 8px; background: #fafafa;
+}
+.aj-job-item h4 { margin: 0 0 4px 0; font-size: 0.85rem; color: var(--admin-text); }
+.aj-job-item span { font-size: 0.7rem; color: var(--admin-muted); }
+.aj-btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+.aj-btn-delete:hover { background: #fca5a5; }
+
+@media (max-width: 900px) { .aj-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .aj-container { padding: 15px; }
+  .aj-form-grid { grid-template-columns: 1fr; }
+  .aj-input-group.full-width { grid-column: span 1; }
+}
+
+/* ... (Tumhara baki CSS same rahega) ... */
+
+.aj-input-group label { 
+  font-size: 0.7rem; 
+  font-weight: 600; 
+  color: var(--admin-muted); 
+  text-transform: uppercase; 
+}
+
+/* 🔥 ADDED 'select' here to style the dropdown correctly */
+.aj-input-group input, 
+.aj-input-group textarea,
+.aj-input-group select {
+  padding: 10px 12px; 
+  border-radius: 8px; 
+  border: 1px solid var(--admin-border);
+  font-size: 0.8rem; 
+  background: #f8fafc; 
+  transition: 0.2s; 
+  outline: none; 
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.aj-input-group input:focus, 
+.aj-input-group textarea:focus,
+.aj-input-group select:focus {
+  border-color: var(--admin-blue); 
+  background: #ffffff; 
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}

@@ -1,0 +1,574 @@
+:root {
+  --logo-blue: #005ce6;
+  --logo-orange: #ff8c00;
+}
+
+.admin {
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* STATS */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 10px;
+}
+
+.card {
+  background: linear-gradient(90deg,#0b5ed7,#ffd54f);
+  color: white;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* SEARCH */
+.search {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+}
+
+/* USER CARD */
+.user-card {
+  background: white;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Adds a little padding so the modal doesn't touch the screen edges on mobile */
+  padding: 20px; 
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  
+  /* Key fixes for scrolling */
+  max-height: 90vh; /* Limits height to 90% of the viewport */
+  overflow-y: auto; /* Adds scrollbar only when content is too long */
+  
+  /* Smooth scrolling for iOS devices */
+  -webkit-overflow-scrolling: touch; 
+}
+
+/* 📱 MOBILE */
+@media(max-width:768px){
+  .stats{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-user-btn {
+  background: linear-gradient(90deg,#0b5ed7,#ffd54f);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* HEADER */
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  color: #64748b;
+  margin-top: 10px;
+}
+
+/* USER CARD */
+.user-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: white;
+  padding: 12px;
+  margin: 8px 0;
+
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* INFO */
+.user-info b {
+  font-size: 13px;
+}
+
+.user-info p {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* META */
+.meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.gender {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+
+.gender.male {
+  background: #0b5ed7;
+  color: white;
+}
+
+.gender.female {
+  background: #ec4899;
+  color: white;
+}
+
+.date {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+/* BUTTON */
+.user-actions button {
+  background: #ffd54f;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* CLOSE BUTTON */
+.close-btn {
+  margin-top: 10px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 480px) {
+  .user-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .user-actions {
+    width: 100%;
+  }
+
+  .user-actions button {
+    width: 100%;
+  }
+}
+
+.addApp {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.addApp input,
+.addApp select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 12px;
+}
+
+.addApp button {
+  background: #0b5ed7;
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.adminApps {
+  margin-top: 10px;
+}
+
+/* ADD BOX */
+.addAppBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.addAppBox input,
+.addAppBox select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 12px;
+}
+
+.addAppBox button {
+  background: #0b5ed7;
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+/* APPLICATION CARD */
+.app-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px;
+  margin: 8px 0;
+
+  border-radius: 12px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(6px);
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.app-info b {
+  font-size: 13px;
+}
+
+.app-info p {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.fees {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.app-actions {
+  text-align: right;
+}
+
+.total {
+  font-size: 12px;
+}
+
+/* STATUS */
+.paid {
+  background: #22c55e;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 20px;
+  font-size: 10px;
+}
+
+.pending {
+  background: #ef4444;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 20px;
+  font-size: 10px;
+}
+
+/* BUTTONS */
+.btns {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.view {
+  background: #0b5ed7;
+  color: white;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.doc {
+  background: #ffd54f;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.adminApps input {
+  margin: 4px 0;
+}
+
+.app-card {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  margin: 8px 0;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.app-actions {
+  text-align: right;
+}
+
+.app-actions a {
+  display: block;
+  font-size: 11px;
+  color: #0b5ed7;
+}
+
+.app-actions button {
+  background: red;
+  color: white;
+  border: none;
+  padding: 4px;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.paid {
+  background: green;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.pending {
+  background: orange;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.totalPreview {
+  font-size: 14px;
+  font-weight: bold;
+  color: #0b5ed7;
+  margin: 6px 0;
+}
+
+.docsSection {
+  margin-top: 10px;
+}
+
+.docCard {
+  display: flex;
+  gap: 10px;
+  margin: 8px 0;
+  padding: 8px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.docCard img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.docCard iframe {
+  width: 80px;
+  height: 80px;
+}
+
+.docMeta input {
+  margin: 3px 0;
+  width: 100%;
+}
+.documentsSection {
+  margin-top: 20px;
+}
+
+.docsGrid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 10px;
+}
+
+.docCard {
+  background: #fff;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.docCard img,
+.docCard iframe {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.totalPreview {
+  font-weight: bold;
+  color: #0b5ed7;
+}
+
+.invoiceBox {
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.serviceRow {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.serviceRow input {
+  flex: 1;
+}
+
+.miniTotal {
+  width: 60px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.rowBtns button {
+  margin-left: 2px;
+}
+
+.addBtn {
+  margin-top: 5px;
+}
+
+.invoiceTotal {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.saveBtn {
+  background: #0b5ed7;
+  color: white;
+  padding: 6px;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.subService {
+  font-size: 12px;
+}
+.previewModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.previewContent {
+  width: 90%;
+  height: 90%;
+  background: #fff;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.previewContent img,
+.previewContent iframe {
+  width: 100%;
+  height: 80%;
+  object-fit: contain;
+  transition: transform 0.3s;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: red;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.navBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.navBtn.left {
+  left: 10px;
+}
+
+.navBtn.right {
+  right: 10px;
+}
+
+.zoomControls {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  display: flex;
+  gap: 5px;
+}
+
+.zoomControls button {
+  padding: 5px 10px;
+  background: #0b5ed7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+.previewInfo {
+  padding: 10px;
+  font-size: 13px;
+  background: #f1f5f9;
+}

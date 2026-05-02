@@ -1,0 +1,97 @@
+.jobBanner {
+  position: relative;
+  overflow: visible;
+
+  margin: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  color: white;
+
+  /* 🔥 Animated Blue-Yellow Gradient */
+  background: linear-gradient(
+    270deg,
+    #0b5ed7,
+    #4da3ff,
+    #ffd54f,
+    #ff7a00
+  );
+  background-size: 400% 400%;
+  animation: gradientMove 8s ease infinite;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+/* 🔤 Typography (Compact) */
+.jobBanner h3 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.jobBanner p {
+  font-size: 12px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+/* 🔥 Floating Image (Outside Container) */
+.jobBanner .right {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+
+  width: 140px;
+  height: auto;
+}
+
+.jobBanner .right img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+
+  /* animation: floatImg 3s ease-in-out infinite; */
+  filter: drop-shadow(0 8px 15px rgba(0,0,0,0.2));
+}
+
+/* 🔄 Gradient Animation */
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 🎈 Floating Animation */
+@keyframes floatImg {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+/* 📱 MOBILE */
+@media (max-width: 480px) {
+  .jobBanner {
+    margin: 10px;
+    padding:12px;
+    padding-right: 80px; /* space for image */
+  }
+
+  .jobBanner h3 {
+    font-size: 15px;
+  }
+
+  .jobBanner p {
+    font-size: 11px;
+  }
+
+  .jobBanner .right {
+    width: 150px;
+    height: auto;
+    top: -34px;
+    right: -10px;
+  }
+}

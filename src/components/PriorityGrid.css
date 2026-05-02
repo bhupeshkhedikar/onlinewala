@@ -1,0 +1,145 @@
+/* 🌍 WRAPPER & GRID */
+.priorityGrid-wrapper {
+  width: 100%;
+  max-width: 800px;
+  margin: 10px auto; /* Thoda top-bottom margin add kiya */
+}
+
+/* 🔥 NEW: HEADER STYLES */
+.pGrid-header {
+  text-align: center;
+  padding: 0 20px;
+  margin-bottom: 5px;
+}
+
+.pGrid-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.pGrid-header p {
+  margin: 4px 0 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.priorityGrid {
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 16px; 
+  padding: 20px;
+}
+
+/* 🃏 SAAS PREMIUM CARD */
+.pCard { 
+  background: #ffffff; 
+  border-radius: 16px; 
+  padding: 16px 12px; 
+  text-align: center; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); 
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.08);
+  border-color: #bfdbfe;
+}
+
+/* 🖼️ ICON BOX WITH AUTOMATIC GRADIENTS */
+.pIcon { 
+  width: 56px; 
+  height: 56px; 
+  border-radius: 14px; 
+  margin: 0 auto 10px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.pIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.pCard:hover .pIcon img {
+  transform: scale(1.1);
+}
+
+.pFallback {
+  font-size: 24px;
+  opacity: 0.8;
+}
+
+/* 🎨 THE MAGIC: Rotating Pastel Gradients for each card */
+.pCard:nth-child(6n+1) .pIcon { background: linear-gradient(135deg, #eff6ff, #bfdbfe); color: #1e3a8a; }
+.pCard:nth-child(6n+2) .pIcon { background: linear-gradient(135deg, #fdf4ff, #fecdd3); color: #831843; }
+.pCard:nth-child(6n+3) .pIcon { background: linear-gradient(135deg, #f0fdf4, #bbf7d0); color: #14532d; }
+.pCard:nth-child(6n+4) .pIcon { background: linear-gradient(135deg, #fffbeb, #fde68a); color: #78350f; }
+.pCard:nth-child(6n+5) .pIcon { background: linear-gradient(135deg, #f5f3ff, #e9d5ff); color: #4c1d95; }
+.pCard:nth-child(6n+6) .pIcon { background: linear-gradient(135deg, #ecfeff, #a5f3fc); color: #164e63; }
+
+/* 📝 TYPOGRAPHY */
+.pCard p { 
+  font-size: 0.75rem; 
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pLoading, .pEmpty {
+  text-align: center;
+  padding: 30px;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  grid-column: span 3;
+}
+
+/* 📱 MOBILE RESPONSIVE */
+@media (max-width: 600px) {
+  .pGrid-header h2 { font-size: 1.15rem; }
+  .pGrid-header p { font-size: 0.75rem; }
+  
+  .priorityGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 15px;
+  }
+  .pCard {
+    padding: 12px 8px;
+    border-radius: 14px;
+  }
+  .pIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+  .pCard p {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .priorityGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

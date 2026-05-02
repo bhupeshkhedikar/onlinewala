@@ -1,0 +1,93 @@
+.bookingBar {
+  margin: 20px auto; 
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  background: #0b5ed7;
+  padding: 15px;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 900px;
+
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+/* 🔥 NEW TITLE CSS */
+.bookingBar-title {
+  flex: 1 1 100%; /* Ye isko poori line de dega */
+  text-align: center;
+  color: white;
+  margin: 0 0 5px 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Inputs */
+.bookingBar select,
+.bookingBar input {
+  flex: 1 1 22%;
+  min-width: 120px;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+/* Button */
+.bookingBar button {
+  background: #ff7a00;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 📱 TABLET */
+@media (max-width: 768px) {
+  .bookingBar {
+    width: 90%;
+  }
+
+  .bookingBar-title {
+    font-size: 1.2rem; /* Thoda chota tablet par */
+  }
+
+  .bookingBar select,
+  .bookingBar input {
+    flex: 1 1 45%; /* 2 per row */
+  }
+
+  .bookingBar button {
+    flex: 1 1 45%;
+  }
+}
+
+/* 📱 MOBILE */
+@media (max-width: 480px) {
+  .bookingBar {
+    width: 90%; 
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .bookingBar-title {
+    font-size: 1.1rem; /* Mobile par aur chota */
+    margin-bottom: 2px;
+  }
+
+  .bookingBar select,
+  .bookingBar input {
+    flex: 1 1 45%; 
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .bookingBar button {
+    flex: 1 1 45%;
+    font-size: 13px;
+    padding: 8px;
+  }
+}

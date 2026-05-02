@@ -1,0 +1,193 @@
+/* Container Spacing */
+.services-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: -10px auto;
+}
+
+/* Row Layout */
+.servicesRow {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Status text */
+.status-text {
+  text-align: center;
+  width: 100%;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 💎 Premium Card */
+.serviceItem {
+  position: relative;
+  text-align: center;
+  flex: 1;
+  min-width: 130px;
+  max-width: 160px;
+  padding: 20px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  background: #ffffff;
+
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* 🔥 ALWAYS RUNNING GRADIENT BORDER */
+.serviceItem::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+
+  background: linear-gradient(
+    120deg,
+    #facc15,
+    #38bdf8,
+    #6366f1,
+    #22c55e,
+    #facc15
+  );
+
+  background-size: 300% 300%;
+  animation: borderGlow 6s linear infinite;
+
+  z-index: 0;
+  opacity: 0.6; /* Always visible */
+  filter: blur(1px); /* Soft premium glow */
+}
+
+/* Mask center */
+.serviceItem::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: #ffffff;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* Keep content above */
+.serviceItem > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ✨ Animation */
+@keyframes borderGlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 💥 Hover Boost (optional but sexy) */
+.serviceItem:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.08),
+    0 0 20px rgba(99, 102, 241, 0.35),
+    0 0 30px rgba(56, 189, 248, 0.25);
+}
+
+.serviceItem:hover::before {
+  opacity: 1;
+  filter: blur(2px);
+  animation-duration: 3s;
+}
+
+/* Icon Container */
+.icon-container {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px auto;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0fdfa, #e0e7ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 4px 8px rgba(30, 58, 138, 0.05);
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.serviceItem:hover .icon-container {
+  transform: scale(1.05);
+}
+
+/* Image */
+.icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Fallback */
+.icon-fallback {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+/* Text */
+.service-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* 📱 Tablet */
+@media (max-width: 768px) {
+  .serviceItem {
+    min-width: 70px;
+    padding: 16px 12px;
+  }
+  .icon-container {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* 📱 Mobile */
+@media (max-width: 480px) {
+  .services-container {
+    padding: 16px 12px;
+  }
+
+  .servicesRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .serviceItem {
+    padding: 14px 8px;
+    border-radius: 12px;
+  }
+
+  .icon-container {
+    width: 44px;
+    height: 44px;
+  }
+
+  .service-name {
+    font-size: 11px;
+  }
+
+  .serviceItem:active {
+    transform: scale(0.96);
+  }
+}

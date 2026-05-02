@@ -1,0 +1,184 @@
+/* 🎨 UserBookings Specific SaaS Styles */
+
+.ub-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Base Card Style */
+.ub-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.ub-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transform: translateY(-1px);
+}
+
+/* Left Side: Info */
+.ub-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.ub-title {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.ub-meta {
+    font-size: 0.7rem;
+    color: #64748b;
+    display: flex;
+    gap: 12px;
+    font-weight: 500;
+}
+
+/* Documents */
+.ub-docs-section {
+    margin-top: 8px;
+    background: #f8fafc;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border-left: 2px solid #3b82f6;
+    display: inline-block;
+    align-self: flex-start;
+}
+
+.ub-docs-label {
+    font-size: 0.6rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.ub-docs-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.ub-doc-link {
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.65rem;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.ub-doc-link:hover {
+    background: #dbeafe;
+}
+
+/* Right Side: Status Column */
+.ub-status-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 140px;
+}
+
+.ub-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.ub-badges-wrapper {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.ub-badge-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.ub-badge-label {
+    font-size: 0.55rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.ub-badge {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.ub-success { background: #ecfdf5; color: #059669; }
+.ub-warning { background: #fffbeb; color: #b45309; }
+.ub-neutral { background: #f1f5f9; color: #475569; }
+
+/* States */
+.ub-loading { padding: 20px; text-align: center; color: #94a3b8; font-size: 0.75rem; }
+.ub-error { padding: 20px; text-align: center; color: #ef4444; font-size: 0.75rem; }
+
+.ub-empty-state {
+    padding: 30px 20px;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.ub-empty-icon { font-size: 24px; opacity: 0.6; }
+.ub-empty-state p { margin: 0; color: #64748b; font-size: 0.75rem; font-weight: 500; }
+
+/* 📱 MOBILE RESPONSIVE MAGIC */
+@media (max-width: 600px) {
+    .ub-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .ub-docs-section {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .ub-status-col {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px dashed #e2e8f0;
+        padding-top: 12px;
+    }
+
+    .ub-badges-wrapper {
+        gap: 8px;
+    }
+}

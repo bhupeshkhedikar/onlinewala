@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: #eef3f9;
+}
+
+.app {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.hero-wrapper {
+  position: relative;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
