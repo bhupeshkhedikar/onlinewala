@@ -9,6 +9,9 @@ export default function ResumeBuilder() {
   // Tab State: 'edit' or 'preview'
   const [activeTab, setActiveTab] = useState("edit"); 
 
+  // 🔥 New State for Download Progress
+  const [downloadStatus, setDownloadStatus] = useState("idle"); // 'idle' | 'downloading' | 'completed'
+
   const [data, setData] = useState({
     name: "RAHUL ANIL DESHMUKH",
     address: "AT POST LAKHORI\nTAH. LAKHANI DIST. BHANDARA\nMAHARASHTRA\n441804",
@@ -80,7 +83,6 @@ export default function ResumeBuilder() {
   };
 
   // 🔥 PERFECT PDF EXPORT LOGIC
-// 🔥 PERFECT PDF EXPORT LOGIC
   const handleDownloadPDF = () => {
     const element = resumeRef.current;
 
@@ -88,6 +90,9 @@ export default function ResumeBuilder() {
       alert("Resume element not found!");
       return;
     }
+
+    // 🔥 Set state to Downloading
+    setDownloadStatus("downloading");
 
     // Temporary force full size for high-quality mobile capture
     const isMobile = window.innerWidth <= 768;
@@ -103,23 +108,68 @@ export default function ResumeBuilder() {
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // 🔥 FIX: Call html2pdf() directly, NOT window.html2pdf()
+    // FIX: Call html2pdf() directly
     try {
       html2pdf().set(opt).from(element).save().then(() => {
-        if (isMobile) element.classList.remove('export-mode'); // Restore mobile view
+        if (isMobile) element.classList.remove('export-mode'); 
+        
+        // 🔥 Set state to Completed once done
+        setDownloadStatus("completed");
+
+        // 🔥 Hide the notification after 3 seconds
+        setTimeout(() => {
+          setDownloadStatus("idle");
+        }, 3000);
+
       }).catch(err => {
         console.error("PDF Generation Error:", err);
         if (isMobile) element.classList.remove('export-mode');
+        setDownloadStatus("idle");
       });
     } catch (error) {
       console.error("html2pdf is not initialized:", error);
       alert("Something went wrong with the PDF generator.");
       if (isMobile) element.classList.remove('export-mode');
+      setDownloadStatus("idle");
     }
   };
 
   return (
     <div className="builder-container">
+
+      {/* 🔥 INLINE CSS: Download Progress Notification */}
+      {downloadStatus !== "idle" && (
+        <div style={{
+          position: "fixed",
+          top: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: downloadStatus === "downloading" ? "#f59e0b" : "#10b981", // Orange for downloading, Green for completed
+          color: "#fff",
+          padding: "12px 24px",
+          borderRadius: "8px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+          zIndex: 9999,
+          fontWeight: "bold",
+          fontSize: "14px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontFamily: "system-ui, sans-serif"
+        }}>
+          {downloadStatus === "downloading" ? (
+            <>
+              <span style={{ animation: "spin 2s linear infinite" }}>⏳</span> 
+              Downloading Started... Please wait
+            </>
+          ) : (
+            <>
+              <span>✅</span> 
+              Download Completed!
+            </>
+          )}
+        </div>
+      )}
       
       {/* 🚀 TOP NAVIGATION TABS */}
       <div className="top-tabs">
@@ -242,8 +292,12 @@ export default function ResumeBuilder() {
         {activeTab === 'preview' && (
           <div className="preview-pane">
             <div className="preview-actions">
-              <button className="download-btn" onClick={handleDownloadPDF}>
-                ⬇ Download PDF
+              <button 
+                className="download-btn" 
+                onClick={handleDownloadPDF} 
+                disabled={downloadStatus === "downloading"} // 🔥 Prevent multiple clicks
+              >
+                {downloadStatus === "downloading" ? "Downloading..." : "⬇ Download PDF"}
               </button>
             </div>
 

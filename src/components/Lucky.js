@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, increment, collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase"; 
+import { useNavigate } from "react-router-dom"; // 🔥 React Router Import
 import "./Lucky.css"; 
 
 export default function Lucky({ user }) {
+  const navigate = useNavigate(); // 🔥 Navigation Hook
+
   const [tickets, setTickets] = useState(0); 
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -67,13 +70,19 @@ export default function Lucky({ user }) {
     { name: "५ पाने मोफत स्कॅन", type: "high", color: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)", textCol: "#881337" },
     { name: "५ मोफत B&W प्रिंट्स", type: "mid", color: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)", textCol: "#4c1d95" },
     { name: "५ मोफत कलर प्रिंट्स", type: "low", color: "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)", textCol: "#065f46" },
-    { name: "₹२० कॅशबॅक", type: "mid", color: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)", textCol: "#78350f" },
+    { name: "३० मिनिट फ्री WiFi ", type: "mid", color: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)", textCol: "#78350f" },
     { name: "पुन्हा प्रयत्न करा", type: "none", color: "linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)", textCol: "#475569" },
     { name: "कोणत्याही फॉर्मवर १०% सूट", type: "low", color: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", textCol: "#1e3a8a" }
   ];
 
   const handleSpin = async () => {
-    if (!user || tickets <= 0 || isSpinning) return;
+    // 🔥 If user is not logged in, redirect to login page
+    if (!user) {
+      navigate("/login"); // अपनी लॉगिन रूट के अनुसार इसे बदलें
+      return;
+    }
+
+    if (tickets <= 0 || isSpinning) return;
 
     setIsSpinning(true);
     setResult(null);
@@ -104,7 +113,6 @@ export default function Lucky({ user }) {
       setResult(wonPrize);
       setIsSpinning(false);
       
-      // Changed to only check type !== "none" to handle Marathi translation safely
       if (wonPrize.type !== "none") {
         try {
           const expiryDate = new Date();
@@ -235,11 +243,12 @@ export default function Lucky({ user }) {
               )}
             </div>
 
-            {/* Spin Button */}
+            {/* 🔥 Spin Button (Updated) */}
             <button 
-              className={`btn-spin-now ${isSpinning || tickets === 0 || loadingTickets || !user ? 'disabled' : ''}`}
+              // अगर यूज़र नहीं है तो बटन disabled नहीं रहेगा, ताकि क्लिक करने पर रिडायरेक्ट हो सके
+              className={`btn-spin-now ${isSpinning || (user && tickets === 0) || loadingTickets ? 'disabled' : ''}`}
               onClick={handleSpin} 
-              disabled={isSpinning || tickets === 0 || loadingTickets || !user}
+              disabled={isSpinning || (user && tickets === 0) || loadingTickets}
             >
               <div className="btn-glow"></div>
               <span>{!user ? "स्पिनसाठी लॉग इन करा" : isSpinning ? "फिरत आहे..." : "आता स्पिन करा"}</span>

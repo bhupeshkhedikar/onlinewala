@@ -27,6 +27,7 @@ import ResumeBuilder from "./components/ResumeBuilder";
 import BiodataBuilder from "./components/BiodataBuilder";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import AgeCalculator from "./components/AgeCalculator";
+import InvoiceDashboard from "./components/admin/InvoiceDashboard";
 
 
 // --- HELPERS ---
@@ -146,7 +147,8 @@ export default function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home authUser={authUser} />} />
-          <Route path="/spinwin" element={<Lucky user={authUser} />} />
+          <Route path="/spin" element={<Lucky user={authUser} />} />
+          <Route path="/invoice" element={<InvoiceDashboard user={authUser}/>} />
           {/* 🔥 NEW PUBLIC ROUTES FOR BUILDERS */}
           <Route path="/resume-builder" element={<ResumeBuilder />} />
           <Route path="/biodata-builder" element={<BiodataBuilder />} />

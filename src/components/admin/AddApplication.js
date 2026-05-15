@@ -9,6 +9,9 @@ import {
 } from "firebase/storage";
 
 import "./AddApplication.css";
+import AllInvoicesPrint from "../AllInvoicesPrint";
+
+
 
 export default function AddApplication({ userId, user }) {
 
@@ -20,7 +23,7 @@ export default function AddApplication({ userId, user }) {
         paid: true,
         note: ""
     });
-
+const [showBulkPrint, setShowBulkPrint] = useState(false);
     const [extraServices, setExtraServices] = useState([]);
 
     // 🔥 DISCOUNT STATES
@@ -1131,6 +1134,22 @@ export default function AddApplication({ userId, user }) {
                     </div>
                 )}
             </div>
+            <button 
+    className="aa-btn-primary" 
+    onClick={() => setShowBulkPrint(true)}
+    style={{ marginBottom: '15px' }}
+>
+    Print All Invoices
+</button>
+
+// ... render at the absolute bottom of your component return
+{showBulkPrint && (
+    <AllInvoicesPrint 
+        user={user} 
+        onClose={() => setShowBulkPrint(false)} 
+    />
+)}
         </div>
+        
     );
 }

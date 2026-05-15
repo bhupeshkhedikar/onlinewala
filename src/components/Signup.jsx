@@ -9,6 +9,7 @@ export default function Signup({ onLoginSuccess, onSwitchToLogin }) {
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // 🔥 New State for Hide/Show
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,6 +27,7 @@ export default function Signup({ onLoginSuccess, onSwitchToLogin }) {
         name: name,
         mobile: mobile,
         email: email,
+        password: password, // Note: Storing plain password is not recommended in production
         role: "user",
         tickets: 1, // 🎉 Welcome Bonus: 1 Free Spin
         createdAt: new Date()
@@ -67,26 +69,64 @@ export default function Signup({ onLoginSuccess, onSwitchToLogin }) {
         <form onSubmit={handleSignup} className="auth-form">
           <div className="auth-input-group">
             <label htmlFor="name">पूर्ण नाव</label>
-            <input type="text" id="name" placeholder="उदा. राहुल पाटील" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input 
+              type="text" 
+              id="name" 
+              placeholder="उदा. राहुल पाटील" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              required 
+            />
           </div>
 
           <div className="auth-input-group">
             <label htmlFor="email">ईमेल आयडी</label>
-            <input type="email" id="email" placeholder="rahul@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="rahul@example.com" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
           </div>
 
           <div className="auth-input-group">
             <label htmlFor="mobile">मोबाईल नंबर</label>
-            <input type="tel" id="mobile" placeholder="९८७६५४३२१०" value={mobile} onChange={(e) => setMobile(e.target.value)} required />
+            <input 
+              type="tel" 
+              id="mobile" 
+              placeholder="९८७६५४३२१०" 
+              value={mobile} 
+              onChange={(e) => setMobile(e.target.value)} 
+              required 
+            />
           </div>
 
           <div className="auth-input-group">
             <label htmlFor="password">सुरक्षित पासवर्ड</label>
-            <input type="password" id="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength="6" />
+            {/* 🔥 Password Wrapper added for the icon */}
+            <div className="password-wrapper">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                id="password" 
+                placeholder="••••••••" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+                minLength="6" 
+              />
+              <span 
+                className="toggle-password" 
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </span>
+            </div>
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? "प्रोफाईल तयार होत आहे..." : "साइन अप करा आणि स्पिन मिळवा"}
+            {loading ? "प्रोफाईल तयार होत येत आहे..." : "साइन अप करा आणि स्पिन मिळवा"}
           </button>
         </form>
 

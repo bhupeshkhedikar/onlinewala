@@ -209,3 +209,35 @@
   .orb-1 { width: 200px; height: 200px; }
   .orb-2 { width: 150px; height: 150px; }
 }
+
+/* 🔥 PASSWORD WRAPPER & ICON (NEW ADDITIONS) */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* Make space for the eye icon so text doesn't overlap */
+  box-sizing: border-box;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  user-select: none;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-password:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}

@@ -6,6 +6,7 @@ import "./Login.css";
 export default function Login({ onLoginSuccess, onSwitchToSignup }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // 🔥 New State for Hide/Show
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -59,12 +60,35 @@ export default function Login({ onLoginSuccess, onSwitchToSignup }) {
         <form onSubmit={handleLogin} className="auth-form">
           <div className="auth-input-group">
             <label htmlFor="email">ईमेल आयडी</label>
-            <input type="email" id="email" placeholder="admin@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="admin@example.com" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
           </div>
 
           <div className="auth-input-group">
             <label htmlFor="password">पासवर्ड</label>
-            <input type="password" id="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            {/* 🔥 Password Wrapper added for the icon */}
+            <div className="password-wrapper">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                id="password" 
+                placeholder="••••••••" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+              />
+              <span 
+                className="toggle-password" 
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </span>
+            </div>
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>

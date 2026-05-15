@@ -3,11 +3,11 @@ import "./Navbar.css";
 
 export default function Navbar() {
   const navItems = [
-    { name: "Home", path: "/" },
+    { name: "मुखपृष्ठ", path: "/" },
     { name: "रेजूम बनवा", path: "/resume-builder" },
     { name: "लग्न बायोडाटा बनवा", path: "/biodata-builder" },
     { name: "वय मोजा", path: "/age-calculator" },
-    { name: "Status", path: "/status" },
+    // { name: "Status", path: "/status" },
   ];
 
   return (
