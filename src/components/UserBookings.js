@@ -24,7 +24,19 @@ export default function UserBookings({ user }) {
       const fetchedBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
       // Sort newest bookings first
-      fetchedBookings.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+     // 🔥 SORT NEWEST BOOKINGS FIRST
+fetchedBookings.sort((a, b) => {
+
+  const dateA = a.createdAt?.seconds
+    ? a.createdAt.seconds * 1000
+    : new Date(a.createdAt || a.date || 0).getTime();
+
+  const dateB = b.createdAt?.seconds
+    ? b.createdAt.seconds * 1000
+    : new Date(b.createdAt || b.date || 0).getTime();
+
+  return dateB - dateA;
+});
       setBookings(fetchedBookings);
     } catch (err) {
       console.error("Error fetching bookings:", err);

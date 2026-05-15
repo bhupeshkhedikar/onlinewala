@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { auth, db } from "./firebase"; 
+import { auth, db } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore"; 
+import { doc, getDoc } from "firebase/firestore";
 
-import UserBookings from "./UserBookings"; 
-import BookingModal from "./BookingModal"; 
+import UserBookings from "./UserBookings";
+import BookingModal from "./BookingModal";
 import "./UserProfile.css";
 
 export default function UserProfile() {
@@ -13,7 +13,7 @@ export default function UserProfile() {
   const [preview, setPreview] = useState(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("online");
-  
+
   const [docSearchQuery, setDocSearchQuery] = useState("");
 
   useEffect(() => {
@@ -49,7 +49,9 @@ export default function UserProfile() {
     return <p style={{ padding: "40px", textAlign: "center", fontSize: "14px", color: "#ef4444" }}>Please log in to view your dashboard.</p>;
   }
 
-  const applications = user?.applications || [];
+const applications = [...(user?.applications || [])].sort(
+  (a, b) => new Date(b.date) - new Date(a.date)
+);
   const documents = user?.documents || [];
 
   const filteredDocuments = documents.filter((doc) => {
@@ -90,7 +92,7 @@ export default function UserProfile() {
 
   return (
     <div className="profile-container">
-      
+
       {/* 🌟 PREMIUM HEADER CARD */}
       <header className="profile-header">
         <div className="wallet-badge-corner" title="Total Offline Amount Paid">
@@ -135,7 +137,7 @@ export default function UserProfile() {
 
       {/* 📄 TAB CONTENT */}
       <main className="tab-content-wrapper">
-        
+
         {/* TAB 1: ONLINE BOOKINGS */}
         {activeTab === "online" && (
           <section className="tab-content fade-in">
@@ -173,15 +175,49 @@ export default function UserProfile() {
 
                     <div className="saas-card-mid">
                       <div className="saas-fee-box">
+
                         <div className="fee-item">
                           <span className="fee-label">Govt Fee</span>
-                          <span className="fee-val">₹{app.govtFee || 0}</span>
+                          <span className="fee-val">
+                            ₹{app.govtFee || 0}
+                          </span>
                         </div>
+
                         <div className="fee-divider"></div>
+
                         <div className="fee-item">
                           <span className="fee-label">Service</span>
-                          <span className="fee-val">₹{app.serviceCharge || 0}</span>
+                          <span className="fee-val">
+                            ₹{app.serviceCharge || 0}
+                          </span>
                         </div>
+
+                        {/* 🔥 DISCOUNT DISPLAY */}
+                        {app.discountValue > 0 && (
+                          <>
+                            <div className="fee-divider"></div>
+
+                            <div className="fee-item">
+                              <span
+                                className="fee-label"
+                                style={{ color: "#ef4444" }}
+                              >
+                                Discount
+                              </span>
+
+                              <span
+                                className="fee-val"
+                                style={{ color: "#ef4444" }}
+                              >
+                                -
+                                {app.discountType === "percent"
+                                  ? `${app.discountValue}%`
+                                  : `₹${app.discountAmount}`}
+                              </span>
+                            </div>
+                          </>
+                        )}
+
                       </div>
 
                       {app.note && (
@@ -193,18 +229,39 @@ export default function UserProfile() {
 
                     <div className="saas-card-bottom">
                       <div className="saas-total">
-                        <span>Total:</span> <strong>₹{app.total}</strong>
+
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+
+                          {app.discountValue > 0 && (
+                            <small
+                              style={{
+                                color: "#64748b",
+                                fontSize: "12px"
+                              }}
+                            >
+                              Subtotal: ₹{app.subTotal}
+                            </small>
+                          )}
+
+                          <span>
+                            Total:
+                            {" "}
+                            <strong>₹{app.total}</strong>
+                          </span>
+
+                        </div>
+
                       </div>
                       <div className="saas-action-btns">
-                        <button 
-                          className={`saas-btn-outline ${!app.formUrl ? "disabled" : ""}`} 
+                        <button
+                          className={`saas-btn-outline ${!app.formUrl ? "disabled" : ""}`}
                           onClick={() => app.formUrl && setPreview({ type: "pdf", url: app.formUrl })}
                           disabled={!app.formUrl}
                         >
                           📄 Form
                         </button>
-                        <button 
-                          className={`saas-btn-outline ${!app.docsUrl ? "disabled" : ""}`} 
+                        <button
+                          className={`saas-btn-outline ${!app.docsUrl ? "disabled" : ""}`}
                           onClick={() => app.docsUrl && setPreview({ type: "pdf", url: app.docsUrl })}
                           disabled={!app.docsUrl}
                         >
@@ -223,17 +280,17 @@ export default function UserProfile() {
         {activeTab === "docs" && (
           <section className="tab-content fade-in">
             <div className="docs-header-row">
-              <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h3 className="section-title" style={{ margin: 0 }}>My Documents</h3>
                 <span className="count-pill">{documents.length} Files</span>
               </div>
-              
+
               {documents.length > 0 && (
                 <div className="saas-search-wrapper">
                   <span className="search-icon">🔍</span>
-                  <input 
-                    type="text" 
-                    placeholder="Search files..." 
+                  <input
+                    type="text"
+                    placeholder="Search files..."
                     value={docSearchQuery}
                     onChange={(e) => setDocSearchQuery(e.target.value)}
                     className="saas-search-input"
@@ -255,11 +312,11 @@ export default function UserProfile() {
             ) : (
               <div className="saas-docs-grid">
                 {filteredDocuments.map((doc, i) => {
-                   const fileExt = doc.url ? doc.url.split('?')[0].split('.').pop().toUpperCase() : "FILE";
-                   const displayType = doc.type ? doc.type.split('/').pop().toUpperCase() : fileExt;
-                   const isImage = doc.type ? doc.type.includes("image") : ['JPG', 'JPEG', 'PNG', 'WEBP'].includes(fileExt);
-                   
-                   return (
+                  const fileExt = doc.url ? doc.url.split('?')[0].split('.').pop().toUpperCase() : "FILE";
+                  const displayType = doc.type ? doc.type.split('/').pop().toUpperCase() : fileExt;
+                  const isImage = doc.type ? doc.type.includes("image") : ['JPG', 'JPEG', 'PNG', 'WEBP'].includes(fileExt);
+
+                  return (
                     <div key={i} className="saas-doc-card" onClick={() => setPreview({ type: isImage ? "img" : "pdf", url: doc.url })}>
                       <div className="saas-doc-preview">
                         {isImage ? (

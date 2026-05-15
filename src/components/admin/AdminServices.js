@@ -12,12 +12,15 @@ export default function AdminServices() {
   const [editingId, setEditingId] = useState(null);
   
   const [name, setName] = useState("");
-  const [description, setDescription] = useState(""); // 🔥 New State for Description
+  const [description, setDescription] = useState(""); 
   const [docs, setDocs] = useState(""); 
   const [govtFee, setGovtFee] = useState("");
   const [serviceCharge, setServiceCharge] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
+  
+  // 🔥 NEW: State for Custom Fields
+  const [customFields, setCustomFields] = useState([]);
 
   useEffect(() => {
     fetchServices();
@@ -41,19 +44,21 @@ export default function AdminServices() {
     if (service) {
       setEditingId(service.id);
       setName(service.name);
-      setDescription(service.description || ""); // 🔥 Set Description
+      setDescription(service.description || ""); 
       setDocs(service.docs ? service.docs.join(", ") : "");
       setGovtFee(service.govtFee);
       setServiceCharge(service.serviceCharge);
       setImageUrl(service.imageUrl || ""); 
+      setCustomFields(service.customFields || []); // Load existing custom fields
     } else {
       setEditingId(null);
       setName("");
-      setDescription(""); // 🔥 Clear Description
+      setDescription(""); 
       setDocs("");
       setGovtFee("");
       setServiceCharge("");
       setImageUrl("");
+      setCustomFields([]); // Clear for new service
     }
     setIsModalOpen(true);
   };
@@ -63,31 +68,55 @@ export default function AdminServices() {
     setEditingId(null);
   };
 
+  // 🔥 Helper to manage Custom Fields dynamically
+  const addCustomField = () => {
+    setCustomFields([...customFields, { label: "", type: "text", options: "", required: true }]);
+  };
+
+  const updateCustomField = (index, key, value) => {
+    const updatedFields = [...customFields];
+    updatedFields[index][key] = value;
+    setCustomFields(updatedFields);
+  };
+
+  const removeCustomField = (index) => {
+    setCustomFields(customFields.filter((_, i) => i !== index));
+  };
+
+// ... baaki imports same rahenge ...
+
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!name || !description || !docs || govtFee === "" || serviceCharge === "") {
-      return alert("Please fill all fields");
+    // Ab sirf Name aur Description mandatory hain
+    if (!name || !description) {
+      return alert("Please fill Name and Description");
     }
 
     setLoading(true);
     try {
       let finalImageUrl = imageUrl;
-
       if (imageFile) {
         const fileRef = ref(storage, `service_icons/${Date.now()}_${imageFile.name}`);
         await uploadBytes(fileRef, imageFile);
         finalImageUrl = await getDownloadURL(fileRef);
       }
 
-      const docsArray = docs.split(",").map(d => d.trim()).filter(d => d !== "");
+      // Agar docs empty hai toh empty array bhejenge
+      const docsArray = docs ? docs.split(",").map(d => d.trim()).filter(d => d !== "") : [];
+
+      const formattedCustomFields = customFields.map(field => ({
+        ...field,
+        options: field.type === "select" ? (typeof field.options === 'string' ? field.options.split(",").map(o => o.trim()) : field.options) : []
+      }));
 
       const serviceData = {
         name,
-        description, // 🔥 Save Description to Firestore
+        description, 
         docs: docsArray,
-        govtFee: Number(govtFee),
-        serviceCharge: Number(serviceCharge),
+        govtFee: govtFee ? Number(govtFee) : 0, // Optional: default 0
+        serviceCharge: serviceCharge ? Number(serviceCharge) : 0, // Optional: default 0
         imageUrl: finalImageUrl, 
+        customFields: formattedCustomFields 
       };
 
       if (editingId) {
@@ -105,6 +134,7 @@ export default function AdminServices() {
       setLoading(false);
     }
   };
+
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this service?")) return;
@@ -124,10 +154,7 @@ export default function AdminServices() {
     <div style={{ marginTop: '30px', background: '#fff', padding: '20px', borderRadius: '8px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Manage Services</h3>
-        <button 
-          onClick={() => openModal()} 
-          style={{ background: '#6366f1', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-        >
+        <button onClick={() => openModal()} style={{ background: '#6366f1', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
           + Add New Service
         </button>
       </div>
@@ -138,33 +165,22 @@ export default function AdminServices() {
             <tr style={{ background: '#f3f4f6', textAlign: 'left' }}>
               <th style={{ padding: '10px' }}>Icon</th>
               <th style={{ padding: '10px' }}>Service Name</th>
-              <th style={{ padding: '10px' }}>Description</th> {/* 🔥 New Column */}
-              <th style={{ padding: '10px' }}>Required Documents</th>
+              <th style={{ padding: '10px' }}>Custom Fields</th>
               <th style={{ padding: '10px' }}>Govt Fee</th>
               <th style={{ padding: '10px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {services.length === 0 ? (
-              <tr><td colSpan="6" style={{ padding: '10px', textAlign: 'center' }}>No services added yet.</td></tr>
+              <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center' }}>No services added yet.</td></tr>
             ) : (
               services.map((s) => (
                 <tr key={s.id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td style={{ padding: '10px' }}>
-                    {s.imageUrl ? (
-                      <img src={s.imageUrl} alt={s.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} />
-                    ) : (
-                      <div style={{ width: '40px', height: '40px', background: '#e5e7eb', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#6b7280' }}>No Img</div>
-                    )}
+                    {s.imageUrl ? <img src={s.imageUrl} alt={s.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} /> : "No Img"}
                   </td>
                   <td style={{ padding: '10px' }}><strong>{s.name}</strong></td>
-                  <td style={{ padding: '10px', fontSize: '13px', color: '#555', maxWidth: '200px' }}>
-                    {/* 🔥 Truncate description for table view */}
-                    {s.description?.length > 50 ? s.description.substring(0, 50) + "..." : s.description}
-                  </td>
-                  <td style={{ padding: '10px', fontSize: '13px', color: '#555' }}>
-                    {s.docs?.join(", ")}
-                  </td>
+                  <td style={{ padding: '10px', fontSize: '13px' }}>{s.customFields?.length || 0} fields</td>
                   <td style={{ padding: '10px' }}>₹{s.govtFee}</td>
                   <td style={{ padding: '10px' }}>
                     <button onClick={() => openModal(s)} style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
@@ -180,54 +196,57 @@ export default function AdminServices() {
       {/* Add/Edit Modal */}
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: '25px', borderRadius: '12px', width: '450px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ background: 'white', padding: '25px', borderRadius: '12px', width: '600px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>{editingId ? "Edit Service" : "Add New Service"}</h3>
             
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {/* --- BASIC FIELDS --- */}
+              <div><label>Service Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc' }} /></div>
+              <div><label>Description</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc' }} /></div>
+              <div><label>Required Documents</label><input type="text" value={docs} onChange={(e) => setDocs(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc' }} placeholder="Adhaar, PAN" /></div>
               
-              <div>
-                <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Service Icon / Image</label>
-                <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                {imageUrl && !imageFile && (
-                  <div style={{ marginTop: '10px' }}>
-                    <img src={imageUrl} alt="Current" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
-                    <span style={{ fontSize: '12px', color: '#666', marginLeft: '10px' }}>Current Image</span>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Service Name</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }} placeholder="e.g. PAN Card" />
-              </div>
-
-              {/* 🔥 New Description Field */}
-              <div>
-                <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Service Description</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} required style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc', resize: 'vertical', minHeight: '60px' }} placeholder="Provide details about what this service includes..." />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Required Documents (Comma separated)</label>
-                <textarea value={docs} onChange={(e) => setDocs(e.target.value)} required style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc', resize: 'vertical' }} placeholder="Photo, Aadhaar Card, Signature" />
-              </div>
-
               <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Govt Fee (₹)</label>
-                  <input type="number" value={govtFee} onChange={(e) => setGovtFee(e.target.value)} required style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <div style={{ flex: 1 }}><label>Govt Fee</label><input type="number" value={govtFee} onChange={(e) => setGovtFee(e.target.value)}  style={{ width: '100%', padding: '8px' }} /></div>
+                <div style={{ flex: 1 }}><label>Service Charge</label><input type="number" value={serviceCharge} onChange={(e) => setServiceCharge(e.target.value)}  style={{ width: '100%', padding: '8px' }} /></div>
+              </div>
+
+              {/* 🔥 DYNAMIC CUSTOM FIELDS BUILDER 🔥 */}
+              <div style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', background: '#fafafa' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <label style={{ fontWeight: 'bold' }}>Dynamic Requirements (Form Fields)</label>
+                  <button type="button" onClick={addCustomField} style={{ background: '#10b981', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>+ Add Field</button>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Service Charge (₹)</label>
-                  <input type="number" value={serviceCharge} onChange={(e) => setServiceCharge(e.target.value)} required style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                </div>
+
+                {customFields.map((field, index) => (
+                  <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px', background: '#fff', padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
+                    <div style={{ flex: 1 }}>
+                      <input type="text" placeholder="Field Name (e.g. Train No)" value={field.label} onChange={(e) => updateCustomField(index, "label", e.target.value)} style={{ width: '100%', padding: '6px' }} required />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <select value={field.type} onChange={(e) => updateCustomField(index, "type", e.target.value)} style={{ width: '100%', padding: '6px' }}>
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="date">Date</option>
+                        <option value="select">Dropdown</option>
+                      </select>
+                    </div>
+                    {field.type === "select" && (
+                      <div style={{ flex: 1 }}>
+                        <input type="text" placeholder="Options (comma separated)" value={Array.isArray(field.options) ? field.options.join(",") : field.options} onChange={(e) => updateCustomField(index, "options", e.target.value)} style={{ width: '100%', padding: '6px' }} required />
+                      </div>
+                    )}
+                    <div>
+                      <label style={{ fontSize: '12px' }}><input type="checkbox" checked={field.required} onChange={(e) => updateCustomField(index, "required", e.target.checked)} /> Req</label>
+                    </div>
+                    <button type="button" onClick={() => removeCustomField(index)} style={{ background: 'transparent', color: 'red', border: 'none', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                  </div>
+                ))}
+                {customFields.length === 0 && <p style={{ fontSize: '12px', color: '#777' }}>No custom fields added. Add fields like "Train Name", "Class" for specific services.</p>}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={closeModal} style={{ padding: '8px 16px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-                  {loading ? "Saving..." : "Save Service"}
-                </button>
+                <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#6366f1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save Service</button>
               </div>
             </form>
           </div>

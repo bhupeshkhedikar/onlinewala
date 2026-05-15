@@ -22,10 +22,11 @@ export default function BookingModal({ user, initialData, onClose }) {
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState(user?.email || ""); 
   
-  // File Upload State: Object to hold { "DocName": FileObject }
+  // File Upload State & Custom Details State
   const [files, setFiles] = useState({});
+  const [customDetails, setCustomDetails] = useState({});
 
-  // 🔥 FIXED: Generate time slots dynamically (10:00 AM → 9:00 PM)
+  // Generate time slots dynamically (10:00 AM → 9:00 PM)
   const generateTimeSlots = () => {
     const slots = [];
     let startHour = 10; // 10:00 AM
@@ -62,7 +63,8 @@ export default function BookingModal({ user, initialData, onClose }) {
             govtFee: data.govtFee || 0,
             serviceCharge: data.serviceCharge || 0,
             description: data.description || "",
-            imageUrl: data.imageUrl || "" 
+            imageUrl: data.imageUrl || "",
+            customFields: data.customFields || [] // Fetch custom fields if any
           };
         });
         setServicesData(dataObj);
@@ -75,14 +77,48 @@ export default function BookingModal({ user, initialData, onClose }) {
     fetchServices();
   }, []);
 
+  // --- Step Navigation Handlers ---
+
   const handleNextStep1 = () => {
     if (!service || !date || !time) return alert("Please select all fields!");
+    setCustomDetails({}); // Reset custom fields if service changes
     setStep(2);
   };
 
   const handleNextStep3 = () => {
     if (!name || !mobile || !email) return alert("Please fill in all contact details!");
-    setStep(4);
+    
+    // Check if service has custom fields. If yes, go to Step 4, else skip to Step 5.
+    const hasCustomFields = servicesData[service]?.customFields?.length > 0;
+    if (hasCustomFields) {
+      setStep(4);
+    } else {
+      setStep(5);
+    }
+  };
+
+  const handleNextStep4 = () => {
+    // Validate required custom fields
+    const requiredFields = servicesData[service]?.customFields?.filter(f => f.required) || [];
+    for (let field of requiredFields) {
+      if (!customDetails[field.label]) {
+        return alert(`Please fill the required field: ${field.label}`);
+      }
+    }
+    setStep(5); // Proceed to Upload step
+  };
+
+  const handleBackFromUpload = () => {
+    const hasCustomFields = servicesData[service]?.customFields?.length > 0;
+    if (hasCustomFields) {
+      setStep(4);
+    } else {
+      setStep(3);
+    }
+  };
+
+  const handleCustomDetailChange = (label, value) => {
+    setCustomDetails(prev => ({ ...prev, [label]: value }));
   };
 
   const handleFileChange = (docName, file) => {
@@ -102,13 +138,15 @@ export default function BookingModal({ user, initialData, onClose }) {
     try {
       let uploadedDocs = [];
 
-      // 1. Upload files to Firebase Storage
+      // 1. Upload files to Firebase Storage (if any)
       for (let docName of Object.keys(files)) {
         const file = files[docName];
-        const fileRef = ref(storage, `bookings/${user.uid}/${Date.now()}_${file.name}`);
-        await uploadBytes(fileRef, file);
-        const url = await getDownloadURL(fileRef);
-        uploadedDocs.push({ name: docName, url, type: file.type });
+        if (file) {
+          const fileRef = ref(storage, `bookings/${user.uid}/${Date.now()}_${file.name}`);
+          await uploadBytes(fileRef, file);
+          const url = await getDownloadURL(fileRef);
+          uploadedDocs.push({ name: docName, url, type: file.type });
+        }
       }
 
       // 2. Save Booking to Firestore
@@ -120,6 +158,7 @@ export default function BookingModal({ user, initialData, onClose }) {
         service,
         date,
         time,
+        customDetails, // Save dynamic info
         documents: uploadedDocs,
         govtFee: selectedServiceData.govtFee,
         serviceCharge: selectedServiceData.serviceCharge,
@@ -129,8 +168,8 @@ export default function BookingModal({ user, initialData, onClose }) {
         createdAt: serverTimestamp(),
       });
 
-      // ✨ SUCCESS: Show Animation Step instead of alert
-      setStep(5);
+      // ✨ SUCCESS: Proceed to step 6 (Animation)
+      setStep(6);
 
     } catch (error) {
       console.error(error);
@@ -140,16 +179,27 @@ export default function BookingModal({ user, initialData, onClose }) {
     }
   };
 
+  // Logic to show correct step numbers in the header
+  const hasCustomFields = servicesData[service]?.customFields?.length > 0;
+  const totalSteps = hasCustomFields ? 5 : 4;
+  
+  const getDisplayStep = () => {
+    if (step <= 3) return step;
+    if (step === 4) return 4;
+    if (step === 5) return hasCustomFields ? 5 : 4;
+    return step;
+  };
+
   return (
     <div className="bm-overlay">
       <div className="bm-modal">
         
-        {/* Hide header if on success step */}
-        {step !== 5 && (
+        {/* Hide header if on success step (Step 6) */}
+        {step !== 6 && (
           <div className="bm-header">
             <div>
               <h2>Book a Service</h2>
-              <p className="bm-subtitle">Step {step} of 4</p>
+              <p className="bm-subtitle">Step {getDisplayStep()} of {totalSteps}</p>
             </div>
             <button className="bm-close" onClick={onClose}>✕</button>
           </div>
@@ -192,7 +242,6 @@ export default function BookingModal({ user, initialData, onClose }) {
               {/* STEP 2: Requirements & Fees */}
               {step === 2 && service && servicesData[service] && (
                 <div className="bm-step fade-in">
-                  
                   <div className="bm-service-card">
                     {servicesData[service].imageUrl && (
                       <img src={servicesData[service].imageUrl} alt={service} className="bm-service-img" />
@@ -220,14 +269,16 @@ export default function BookingModal({ user, initialData, onClose }) {
                     </div>
                   </div>
 
-                  <div className="bm-docs-req">
-                    <span className="bm-label">Required Documents:</span>
-                    <div className="bm-doc-pills">
-                      {servicesData[service].docs.map((doc, i) => (
-                        <span key={i} className="bm-pill">📄 {doc}</span>
-                      ))}
+                  {servicesData[service].docs?.length > 0 && (
+                    <div className="bm-docs-req">
+                      <span className="bm-label">Required Documents:</span>
+                      <div className="bm-doc-pills">
+                        {servicesData[service].docs.map((doc, i) => (
+                          <span key={i} className="bm-pill">📄 {doc}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="bm-actions">
                     <button className="bm-btn secondary" onClick={() => setStep(1)}>Back</button>
@@ -239,74 +290,99 @@ export default function BookingModal({ user, initialData, onClose }) {
               {/* STEP 3: Contact Details */}
               {step === 3 && (
                 <div className="bm-step fade-in">
-                  
                   <div className="bm-input-group">
                     <label className="bm-label">Full Name *</label>
-                    <input 
-                      className="bm-input"
-                      type="text" 
-                      value={name} 
-                      onChange={(e) => setName(e.target.value)} 
-                      placeholder="e.g. Rahul Kumar" 
-                    />
+                    <input className="bm-input" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Rahul Kumar" />
                   </div>
 
                   <div className="bm-input-group">
                     <label className="bm-label">Mobile Number *</label>
-                    <input 
-                      className="bm-input"
-                      type="tel" 
-                      value={mobile} 
-                      onChange={(e) => setMobile(e.target.value)} 
-                      placeholder="e.g. 9876543210" 
-                    />
+                    <input className="bm-input" type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="e.g. 9876543210" />
                   </div>
 
                   <div className="bm-input-group">
                     <label className="bm-label">Email ID *</label>
-                    <input 
-                      className="bm-input"
-                      type="email" 
-                      value={email} 
-                      onChange={(e) => setEmail(e.target.value)} 
-                      placeholder="e.g. rahul@example.com" 
-                    />
+                    <input className="bm-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. rahul@example.com" />
                   </div>
 
                   <div className="bm-actions mt-2">
                     <button className="bm-btn secondary" onClick={() => setStep(2)}>Back</button>
-                    <button className="bm-btn primary" onClick={handleNextStep3}>Proceed to Upload ➔</button>
+                    <button className="bm-btn primary" onClick={handleNextStep3}>Next ➔</button>
                   </div>
                 </div>
               )}
 
-              {/* STEP 4: Upload Documents */}
-              {step === 4 && service && servicesData[service] && (
+              {/* ✨ STEP 4: Additional Dynamic Information (Conditional) */}
+              {step === 4 && service && servicesData[service]?.customFields && (
                 <div className="bm-step fade-in">
+                  <h4 style={{marginTop: 0, marginBottom: '15px'}}>Additional Details</h4>
                   
+                  {servicesData[service].customFields.map((field, index) => (
+                    <div className="bm-input-group" key={index}>
+                      <label className="bm-label">{field.label} {field.required && '*'}</label>
+                      
+                      {field.type === "select" ? (
+                        <select 
+                          className="bm-input"
+                          value={customDetails[field.label] || ""} 
+                          onChange={(e) => handleCustomDetailChange(field.label, e.target.value)}
+                        >
+                          <option value="">Select Option</option>
+                          {field.options.map((opt, i) => (
+                            <option key={i} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input 
+                          className="bm-input"
+                          type={field.type} 
+                          value={customDetails[field.label] || ""} 
+                          onChange={(e) => handleCustomDetailChange(field.label, e.target.value)}
+                          placeholder={`Enter ${field.label}`}
+                        />
+                      )}
+                    </div>
+                  ))}
+
+                  <div className="bm-actions mt-2">
+                    <button className="bm-btn secondary" onClick={() => setStep(3)}>Back</button>
+                    <button className="bm-btn primary" onClick={handleNextStep4}>Proceed to Upload ➔</button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 5: Upload Documents & Submit */}
+              {step === 5 && service && servicesData[service] && (
+                <div className="bm-step fade-in">
                   <div className="bm-payable-banner">
                     <span>Total Payable:</span>
                     <strong>₹{servicesData[service].govtFee + servicesData[service].serviceCharge}</strong>
                   </div>
 
                   <div className="bm-upload-list">
-                    {servicesData[service].docs.map((doc, i) => (
-                      <div key={i} className="bm-upload-group">
-                        <label className="bm-label">{doc} *</label>
-                        <div className="bm-file-wrapper">
-                          <input 
-                            className="bm-file-input"
-                            type="file" 
-                            onChange={(e) => handleFileChange(doc, e.target.files[0])} 
-                            accept="image/*,.pdf" 
-                          />
+                    {servicesData[service].docs?.length > 0 ? (
+                      servicesData[service].docs.map((doc, i) => (
+                        <div key={i} className="bm-upload-group">
+                          <label className="bm-label">{doc} *</label>
+                          <div className="bm-file-wrapper">
+                            <input 
+                              className="bm-file-input"
+                              type="file" 
+                              onChange={(e) => handleFileChange(doc, e.target.files[0])} 
+                              accept="image/*,.pdf" 
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p style={{ textAlign: "center", color: "#666", padding: "20px 0" }}>
+                        No documents required for this service.
+                      </p>
+                    )}
                   </div>
                   
                   <div className="bm-actions mt-2">
-                    <button className="bm-btn secondary" onClick={() => setStep(3)}>Back</button>
+                    <button className="bm-btn secondary" onClick={handleBackFromUpload}>Back</button>
                     <button className="bm-btn submit" onClick={handleSubmit} disabled={loading}>
                       {loading ? "Processing..." : "Submit Booking ✅"}
                     </button>
@@ -314,17 +390,13 @@ export default function BookingModal({ user, initialData, onClose }) {
                 </div>
               )}
 
-              {/* ✨ STEP 5: Success Animation Screen */}
-              {step === 5 && (
+              {/* ✨ STEP 6: Success Animation Screen */}
+              {step === 6 && (
                 <div className="bm-step bm-success-step">
                   <div className="bm-success-animation-container">
-                    
-                    {/* Animated Circle & Checkmark */}
                     <div className="bm-success-circle">
                       <span className="bm-check">✓</span>
                     </div>
-
-                    {/* Confetti Particles */}
                     <div className="bm-particle bm-p1"></div>
                     <div className="bm-particle bm-p2"></div>
                     <div className="bm-particle bm-p3"></div>
@@ -335,7 +407,7 @@ export default function BookingModal({ user, initialData, onClose }) {
 
                   <h3 className="bm-success-heading">Booking Confirmed!</h3>
                   <p className="bm-success-subtext">
-                    Aapka slot book ho gaya hai. Kripya time par apne documents ke sath center par aayein.
+                    Aapka slot book ho gaya hai. Kripya time par center par aayein.
                   </p>
 
                   <div className="bm-actions" style={{ marginTop: '20px', width: '100%' }}>
