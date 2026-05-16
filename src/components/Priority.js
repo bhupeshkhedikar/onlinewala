@@ -16,9 +16,9 @@ export default function Priority() {
 
         {/* Right Side: Action Button */}
         <button className="priority-cta">
-          Upgrade Now ➔
+          Comming Soon...
         </button>
-
+{/* ➔ */}
         {/* Decorative Glow */}
         <div className="priority-glow"></div>
       </div>
