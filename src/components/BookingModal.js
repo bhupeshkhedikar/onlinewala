@@ -17,7 +17,7 @@ export default function BookingModal({ user, initialData, onClose }) {
   const [date, setDate] = useState(initialData?.date || "");
   const [time, setTime] = useState(initialData?.time || "");
   
-  // 🔥 Contact Details State
+  // Contact Details State
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState(user?.email || ""); 
@@ -29,8 +29,8 @@ export default function BookingModal({ user, initialData, onClose }) {
   // Generate time slots dynamically (10:00 AM → 9:00 PM)
   const generateTimeSlots = () => {
     const slots = [];
-    let startHour = 10; // 10:00 AM
-    let endHour = 21;   // 9:00 PM
+    let startHour = 10; 
+    let endHour = 21;  
 
     for (let h = startHour; h <= endHour; h++) {
       slots.push(formatTime(h, 0));
@@ -59,12 +59,12 @@ export default function BookingModal({ user, initialData, onClose }) {
         snapshot.docs.forEach(doc => {
           const data = doc.data();
           dataObj[data.name] = {
-            docs: data.docs || [],
+            docs: data.docs || [], // Now expects array of objects: [{name: "Pan", isRequired: true}]
             govtFee: data.govtFee || 0,
             serviceCharge: data.serviceCharge || 0,
             description: data.description || "",
             imageUrl: data.imageUrl || "",
-            customFields: data.customFields || [] // Fetch custom fields if any
+            customFields: data.customFields || [] 
           };
         });
         setServicesData(dataObj);
@@ -81,14 +81,13 @@ export default function BookingModal({ user, initialData, onClose }) {
 
   const handleNextStep1 = () => {
     if (!service || !date || !time) return alert("Please select all fields!");
-    setCustomDetails({}); // Reset custom fields if service changes
+    setCustomDetails({}); 
     setStep(2);
   };
 
   const handleNextStep3 = () => {
     if (!name || !mobile || !email) return alert("Please fill in all contact details!");
     
-    // Check if service has custom fields. If yes, go to Step 4, else skip to Step 5.
     const hasCustomFields = servicesData[service]?.customFields?.length > 0;
     if (hasCustomFields) {
       setStep(4);
@@ -98,14 +97,13 @@ export default function BookingModal({ user, initialData, onClose }) {
   };
 
   const handleNextStep4 = () => {
-    // Validate required custom fields
     const requiredFields = servicesData[service]?.customFields?.filter(f => f.required) || [];
     for (let field of requiredFields) {
       if (!customDetails[field.label]) {
         return alert(`Please fill the required field: ${field.label}`);
       }
     }
-    setStep(5); // Proceed to Upload step
+    setStep(5); 
   };
 
   const handleBackFromUpload = () => {
@@ -127,18 +125,21 @@ export default function BookingModal({ user, initialData, onClose }) {
 
   const handleSubmit = async () => {
     const selectedServiceData = servicesData[service];
-    const requiredDocs = selectedServiceData?.docs || [];
+    
+    // ✨ FIX: Filter only documents that are marked as required
+    const allDocs = selectedServiceData?.docs || [];
+    const requiredDocs = allDocs.filter(d => d.isRequired);
     
     // Check if all required files are selected
     for (let doc of requiredDocs) {
-      if (!files[doc]) return alert(`Please upload ${doc}`);
+      if (!files[doc.name]) return alert(`Please upload ${doc.name}`);
     }
 
     setLoading(true);
     try {
       let uploadedDocs = [];
 
-      // 1. Upload files to Firebase Storage (if any)
+      // 1. Upload files to Firebase Storage
       for (let docName of Object.keys(files)) {
         const file = files[docName];
         if (file) {
@@ -152,13 +153,13 @@ export default function BookingModal({ user, initialData, onClose }) {
       // 2. Save Booking to Firestore
       await addDoc(collection(db, "bookings"), {
         userId: user.uid,
-        userName: name,     
+        userName: name,    
         userMobile: mobile, 
         userEmail: email,   
         service,
         date,
         time,
-        customDetails, // Save dynamic info
+        customDetails, 
         documents: uploadedDocs,
         govtFee: selectedServiceData.govtFee,
         serviceCharge: selectedServiceData.serviceCharge,
@@ -168,7 +169,6 @@ export default function BookingModal({ user, initialData, onClose }) {
         createdAt: serverTimestamp(),
       });
 
-      // ✨ SUCCESS: Proceed to step 6 (Animation)
       setStep(6);
 
     } catch (error) {
@@ -179,7 +179,6 @@ export default function BookingModal({ user, initialData, onClose }) {
     }
   };
 
-  // Logic to show correct step numbers in the header
   const hasCustomFields = servicesData[service]?.customFields?.length > 0;
   const totalSteps = hasCustomFields ? 5 : 4;
   
@@ -194,7 +193,6 @@ export default function BookingModal({ user, initialData, onClose }) {
     <div className="bm-overlay">
       <div className="bm-modal">
         
-        {/* Hide header if on success step (Step 6) */}
         {step !== 6 && (
           <div className="bm-header">
             <div>
@@ -271,10 +269,13 @@ export default function BookingModal({ user, initialData, onClose }) {
 
                   {servicesData[service].docs?.length > 0 && (
                     <div className="bm-docs-req">
-                      <span className="bm-label">Required Documents:</span>
+                      <span className="bm-label">Documents Needed:</span>
                       <div className="bm-doc-pills">
+                        {/* ✨ FIX: Render doc.name and show if Optional */}
                         {servicesData[service].docs.map((doc, i) => (
-                          <span key={i} className="bm-pill">📄 {doc}</span>
+                          <span key={i} className="bm-pill" style={{ opacity: doc.isRequired ? 1 : 0.7 }}>
+                            📄 {doc.name} {!doc.isRequired && "(Optional)"}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -312,7 +313,7 @@ export default function BookingModal({ user, initialData, onClose }) {
                 </div>
               )}
 
-              {/* ✨ STEP 4: Additional Dynamic Information (Conditional) */}
+              {/* STEP 4: Additional Dynamic Information */}
               {step === 4 && service && servicesData[service]?.customFields && (
                 <div className="bm-step fade-in">
                   <h4 style={{marginTop: 0, marginBottom: '15px'}}>Additional Details</h4>
@@ -361,14 +362,18 @@ export default function BookingModal({ user, initialData, onClose }) {
 
                   <div className="bm-upload-list">
                     {servicesData[service].docs?.length > 0 ? (
+                      // ✨ FIX: Use doc.name and conditionally show '*' based on doc.isRequired
                       servicesData[service].docs.map((doc, i) => (
                         <div key={i} className="bm-upload-group">
-                          <label className="bm-label">{doc} *</label>
+                          <label className="bm-label">
+                            {doc.name} {doc.isRequired && <span style={{color: 'red'}}>*</span>}
+                            {!doc.isRequired && <span style={{fontSize: '12px', color: '#666', fontWeight: 'normal'}}> (Optional)</span>}
+                          </label>
                           <div className="bm-file-wrapper">
                             <input 
                               className="bm-file-input"
                               type="file" 
-                              onChange={(e) => handleFileChange(doc, e.target.files[0])} 
+                              onChange={(e) => handleFileChange(doc.name, e.target.files[0])} 
                               accept="image/*,.pdf" 
                             />
                           </div>
@@ -390,7 +395,7 @@ export default function BookingModal({ user, initialData, onClose }) {
                 </div>
               )}
 
-              {/* ✨ STEP 6: Success Animation Screen */}
+              {/* STEP 6: Success Animation Screen */}
               {step === 6 && (
                 <div className="bm-step bm-success-step">
                   <div className="bm-success-animation-container">
