@@ -39,7 +39,7 @@ export default function BookingModal({ user, initialData, onClose }) {
     return `${yyyy}-${mm}-${dd}`;
   };
 
-  // 🔥 NEW: Strict validation to block manual typing of past dates
+  // Strict validation to block manual typing of past dates
   const handleDateChange = (e) => {
     const selectedDate = e.target.value;
     const today = getTodayString();
@@ -281,9 +281,10 @@ export default function BookingModal({ user, initialData, onClose }) {
 
   return (
     <div className="bm-overlay">
-      <div className="bm-modal">
+      {/* 🔥 ADDED: display, flexDirection, maxHeight, aur overflow chhote screens pe cut hone se bachane ke liye */}
+      <div className="bm-modal" style={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
         {step !== 6 && (
-          <div className="bm-header">
+          <div className="bm-header" style={{ flexShrink: 0 }}>
             <div>
               <h2>Book a Service</h2>
               <p className="bm-subtitle">Step {getDisplayStep()} of {totalSteps}</p>
@@ -292,7 +293,8 @@ export default function BookingModal({ user, initialData, onClose }) {
           </div>
         )}
         
-        <div className="bm-body">
+        {/* 🔥 ADDED: overflowY: 'auto' taaki body scroll ho sake agar list badi ho */}
+        <div className="bm-body" style={{ overflowY: 'auto', flexGrow: 1, paddingRight: '5px' }}>
           {fetchingServices ? (
             <div className="bm-loading">Loading services...</div>
           ) : (
@@ -310,7 +312,6 @@ export default function BookingModal({ user, initialData, onClose }) {
                   <div className="bm-row">
                     <div className="bm-input-group">
                       <label className="bm-label">Date</label>
-                      {/* 🔥 CHANGED: Now using the strict handleDateChange function */}
                       <input 
                         className="bm-input" 
                         type="date" 

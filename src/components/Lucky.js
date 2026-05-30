@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, increment, collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase"; 
-import { useNavigate } from "react-router-dom"; // 🔥 React Router Import
+import { useNavigate } from "react-router-dom";
 import "./Lucky.css"; 
 
 export default function Lucky({ user }) {
-  const navigate = useNavigate(); // 🔥 Navigation Hook
+  const navigate = useNavigate();
 
   const [tickets, setTickets] = useState(0); 
   const [isSpinning, setIsSpinning] = useState(false);
@@ -26,7 +26,9 @@ export default function Lucky({ user }) {
           const userRef = doc(db, "users", user.uid);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
-            setTickets(userSnap.data().tickets || 0);
+            // Ensure tickets never load as negative
+            const fetchedTickets = userSnap.data().tickets || 0;
+            setTickets(fetchedTickets < 0 ? 0 : fetchedTickets); 
           }
           fetchMyWinnings(user.uid);
         } catch (error) {
@@ -65,7 +67,6 @@ export default function Lucky({ user }) {
     }
   };
 
-  // 🔥 बक्षिसांची नावे मराठीत
   const prizes = [
     { name: "५ पाने मोफत स्कॅन", type: "high", color: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)", textCol: "#881337" },
     { name: "५ मोफत B&W प्रिंट्स", type: "mid", color: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)", textCol: "#4c1d95" },
@@ -76,17 +77,17 @@ export default function Lucky({ user }) {
   ];
 
   const handleSpin = async () => {
-    // 🔥 If user is not logged in, redirect to login page
     if (!user) {
-      navigate("/login"); // अपनी लॉगिन रूट के अनुसार इसे बदलें
+      navigate("/login"); 
       return;
     }
 
+    // 🔥 STRICT CHECK: Prevents spinning if tickets are 0 or less
     if (tickets <= 0 || isSpinning) return;
 
     setIsSpinning(true);
     setResult(null);
-    setTickets((prev) => prev - 1);
+    setTickets((prev) => (prev > 0 ? prev - 1 : 0)); // Safer local decrement
 
     try {
       const userRef = doc(db, "users", user.uid);
@@ -174,7 +175,7 @@ export default function Lucky({ user }) {
     <div className="lucky-wrapper">
       <div className="lucky-premium-card">
         
-        {/* 🔥 TABS */}
+        {/* TABS */}
         <div className="lucky-tabs">
           <button 
             className={`l-tab-btn ${activeTab === "spin" ? "active" : ""}`}
@@ -206,7 +207,8 @@ export default function Lucky({ user }) {
                 <span className="t-text">शिल्लक स्पिन्स</span>
               </div>
               <div className="ticket-value">
-                {loadingTickets ? "..." : tickets}
+                {/* Prevent displaying negative tickets */}
+                {loadingTickets ? "..." : Math.max(0, tickets)}
               </div>
             </div>
 
@@ -243,18 +245,18 @@ export default function Lucky({ user }) {
               )}
             </div>
 
-            {/* 🔥 Spin Button (Updated) */}
+            {/* 🔥 Spin Button: Changed 'tickets === 0' to 'tickets <= 0' */}
             <button 
-              // अगर यूज़र नहीं है तो बटन disabled नहीं रहेगा, ताकि क्लिक करने पर रिडायरेक्ट हो सके
-              className={`btn-spin-now ${isSpinning || (user && tickets === 0) || loadingTickets ? 'disabled' : ''}`}
+              className={`btn-spin-now ${isSpinning || (user && tickets <= 0) || loadingTickets ? 'disabled' : ''}`}
               onClick={handleSpin} 
-              disabled={isSpinning || (user && tickets === 0) || loadingTickets}
+              disabled={isSpinning || (user && tickets <= 0) || loadingTickets}
             >
               <div className="btn-glow"></div>
               <span>{!user ? "स्पिनसाठी लॉग इन करा" : isSpinning ? "फिरत आहे..." : "आता स्पिन करा"}</span>
             </button>
             
-            {tickets === 0 && user && !isSpinning && (
+            {/* 🔥 Changed check here as well */}
+            {tickets <= 0 && user && !isSpinning && (
               <p className="no-ticket-text">अधिक स्पिन्स मिळवण्यासाठी सर्विस बुक करा!</p>
             )}
           </div>
