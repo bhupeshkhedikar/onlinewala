@@ -13,10 +13,10 @@ export default function BookingBar({ user, onLoginRequest }) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 🔥 State for dynamic services list
+  // State for dynamic services list
   const [servicesList, setServicesList] = useState([]);
 
-  // 🔥 Fetch services dynamically when the component loads
+  // Fetch services dynamically when the component loads
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -31,6 +31,28 @@ export default function BookingBar({ user, onLoginRequest }) {
     
     fetchServices();
   }, []);
+
+  // 🔥 Helper to get today's date in YYYY-MM-DD format
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // 🔥 Strict validation to block manual typing of past dates
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    const today = getTodayString();
+    
+    if (newDate && newDate < today) {
+      alert("मागील तारीख निवडता येणार नाही. कृपया आजची किंवा पुढील तारीख निवडा."); // Marathi alert for consistency
+      setSelectedDate(""); // Clear invalid date
+    } else {
+      setSelectedDate(newDate);
+    }
+  };
 
   // Generate time slots (10:00 AM → 9:00 PM, 30 min)
   const generateTimeSlots = () => {
@@ -79,10 +101,10 @@ export default function BookingBar({ user, onLoginRequest }) {
     <div className="bookingBar-wrapper">
       <div className="bookingBar">
         
-        {/* 🔥 NAYA CENTERED TITLE */}
+        {/* CENTERED TITLE */}
         <h3 className="bookingBar-title">सेवा बुक करा</h3>
         
-        {/* 🔥 DYNAMIC SERVICES DROPDOWN WITH DEFAULT PLACEHOLDER */}
+        {/* DYNAMIC SERVICES DROPDOWN WITH DEFAULT PLACEHOLDER */}
         <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)}>
           <option value="" disabled hidden>सेवा निवडा</option>
           {servicesList.length === 0 ? (
@@ -94,19 +116,23 @@ export default function BookingBar({ user, onLoginRequest }) {
           )}
         </select>
 
-        {/* 🔥 DATE INPUT WITH SMART PLACEHOLDER */}
+        {/* 🔥 DATE INPUT WITH SMART PLACEHOLDER AND VALIDATION */}
         <input 
           type={selectedDate ? "date" : "text"} 
           placeholder="तारीख निवडा"
-          onFocus={(e) => (e.target.type = "date")}
+          min={getTodayString()} // Grays out past dates in the calendar picker
+          onFocus={(e) => {
+            e.target.type = "date";
+            e.target.min = getTodayString(); // Apply min attribute dynamically when focused
+          }}
           onBlur={(e) => {
             if (!selectedDate) e.target.type = "text";
           }}
           value={selectedDate} 
-          onChange={(e) => setSelectedDate(e.target.value)} 
+          onChange={handleDateChange} // Validates against keyboard typing
         />
 
-        {/* 🔥 TIME DROPDOWN WITH DEFAULT PLACEHOLDER */}
+        {/* TIME DROPDOWN WITH DEFAULT PLACEHOLDER */}
         <select value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)}>
           <option value="" disabled hidden>वेळ निवडा</option>
           {timeSlots.map((slot, i) => (

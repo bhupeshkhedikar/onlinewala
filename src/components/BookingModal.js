@@ -30,6 +30,29 @@ export default function BookingModal({ user, initialData, onClose }) {
   // State to track upload progress
   const [uploadStatus, setUploadStatus] = useState(null);
 
+  // Helper to get today's date in YYYY-MM-DD format (Local Time)
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // 🔥 NEW: Strict validation to block manual typing of past dates
+  const handleDateChange = (e) => {
+    const selectedDate = e.target.value;
+    const today = getTodayString();
+    
+    // Check if the selected date is logically older than today's date string
+    if (selectedDate && selectedDate < today) {
+      alert("Past dates are not allowed. Please select today or a future date.");
+      setDate(""); // Instantly clear the invalid date
+    } else {
+      setDate(selectedDate);
+    }
+  };
+
   // Generate time slots dynamically (10:00 AM → 9:00 PM)
   const generateTimeSlots = () => {
     const slots = [];
@@ -112,7 +135,7 @@ export default function BookingModal({ user, initialData, onClose }) {
     setFiles((prev) => {
       const updated = { ...prev };
       if (file) updated[docName] = file;
-      else delete updated[docName]; // Clean up if user cancels file selection
+      else delete updated[docName]; 
       return updated;
     });
   };
@@ -133,7 +156,6 @@ export default function BookingModal({ user, initialData, onClose }) {
     setExtraDocs(extraDocs.filter(doc => doc.id !== id));
   };
 
-  // 🔥 Helper to display the file preview UI
   const renderFilePreview = (file) => {
     if (!file) return null;
     
@@ -288,7 +310,14 @@ export default function BookingModal({ user, initialData, onClose }) {
                   <div className="bm-row">
                     <div className="bm-input-group">
                       <label className="bm-label">Date</label>
-                      <input className="bm-input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                      {/* 🔥 CHANGED: Now using the strict handleDateChange function */}
+                      <input 
+                        className="bm-input" 
+                        type="date" 
+                        value={date} 
+                        min={getTodayString()} 
+                        onChange={handleDateChange} 
+                      />
                     </div>
                     <div className="bm-input-group">
                       <label className="bm-label">Time</label>
@@ -405,7 +434,6 @@ export default function BookingModal({ user, initialData, onClose }) {
                             <div className="bm-file-wrapper">
                               <input className="bm-file-input" type="file" onChange={(e) => handleFileChange(doc.name, e.target.files[0])} accept="image/*,.pdf" />
                             </div>
-                            {/* 🔥 Render Preview if file is selected */}
                             {renderFilePreview(files[doc.name])}
                           </div>
                         ))
@@ -427,7 +455,6 @@ export default function BookingModal({ user, initialData, onClose }) {
                             </div>
                             <input type="file" onChange={(e) => handleExtraDocFileChange(ed.id, e.target.files[0])} accept="image/*,.pdf" className="bm-file-input" />
                             
-                            {/* 🔥 Render Preview if file is selected */}
                             {renderFilePreview(ed.file)}
                           </div>
                         ))}
