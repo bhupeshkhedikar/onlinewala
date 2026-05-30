@@ -16,10 +16,12 @@ export default function AdminServices() {
   const [docs, setDocs] = useState(""); 
   const [govtFee, setGovtFee] = useState("");
   const [serviceCharge, setServiceCharge] = useState("");
+  
+  // 🔥 Image States
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   
-  // 🔥 NEW: State for Custom Fields
+  // 🔥 State for Custom Fields
   const [customFields, setCustomFields] = useState([]);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function AdminServices() {
       setGovtFee(service.govtFee);
       setServiceCharge(service.serviceCharge);
       setImageUrl(service.imageUrl || ""); 
-      setCustomFields(service.customFields || []); // Load existing custom fields
+      setCustomFields(service.customFields || []);
     } else {
       setEditingId(null);
       setName("");
@@ -58,7 +60,7 @@ export default function AdminServices() {
       setGovtFee("");
       setServiceCharge("");
       setImageUrl("");
-      setCustomFields([]); // Clear for new service
+      setCustomFields([]); 
     }
     setIsModalOpen(true);
   };
@@ -68,7 +70,6 @@ export default function AdminServices() {
     setEditingId(null);
   };
 
-  // 🔥 Helper to manage Custom Fields dynamically
   const addCustomField = () => {
     setCustomFields([...customFields, { label: "", type: "text", options: "", required: true }]);
   };
@@ -83,11 +84,8 @@ export default function AdminServices() {
     setCustomFields(customFields.filter((_, i) => i !== index));
   };
 
-// ... baaki imports same rahenge ...
-
   const handleSave = async (e) => {
     e.preventDefault();
-    // Ab sirf Name aur Description mandatory hain
     if (!name || !description) {
       return alert("Please fill Name and Description");
     }
@@ -95,13 +93,14 @@ export default function AdminServices() {
     setLoading(true);
     try {
       let finalImageUrl = imageUrl;
+      
+      // Upload image if a new file is selected
       if (imageFile) {
         const fileRef = ref(storage, `service_icons/${Date.now()}_${imageFile.name}`);
         await uploadBytes(fileRef, imageFile);
         finalImageUrl = await getDownloadURL(fileRef);
       }
 
-      // Agar docs empty hai toh empty array bhejenge
       const docsArray = docs ? docs.split(",").map(d => d.trim()).filter(d => d !== "") : [];
 
       const formattedCustomFields = customFields.map(field => ({
@@ -113,9 +112,9 @@ export default function AdminServices() {
         name,
         description, 
         docs: docsArray,
-        govtFee: govtFee ? Number(govtFee) : 0, // Optional: default 0
-        serviceCharge: serviceCharge ? Number(serviceCharge) : 0, // Optional: default 0
-        imageUrl: finalImageUrl, 
+        govtFee: govtFee ? Number(govtFee) : 0, 
+        serviceCharge: serviceCharge ? Number(serviceCharge) : 0, 
+        imageUrl: finalImageUrl, // Will save empty string if no image was uploaded
         customFields: formattedCustomFields 
       };
 
@@ -134,7 +133,6 @@ export default function AdminServices() {
       setLoading(false);
     }
   };
-
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this service?")) return;
@@ -205,6 +203,23 @@ export default function AdminServices() {
               <div><label>Description</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc' }} /></div>
               <div><label>Required Documents</label><input type="text" value={docs} onChange={(e) => setDocs(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc' }} placeholder="Adhaar, PAN" /></div>
               
+              {/* 🔥 NEW: Optional Image Upload Field */}
+              <div>
+                <label>Service Icon / Image (Optional)</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => setImageFile(e.target.files[0])} 
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ccc', background: '#fff' }} 
+                />
+                {/* Show a preview link if editing a service that already has an image */}
+                {imageUrl && !imageFile && (
+                  <p style={{ fontSize: '12px', marginTop: '5px', color: '#666' }}>
+                    Current Image: <a href={imageUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>View Image</a>
+                  </p>
+                )}
+              </div>
+
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ flex: 1 }}><label>Govt Fee</label><input type="number" value={govtFee} onChange={(e) => setGovtFee(e.target.value)}  style={{ width: '100%', padding: '8px' }} /></div>
                 <div style={{ flex: 1 }}><label>Service Charge</label><input type="number" value={serviceCharge} onChange={(e) => setServiceCharge(e.target.value)}  style={{ width: '100%', padding: '8px' }} /></div>
@@ -254,4 +269,4 @@ export default function AdminServices() {
       )}
     </div>
   );
-}
+} 
