@@ -27,6 +27,7 @@ import ResumeBuilder from "./components/ResumeBuilder";
 import BiodataBuilder from "./components/BiodataBuilder";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import AgeCalculator from "./components/AgeCalculator";
+import Footer from "./components/Footer";
 import InvoiceDashboard from "./components/admin/InvoiceDashboard";
 
 
@@ -46,6 +47,7 @@ const Home = ({ authUser }) => (
     <PriorityGrid />
     <Priority />
     <Analytics/>
+    <Footer />
   </>
 );
 
