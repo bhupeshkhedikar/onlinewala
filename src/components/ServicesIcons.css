@@ -109,8 +109,8 @@
 
 /* Icon Container */
 .icon-container {
-  width: 56px;
-  height: 56px;
+  /* width: 56px;
+  height: 56px; */
   margin: 0 auto 12px auto;
   border-radius: 14px;
   background: linear-gradient(135deg, #f0fdfa, #e0e7ff);
@@ -155,10 +155,10 @@
     min-width: 70px;
     padding: 16px 12px;
   }
-  .icon-container {
+  /* .icon-container {
     width: 50px;
     height: 50px;
-  }
+  } */
 }
 
 /* 📱 Mobile */
@@ -178,10 +178,10 @@
     border-radius: 12px;
   }
 
-  .icon-container {
+  /* .icon-container {
     width: 44px;
     height: 44px;
-  }
+  } */
 
   .service-name {
     font-size: 11px;
