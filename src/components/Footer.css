@@ -10,7 +10,7 @@
 
 /* --- Animated Top Gradient Border --- */
 .ow-animated-border {
-  height: 4px;
+  height: 3px;
   width: 100%;
   background: linear-gradient(90deg, #2563eb, #f59e0b, #2563eb, #f59e0b);
   background-size: 300% 100%;
@@ -22,21 +22,20 @@
   100% { background-position: 0 0; }
 }
 
-/* --- Fluid Responsive Main Container (FLEXBOX) --- */
+/* --- Fluid Responsive Main Container --- */
 .ow-footer-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 50px 20px;
+  padding: 40px 20px;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 40px;
+  justify-content: space-between; /* Keeps brand left and contact right */
+  gap: 30px;
 }
 
-/* Flex rules for fluid resizing */
-.ow-col-brand { flex: 2 1 300px; }
-.ow-col-links { flex: 1 1 150px; }
-.ow-col-contact { flex: 1.5 1 200px; }
+/* Flex rules for 2-column fluid layout */
+.ow-col-brand { flex: 1 1 300px; }
+.ow-col-contact { flex: 0 1 350px; }
 
 
 /* =========================================
@@ -45,25 +44,24 @@
 .ow-animated-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  cursor: pointer;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 /* 1. Orbiting Dots Icon */
 .ow-logo-icon {
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   animation: rotateIcon 4s linear infinite;
 }
 
 .ow-dot {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  box-shadow: 0 0 6px rgba(0,0,0,0.15);
 }
 
 .ow-dot-blue {
@@ -90,9 +88,9 @@
   100% { transform: scale(1.2); }
 }
 
-/* 2. Text Shimmer & Hover Pop */
+/* 2. Text Shimmer */
 .ow-logo-text {
-  font-size: 26px;
+  font-size: 22px; 
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.5px;
@@ -103,7 +101,7 @@
 
 .ow-text-part {
   display: inline-block;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.3s ease;
 }
 
 .ow-blue { color: #2563eb; }
@@ -117,7 +115,7 @@
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
   animation: shimmerSweep 3s infinite;
   pointer-events: none;
 }
@@ -128,21 +126,16 @@
   100% { left: 200%; }
 }
 
-/* Hover Interaction on Logo */
-.ow-animated-logo:hover .ow-blue { transform: translateY(-3px) rotate(-2deg); }
-.ow-animated-logo:hover .ow-orange { transform: translateY(3px) rotate(2deg); }
-
-
 /* --- Brand Texts & Badges --- */
 .ow-tagline {
-  font-size: 14px;
+  font-size: 13px; 
   color: #64748b;
   font-weight: 600;
   margin: 0 0 4px 0;
 }
 
 .ow-sub-tagline {
-  font-size: 13px;
+  font-size: 12px; 
   color: #f59e0b;
   font-weight: 700;
   margin: 0 0 15px 0;
@@ -151,91 +144,51 @@
 .ow-trust-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .ow-trust-badges .badge {
   font-size: 11px;
   background: #e0e7ff;
   color: #3730a3;
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-weight: 700;
-  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.1);
 }
 
-/* --- Links Columns --- */
-.ow-link-title {
-  font-size: 15px;
+/* --- Titles --- */
+.ow-info-title {
+  font-size: 14px; 
   color: #1e293b;
   font-weight: 800;
-  margin: 0 0 18px 0;
+  margin: 0 0 15px 0;
   position: relative;
   display: inline-block;
 }
 
-.ow-link-title::after {
+.ow-info-title::after {
   content: '';
   position: absolute;
   left: 0;
-  bottom: -6px;
-  width: 25px;
-  height: 3px;
+  bottom: -4px;
+  width: 20px;
+  height: 2px;
   border-radius: 2px;
   background: #f59e0b;
   transition: width 0.3s ease;
 }
 
-.ow-col-links:hover .ow-link-title::after {
+.ow-col-contact:hover .ow-info-title::after {
   width: 100%;
-}
-
-.ow-link-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.ow-link-list a {
-  text-decoration: none;
-  color: #475569;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-}
-
-.ow-link-list a::before {
-  content: '›';
-  color: #2563eb;
-  font-size: 18px;
-  margin-right: 6px;
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: all 0.3s ease;
-}
-
-.ow-link-list a:hover {
-  color: #2563eb;
-  transform: translateX(6px);
-}
-
-.ow-link-list a:hover::before {
-  opacity: 1;
-  transform: translateX(0);
 }
 
 /* --- Contact & Social --- */
 .ow-contact-text {
-  font-size: 14px;
+  font-size: 13px;
   color: #475569;
   font-weight: 500;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -244,8 +197,8 @@
 .ow-social-icons {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .ow-social-btn {
@@ -253,12 +206,12 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 13px;
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 25px;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-weight: 700;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default; 
+  transition: all 0.3s ease;
 }
 
 .ow-social-btn.whatsapp {
@@ -267,36 +220,22 @@
   border: 1px solid #bbf7d0;
 }
 
-.ow-social-btn.whatsapp:hover {
-  background: #22c55e;
-  color: #ffffff;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(34, 197, 94, 0.25);
-}
-
 .ow-social-btn.instagram {
   background: #fce7f3;
   color: #be185d;
   border: 1px solid #fbcfe8;
 }
 
-.ow-social-btn.instagram:hover {
-  background: #db2777;
-  color: #ffffff;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(219, 39, 119, 0.25);
-}
-
 /* --- Footer Bottom Bar --- */
 .ow-footer-bottom {
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
-  padding: 20px;
+  padding: 15px 20px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px; 
   color: #64748b;
   font-weight: 500;
 }
@@ -316,23 +255,52 @@
   50% { transform: scale(1.2); }
 }
 
-/* --- EXTREME RESPONSIVENESS FOR SMALL MOBILES --- */
-@media (max-width: 600px) {
+/* =========================================
+   🔥 EXTREME RESPONSIVENESS & CENTERING (MOBILE)
+========================================== */
+@media (max-width: 768px) {
   .ow-footer-container {
     flex-direction: column;
+    align-items: center;    /* Center horizontally */
+    text-align: center;     /* Center text */
     padding: 30px 20px;
     gap: 35px;
   }
   
-  .ow-col-brand, .ow-col-links, .ow-col-contact {
+  .ow-col-brand, .ow-col-contact {
     flex: 1 1 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* Center content inside columns */
+  }
+
+  /* Center Animated Logo */
+  .ow-animated-logo {
+    justify-content: center;
   }
   
-  .ow-logo-text { font-size: 24px; }
-  
+  /* Center Trust Badges */
+  .ow-trust-badges {
+    justify-content: center;
+  }
+
+  /* Center the title underline */
+  .ow-info-title::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Center Social Icons */
+  .ow-social-icons {
+    justify-content: center;
+  }
+
+  /* Center Footer Bottom */
   .ow-footer-bottom {
     flex-direction: column;
     text-align: center;
-    gap: 12px;
+    justify-content: center;
+    gap: 10px;
   }
 }

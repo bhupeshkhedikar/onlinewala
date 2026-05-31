@@ -30,41 +30,19 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Column 2: Quick Links */}
-        <div className="ow-col-links">
-          <h4 className="ow-link-title">मुख्य सेवा</h4>
-          <ul className="ow-link-list">
-            <li><a href="#booking">सेवा बुक करा</a></li>
-            <li><a href="#documents">आवश्यक कागदपत्रे</a></li>
-            <li><a href="#status">अर्जाची स्थिती पहा</a></li>
-            <li><a href="#offers">लकी ड्रॉ / ऑफर्स</a></li>
-          </ul>
-        </div>
-
-        {/* Column 3: Legal & Support */}
-        <div className="ow-col-links">
-          <h4 className="ow-link-title">सपोर्ट आणि नियम</h4>
-          <ul className="ow-link-list">
-            <li><a href="#about">आमच्याबद्दल</a></li>
-            <li><a href="#contact">संपर्क साधा</a></li>
-            <li><a href="#privacy">गोपनीयता धोरण (Privacy)</a></li>
-            <li><a href="#terms">अटी आणि शर्ती (Terms)</a></li>
-          </ul>
-        </div>
-
-        {/* Column 4: Contact & Social */}
+        {/* Column 2: Contact & Social */}
         <div className="ow-col-contact">
-          <h4 className="ow-link-title">आमच्याशी जोडून राहा</h4>
-          <p className="ow-contact-text">✉️ support@onlinewalaa.com</p>
+          <h4 className="ow-info-title">आमच्याशी संपर्क साधा</h4>
+          <p className="ow-contact-text">✉️ support@onlinewala.com</p>
           <p className="ow-contact-text">📞 +91 98765 43210</p>
           
           <div className="ow-social-icons">
-            <a href="#whatsapp" className="ow-social-btn whatsapp" title="WhatsApp">
+            <span className="ow-social-btn whatsapp">
               <i className="fab fa-whatsapp"></i> WhatsApp
-            </a>
-            <a href="#instagram" className="ow-social-btn instagram" title="Instagram">
+            </span>
+            <span className="ow-social-btn instagram">
               <i className="fab fa-instagram"></i> Instagram
-            </a>
+            </span>
           </div>
         </div>
       </div>
