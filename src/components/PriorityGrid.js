@@ -6,6 +6,9 @@ import "./PriorityGrid.css";
 export default function PriorityGrid() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // State to track whether to show all cards or not
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     // Real-time listener for Priority Services
@@ -20,23 +23,26 @@ export default function PriorityGrid() {
   }, []);
 
   if (loading) {
-    return <div className="pLoading">Loading priority services...</div>;
+    return <div className="pLoading">सेवा लोड होत आहेत...</div>;
   }
+
+  // Slice the array to show only 6 items if 'showAll' is false
+  const displayedItems = showAll ? items : items.slice(0, 6);
 
   return (
     <div className="priorityGrid-wrapper">
       
-      {/* 🔥 NEW: TITLE & SUBTITLE ADDED HERE */}
+      {/* TITLE & SUBTITLE IN MARATHI */}
       <div className="pGrid-header">
-        <h2>Quick Services</h2>
-        <p>Access our most popular features instantly</p>
+        <h2>जलद सेवा</h2>
+        <p>आमच्या सर्वाधिक लोकप्रिय सेवांचा त्वरित लाभ घ्या</p>
       </div>
 
       <div className="priorityGrid">
         {items.length === 0 ? (
-          <p className="pEmpty">No priority services added yet.</p>
+          <p className="pEmpty">अद्याप कोणतीही सेवा जोडलेली नाही.</p>
         ) : (
-          items.map((item) => (
+          displayedItems.map((item) => (
             <div key={item.id} className="pCard">
               <div className="pIcon">
                 {item.imageUrl ? (
@@ -50,6 +56,27 @@ export default function PriorityGrid() {
           ))
         )}
       </div>
+
+      {/* See More / See Less Button IN MARATHI */}
+      {items.length > 6 && (
+        <div style={{ textAlign: "center", marginTop: "15px" }}>
+          <button 
+            onClick={() => setShowAll(!showAll)}
+            style={{
+              background: "transparent",
+              color: "#4f46e5", 
+              border: "none",
+              fontWeight: "bold",
+              cursor: "pointer",
+              padding: "8px 16px",
+              fontSize: "14px"
+            }}
+          >
+            {showAll ? "कमी पहा ▲" : "अधिक पहा ▼"}
+          </button>
+        </div>
+      )}
+
     </div>
   );
 }
