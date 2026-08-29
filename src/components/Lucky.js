@@ -1,22 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { doc, getDoc, updateDoc, increment, collection, addDoc, query, where, getDocs } from "firebase/firestore";
-import { db } from "./firebase"; 
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  increment,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs
+} from "firebase/firestore";
+import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
-import "./Lucky.css"; 
+import "./Lucky.css";
 
 export default function Lucky({ user }) {
   const navigate = useNavigate();
 
-  const [tickets, setTickets] = useState(0); 
+  const [tickets, setTickets] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState(null);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [loadingTickets, setLoadingTickets] = useState(true);
-  
+
   const [myWinnings, setMyWinnings] = useState([]);
   const [loadingWinnings, setLoadingWinnings] = useState(false);
 
-  const [activeTab, setActiveTab] = useState("spin"); 
+  const [activeTab, setActiveTab] = useState("spin");
   const [winningsFilter, setWinningsFilter] = useState("all");
 
   useEffect(() => {
@@ -25,16 +36,18 @@ export default function Lucky({ user }) {
         try {
           const userRef = doc(db, "users", user.uid);
           const userSnap = await getDoc(userRef);
+
           if (userSnap.exists()) {
-            // Ensure tickets never load as negative
             const fetchedTickets = userSnap.data().tickets || 0;
-            setTickets(fetchedTickets < 0 ? 0 : fetchedTickets); 
+            setTickets(fetchedTickets < 0 ? 0 : fetchedTickets);
           }
+
           fetchMyWinnings(user.uid);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
       }
+
       setLoadingTickets(false);
     };
 
@@ -43,13 +56,20 @@ export default function Lucky({ user }) {
 
   const fetchMyWinnings = async (uid) => {
     setLoadingWinnings(true);
+
     try {
-      const q = query(collection(db, "winnings"), where("userId", "==", uid));
+      const q = query(
+        collection(db, "winnings"),
+        where("userId", "==", uid)
+      );
+
       const querySnapshot = await getDocs(q);
-      
+
       const winningsData = [];
+
       querySnapshot.forEach((document) => {
         const data = document.data();
+
         winningsData.push({
           id: document.id,
           ...data,
@@ -59,6 +79,7 @@ export default function Lucky({ user }) {
       });
 
       winningsData.sort((a, b) => b.wonAt - a.wonAt);
+
       setMyWinnings(winningsData);
     } catch (error) {
       console.error("Error fetching winnings:", error);
@@ -68,61 +89,123 @@ export default function Lucky({ user }) {
   };
 
   const prizes = [
-    { name: "५ पाने मोफत स्कॅन", type: "high", color: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)", textCol: "#881337" },
-    { name: "५ मोफत B&W प्रिंट्स", type: "mid", color: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)", textCol: "#4c1d95" },
-    { name: "५ मोफत कलर प्रिंट्स", type: "low", color: "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)", textCol: "#065f46" },
-    { name: "३० मिनिट फ्री WiFi ", type: "mid", color: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)", textCol: "#78350f" },
-    { name: "पुन्हा प्रयत्न करा", type: "none", color: "linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)", textCol: "#475569" },
-    { name: "कोणत्याही फॉर्मवर १०% सूट", type: "low", color: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", textCol: "#1e3a8a" }
+    {
+      name: "५ पाने मोफत स्कॅन",
+      type: "high",
+      color:
+        "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+      textCol: "#881337"
+    },
+    {
+      name: "५ मोफत B&W प्रिंट्स",
+      type: "mid",
+      color:
+        "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+      textCol: "#4c1d95"
+    },
+    {
+      name: "५ मोफत कलर प्रिंट्स",
+      type: "low",
+      color:
+        "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
+      textCol: "#065f46"
+    },
+    {
+      name: "३० मिनिट फ्री WiFi",
+      type: "mid",
+      color:
+        "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
+      textCol: "#78350f"
+    },
+    {
+      name: "पुन्हा प्रयत्न करा",
+      type: "none",
+      color:
+        "linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)",
+      textCol: "#475569"
+    },
+    {
+      name: "कोणत्याही फॉर्मवर १०% सूट",
+      type: "low",
+      color:
+        "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+      textCol: "#1e3a8a"
+    }
   ];
 
   const handleSpin = async () => {
     if (!user) {
-      navigate("/login"); 
+      navigate("/login");
       return;
     }
 
-    // 🔥 STRICT CHECK: Prevents spinning if tickets are 0 or less
     if (tickets <= 0 || isSpinning) return;
 
     setIsSpinning(true);
     setResult(null);
-    setTickets((prev) => (prev > 0 ? prev - 1 : 0)); // Safer local decrement
+    setShowCelebration(false);
+
+    setTickets((prev) => (prev > 0 ? prev - 1 : 0));
 
     try {
       const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, { tickets: increment(-1) });
+
+      await updateDoc(userRef, {
+        tickets: increment(-1)
+      });
     } catch (error) {
       console.error("Error deducting ticket:", error);
+
       alert("डेटाबेस एरर. कृपया पुन्हा प्रयत्न करा.");
-      setTickets((prev) => prev + 1); 
+
+      setTickets((prev) => prev + 1);
       setIsSpinning(false);
+
       return;
     }
 
     const prizeIndex = Math.floor(Math.random() * prizes.length);
+
     const sliceAngle = 360 / prizes.length;
-    const offset = sliceAngle / 2; 
-    const targetAngle = 360 - (prizeIndex * sliceAngle + offset);
+    const offset = sliceAngle / 2;
+
+    const targetAngle =
+      360 - (prizeIndex * sliceAngle + offset);
+
     const extraSpins = 5 * 360;
-    const newRotation = rotation + extraSpins + targetAngle - (rotation % 360);
-    
+
+    const newRotation =
+      rotation +
+      extraSpins +
+      targetAngle -
+      (rotation % 360);
+
     setRotation(newRotation);
 
     setTimeout(async () => {
       const wonPrize = prizes[prizeIndex];
+
       setResult(wonPrize);
       setIsSpinning(false);
-      
+
+      /*
+       * 🎉 SHOW CELEBRATION
+       * Only actual winning prizes get celebration.
+       */
       if (wonPrize.type !== "none") {
+        setShowCelebration(true);
+
         try {
           const expiryDate = new Date();
-          expiryDate.setDate(expiryDate.getDate() + 5); 
+
+          expiryDate.setDate(
+            expiryDate.getDate() + 5
+          );
 
           await addDoc(collection(db, "winnings"), {
             userId: user.uid,
             userName: user.name || "Customer",
-            userMobile: user.mobile || "", 
+            userMobile: user.mobile || "",
             prizeName: wonPrize.name,
             status: "active",
             wonAt: new Date(),
@@ -131,14 +214,31 @@ export default function Lucky({ user }) {
 
           fetchMyWinnings(user.uid);
         } catch (error) {
-          console.error("Error saving winning:", error);
+          console.error(
+            "Error saving winning:",
+            error
+          );
         }
       }
-    }, 4000); 
+    }, 4000);
+  };
+
+  const closeCelebration = () => {
+    setShowCelebration(false);
+  };
+
+  const viewMyWinnings = () => {
+    setShowCelebration(false);
+    setActiveTab("winnings");
   };
 
   const handleHowToRedeem = () => {
-    alert("ℹ️ कसे रिडीम करावे:\n\nकृपया काउंटरवर तुमचा नोंदणीकृत मोबाईल नंबर सांगा किंवा ही स्क्रीन कॅफे स्टाफला दाखवा. स्टाफ त्यांच्या सिस्टममधून हे रिडीम करून तुम्हाला सर्विस देतील!");
+    alert(
+      "ℹ️ कसे रिडीम करावे:\n\n" +
+        "कृपया काउंटरवर तुमचा नोंदणीकृत मोबाईल नंबर सांगा " +
+        "किंवा ही स्क्रीन कॅफे स्टाफला दाखवा. " +
+        "स्टाफ त्यांच्या सिस्टममधून हे रिडीम करून तुम्हाला सर्विस देतील!"
+    );
   };
 
   const wheelBackground = `conic-gradient(
@@ -152,196 +252,611 @@ export default function Lucky({ user }) {
 
   const getFilteredWinnings = () => {
     const now = new Date();
+
     return myWinnings.filter((win) => {
       const diffTime = win.expiresAt - now;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
-      const isExpired = win.status === "expired" || (win.status === "active" && diffTime < 0);
-      const isRedeemed = win.status === "redeemed";
-      const isActive = win.status === "active" && !isExpired;
-      const isExpiringSoon = isActive && diffDays <= 2;
+      const diffDays = Math.ceil(
+        diffTime / (1000 * 60 * 60 * 24)
+      );
 
-      if (winningsFilter === "active") return isActive;
-      if (winningsFilter === "expiring_soon") return isExpiringSoon;
-      if (winningsFilter === "redeemed") return isRedeemed;
-      if (winningsFilter === "expired") return isExpired;
-      return true; 
+      const isExpired =
+        win.status === "expired" ||
+        (win.status === "active" && diffTime < 0);
+
+      const isRedeemed =
+        win.status === "redeemed";
+
+      const isActive =
+        win.status === "active" &&
+        !isExpired;
+
+      const isExpiringSoon =
+        isActive && diffDays <= 2;
+
+      if (winningsFilter === "active")
+        return isActive;
+
+      if (winningsFilter === "expiring_soon")
+        return isExpiringSoon;
+
+      if (winningsFilter === "redeemed")
+        return isRedeemed;
+
+      if (winningsFilter === "expired")
+        return isExpired;
+
+      return true;
     });
   };
 
-  const filteredWinnings = getFilteredWinnings();
+  const filteredWinnings =
+    getFilteredWinnings();
 
   return (
     <div className="lucky-wrapper">
       <div className="lucky-premium-card">
-        
-        {/* TABS */}
+
+        {/* =========================
+            TABS
+        ========================== */}
+
         <div className="lucky-tabs">
-          <button 
-            className={`l-tab-btn ${activeTab === "spin" ? "active" : ""}`}
-            onClick={() => setActiveTab("spin")}
+          <button
+            className={`l-tab-btn ${
+              activeTab === "spin"
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              setActiveTab("spin")
+            }
           >
-            <span className="icon">🎡</span> स्पिन आणि जिंका
+            <span className="icon">
+              🎡
+            </span>
+
+            स्पिन आणि जिंका
           </button>
-          <button 
-            className={`l-tab-btn ${activeTab === "winnings" ? "active" : ""}`}
-            onClick={() => setActiveTab("winnings")}
+
+          <button
+            className={`l-tab-btn ${
+              activeTab === "winnings"
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              setActiveTab("winnings")
+            }
           >
-            <span className="icon">🏆</span> माझी बक्षिसे
-            {myWinnings.length > 0 && <span className="tab-badge">{myWinnings.length}</span>}
+            <span className="icon">
+              🏆
+            </span>
+
+            माझी बक्षिसे
+
+            {myWinnings.length > 0 && (
+              <span className="tab-badge">
+                {myWinnings.length}
+              </span>
+            )}
           </button>
         </div>
 
-        {/* ----------------- TAB 1: SPIN WHEEL ----------------- */}
+        {/* =========================
+            SPIN TAB
+        ========================== */}
+
         {activeTab === "spin" && (
           <div className="lucky-spin-container fade-in">
+
             <div className="lucky-header-text">
-              <h2>व्हील फिरवा</h2>
-              <p>खास प्रिंटिंग आणि स्कॅनिंग ऑफर्स जिंका!</p>
+              <h2>
+                व्हील फिरवा
+              </h2>
+
+              <p>
+                खास प्रिंटिंग आणि स्कॅनिंग
+                ऑफर्स जिंका!
+              </p>
             </div>
 
             {/* Tickets */}
+
             <div className="lucky-ticket-bar">
               <div className="ticket-info">
-                <span className="t-icon">🎟️</span>
-                <span className="t-text">शिल्लक स्पिन्स</span>
+                <span className="t-icon">
+                  🎟️
+                </span>
+
+                <span className="t-text">
+                  शिल्लक स्पिन्स
+                </span>
               </div>
+
               <div className="ticket-value">
-                {/* Prevent displaying negative tickets */}
-                {loadingTickets ? "..." : Math.max(0, tickets)}
+                {loadingTickets
+                  ? "..."
+                  : Math.max(
+                      0,
+                      tickets
+                    )}
               </div>
             </div>
 
             {/* Wheel */}
+
             <div className="wheel-main-container">
+
               <div className="wheel-glow-effect"></div>
+
               <div className="wheel-pointer"></div>
-              
-              <div className="wheel-body" style={{ background: wheelBackground, transform: `rotate(${rotation}deg)` }}>
-                {prizes.map((prize, i) => {
-                  const angle = (i * 60 + 30) - 90; 
-                  return (
-                    <div key={i} className="wheel-slice-text" style={{ transform: `rotate(${angle}deg)` }}>
-                      <span style={{color: prize.textCol}}>{prize.name}</span>
-                    </div>
-                  );
-                })}
+
+              <div
+                className="wheel-body"
+                style={{
+                  background:
+                    wheelBackground,
+                  transform:
+                    `rotate(${rotation}deg)`
+                }}
+              >
+                {prizes.map(
+                  (prize, i) => {
+                    const angle =
+                      (i * 60 + 30) - 90;
+
+                    return (
+                      <div
+                        key={i}
+                        className="wheel-slice-text"
+                        style={{
+                          transform:
+                            `rotate(${angle}deg)`
+                        }}
+                      >
+                        <span
+                          style={{
+                            color:
+                              prize.textCol
+                          }}
+                        >
+                          {prize.name}
+                        </span>
+                      </div>
+                    );
+                  }
+                )}
+
                 <div className="wheel-center-dot">
                   <div className="wheel-center-inner"></div>
                 </div>
               </div>
             </div>
 
-            {/* Result Popup */}
+            {/* Small Result */}
+
             <div className="lucky-result-area">
               {result && (
-                <div className={`result-popup ${result.type === 'none' ? 'loss' : 'win'}`}>
-                  {result.type === 'none' ? (
-                    <>😔 अरेरे! पुढच्या वेळी नक्की प्रयत्न करा.</>
+                <div
+                  className={`result-popup ${
+                    result.type === "none"
+                      ? "loss"
+                      : "win"
+                  }`}
+                >
+                  {result.type === "none" ? (
+                    <>
+                      😔 अरेरे!
+                      पुढच्या वेळी
+                      नक्की प्रयत्न करा.
+                    </>
                   ) : (
-                    <>🎉 अभिनंदन! तुम्ही <strong>{result.name}</strong> जिंकलात!</>
+                    <>
+                      🎉 अभिनंदन!
+                      तुम्ही{" "}
+                      <strong>
+                        {result.name}
+                      </strong>{" "}
+                      जिंकलात!
+                    </>
                   )}
                 </div>
               )}
             </div>
 
-            {/* 🔥 Spin Button: Changed 'tickets === 0' to 'tickets <= 0' */}
-            <button 
-              className={`btn-spin-now ${isSpinning || (user && tickets <= 0) || loadingTickets ? 'disabled' : ''}`}
-              onClick={handleSpin} 
-              disabled={isSpinning || (user && tickets <= 0) || loadingTickets}
+            {/* =========================
+                WIN CELEBRATION MODAL
+            ========================== */}
+
+            {showCelebration &&
+              result &&
+              result.type !== "none" && (
+                <div
+                  className="win-celebration-overlay"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Winning celebration"
+                  onClick={
+                    closeCelebration
+                  }
+                >
+
+                  {/* CONFETTI */}
+
+                  <div
+                    className="confetti-layer"
+                    aria-hidden="true"
+                  >
+                    {Array.from({
+                      length: 40
+                    }).map((_, i) => (
+                      <span
+                        key={i}
+                        className="confetti-piece"
+                        style={{
+                          "--x": `${
+                            (i * 29) % 100
+                          }%`,
+                          "--delay": `${
+                            (i % 12) * 0.08
+                          }s`,
+                          "--drift": `${
+                            ((i * 17) % 160) -
+                            80
+                          }px`,
+                          "--rotate": `${
+                            (i * 47) % 360
+                          }deg`
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* CELEBRATION CARD */}
+
+                  <div
+                    className="win-celebration-card"
+                    onClick={(e) =>
+                      e.stopPropagation()
+                    }
+                  >
+
+                    <button
+                      className="celebration-close"
+                      onClick={
+                        closeCelebration
+                      }
+                      aria-label="Close"
+                    >
+                      ×
+                    </button>
+
+                    <div className="celebration-crown">
+                      👑
+                    </div>
+
+                    <div className="celebration-sparkles">
+                      <span>✨</span>
+                      <span>⭐</span>
+                      <span>✨</span>
+                    </div>
+
+                    <div className="celebration-trophy">
+                      🏆
+                    </div>
+
+                    <div className="celebration-small-title">
+                      CONGRATULATIONS
+                    </div>
+
+                    <h3>
+                      तुम्ही जिंकलात! 🎉
+                    </h3>
+
+                    <p className="celebration-subtitle">
+                      तुमच्यासाठी खास बक्षीस!
+                    </p>
+
+                    {/* EXACT WINNING */}
+
+                    <div className="winning-prize-box">
+
+                      <span className="winning-prize-icon">
+                        🎁
+                      </span>
+
+                      <strong>
+                        {result.name}
+                      </strong>
+
+                    </div>
+
+                    <div className="celebration-message">
+                      <span>🎊</span>
+
+                      <span>
+                        हे बक्षीस तुमच्या
+                        वॉलेटमध्ये सेव्ह झाले आहे.
+                      </span>
+
+                      <span>🎊</span>
+                    </div>
+
+                    <button
+                      className="celebration-redeem-btn"
+                      onClick={
+                        viewMyWinnings
+                      }
+                    >
+                      🏆 माझे बक्षीस पहा
+                    </button>
+
+                    <button
+                      className="celebration-continue-btn"
+                      onClick={
+                        closeCelebration
+                      }
+                    >
+                      नंतर पाहू
+                    </button>
+
+                  </div>
+                </div>
+              )}
+
+            {/* Spin Button */}
+
+            <button
+              className={`btn-spin-now ${
+                isSpinning ||
+                (user && tickets <= 0) ||
+                loadingTickets
+                  ? "disabled"
+                  : ""
+              }`}
+              onClick={handleSpin}
+              disabled={
+                isSpinning ||
+                (user && tickets <= 0) ||
+                loadingTickets
+              }
             >
               <div className="btn-glow"></div>
-              <span>{!user ? "स्पिनसाठी लॉग इन करा" : isSpinning ? "फिरत आहे..." : "आता स्पिन करा"}</span>
+
+              <span>
+                {!user
+                  ? "स्पिनसाठी लॉग इन करा"
+                  : isSpinning
+                  ? "फिरत आहे..."
+                  : "आता स्पिन करा"}
+              </span>
             </button>
-            
-            {/* 🔥 Changed check here as well */}
-            {tickets <= 0 && user && !isSpinning && (
-              <p className="no-ticket-text">अधिक स्पिन्स मिळवण्यासाठी सर्विस बुक करा!</p>
-            )}
+
+            {tickets <= 0 &&
+              user &&
+              !isSpinning && (
+                <p className="no-ticket-text">
+                  अधिक स्पिन्स मिळवण्यासाठी
+                  सर्विस बुक करा!
+                </p>
+              )}
           </div>
         )}
 
-        {/* ----------------- TAB 2: MY WINNINGS ----------------- */}
+        {/* =========================
+            MY WINNINGS TAB
+        ========================== */}
+
         {activeTab === "winnings" && (
           <div className="lucky-winnings-container fade-in">
-            
+
             <div className="winnings-header">
+
               <div className="w-texts">
-                <h2>तुमचे वॉलेट</h2>
-                <p>रिडीम करण्यासाठी काउंटरवर दाखवा</p>
+                <h2>
+                  तुमचे वॉलेट
+                </h2>
+
+                <p>
+                  रिडीम करण्यासाठी
+                  काउंटरवर दाखवा
+                </p>
               </div>
-              
-              {user && myWinnings.length > 0 && (
-                <div className="w-filter-wrapper">
-                  <select 
-                    className="w-filter"
-                    value={winningsFilter} 
-                    onChange={(e) => setWinningsFilter(e.target.value)}
-                  >
-                    <option value="all">सर्व बक्षिसे</option>
-                    <option value="active">🟢 सक्रिय (Active)</option>
-                    <option value="expiring_soon">🟠 लवकरच कालबाह्य</option>
-                    <option value="redeemed">🔵 वापरलेले (Used)</option>
-                    <option value="expired">🔴 कालबाह्य (Expired)</option>
-                  </select>
-                </div>
-              )}
+
+              {user &&
+                myWinnings.length > 0 && (
+                  <div className="w-filter-wrapper">
+
+                    <select
+                      className="w-filter"
+                      value={
+                        winningsFilter
+                      }
+                      onChange={(e) =>
+                        setWinningsFilter(
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="all">
+                        सर्व बक्षिसे
+                      </option>
+
+                      <option value="active">
+                        🟢 सक्रिय (Active)
+                      </option>
+
+                      <option value="expiring_soon">
+                        🟠 लवकरच कालबाह्य
+                      </option>
+
+                      <option value="redeemed">
+                        🔵 वापरलेले (Used)
+                      </option>
+
+                      <option value="expired">
+                        🔴 कालबाह्य (Expired)
+                      </option>
+                    </select>
+
+                  </div>
+                )}
             </div>
 
             <div className="winnings-list-area">
+
               {!user ? (
                 <div className="empty-state">
-                  <span className="empty-icon">🔒</span>
-                  <p>तुमचे वॉलेट पाहण्यासाठी कृपया लॉग इन करा.</p>
+                  <span className="empty-icon">
+                    🔒
+                  </span>
+
+                  <p>
+                    तुमचे वॉलेट पाहण्यासाठी
+                    कृपया लॉग इन करा.
+                  </p>
                 </div>
+
               ) : myWinnings.length === 0 ? (
+
                 <div className="empty-state">
-                  <span className="empty-icon">🎁</span>
-                  <p>तुमचे वॉलेट रिक्त आहे.<br/>बक्षिसे जिंकण्यासाठी व्हील फिरवा!</p>
+                  <span className="empty-icon">
+                    🎁
+                  </span>
+
+                  <p>
+                    तुमचे वॉलेट रिक्त आहे.
+                    <br />
+                    बक्षिसे जिंकण्यासाठी
+                    व्हील फिरवा!
+                  </p>
                 </div>
+
               ) : filteredWinnings.length === 0 ? (
+
                 <div className="empty-state">
-                  <p>या फिल्टरसाठी कोणतीही बक्षिसे आढळली नाहीत.</p>
+                  <p>
+                    या फिल्टरसाठी
+                    कोणतीही बक्षिसे
+                    आढळली नाहीत.
+                  </p>
                 </div>
+
               ) : (
+
                 <div className="winnings-list">
-                  {filteredWinnings.map((win) => {
-                    const now = new Date();
-                    const diffTime = win.expiresAt - now;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
-                    let isExpired = win.status === "expired" || (win.status === "active" && diffTime < 0);
-                    let isRedeemed = win.status === "redeemed";
-                    
-                    let statusClass = "active";
-                    let statusText = `${diffDays} दिवसांत कालबाह्य होईल`;
+                  {filteredWinnings.map(
+                    (win) => {
 
-                    if (isRedeemed) { statusClass = "redeemed"; statusText = "वापरले"; }
-                    else if (isExpired) { statusClass = "expired"; statusText = "कालबाह्य झाले"; }
-                    else if (diffDays <= 2) { statusClass = "warning"; statusText = `फक्त ${diffDays} दिवस बाकी!`; }
+                      const now =
+                        new Date();
 
-                    return (
-                      <div key={win.id} className={`reward-card ${statusClass}`}>
-                        <div className="r-icon">🎁</div>
-                        <div className="r-details">
-                          <h4>{win.prizeName}</h4>
-                          <span className={`r-badge ${statusClass}`}>{statusText}</span>
-                          <span className="r-date">जिंकल्याची तारीख: {win.wonAt.toLocaleDateString()}</span>
+                      const diffTime =
+                        win.expiresAt -
+                        now;
+
+                      const diffDays =
+                        Math.ceil(
+                          diffTime /
+                            (1000 *
+                              60 *
+                              60 *
+                              24)
+                        );
+
+                      let isExpired =
+                        win.status ===
+                          "expired" ||
+                        (win.status ===
+                          "active" &&
+                          diffTime < 0);
+
+                      let isRedeemed =
+                        win.status ===
+                        "redeemed";
+
+                      let statusClass =
+                        "active";
+
+                      let statusText =
+                        `${diffDays} दिवसांत कालबाह्य होईल`;
+
+                      if (isRedeemed) {
+                        statusClass =
+                          "redeemed";
+
+                        statusText =
+                          "वापरले";
+                      } else if (
+                        isExpired
+                      ) {
+                        statusClass =
+                          "expired";
+
+                        statusText =
+                          "कालबाह्य झाले";
+                      } else if (
+                        diffDays <= 2
+                      ) {
+                        statusClass =
+                          "warning";
+
+                        statusText =
+                          `फक्त ${diffDays} दिवस बाकी!`;
+                      }
+
+                      return (
+                        <div
+                          key={win.id}
+                          className={`reward-card ${statusClass}`}
+                        >
+
+                          <div className="r-icon">
+                            🎁
+                          </div>
+
+                          <div className="r-details">
+
+                            <h4>
+                              {win.prizeName}
+                            </h4>
+
+                            <span
+                              className={`r-badge ${statusClass}`}
+                            >
+                              {statusText}
+                            </span>
+
+                            <span className="r-date">
+                              जिंकल्याची तारीख:{" "}
+                              {win.wonAt.toLocaleDateString()}
+                            </span>
+
+                          </div>
+
+                          {!isRedeemed &&
+                            !isExpired && (
+                              <button
+                                className="r-redeem-btn"
+                                onClick={
+                                  handleHowToRedeem
+                                }
+                              >
+                                वापरा
+                              </button>
+                            )}
+
                         </div>
-                        
-                        {!isRedeemed && !isExpired && (
-                          <button className="r-redeem-btn" onClick={handleHowToRedeem}>
-                            वापरा
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    }
+                  )}
+
                 </div>
               )}
-            </div>
 
+            </div>
           </div>
         )}
 
