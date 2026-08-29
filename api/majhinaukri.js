@@ -1,47 +1,26 @@
 const cheerio = require("cheerio");
 
-const WP_API =
-  "https://majhinaukri.in/wp-json/wp/v2";
+const SITE = "https://majhinaukri.in";
 
-const SITE =
-  "https://majhinaukri.in";
+const SOURCE_PAGES = {
+  current:
+    "https://majhinaukri.in/current-recruitment/",
 
-const PAGE_SLUGS = {
-  current: "current-recruitment",
-  hall: "hall-ticket",
-  result: "result",
+  hall:
+    "https://majhinaukri.in/hall-ticket/",
+
+  result:
+    "https://majhinaukri.in/result/",
+
+  mega:
+    "https://majhinaukri.in/mega-bharti/",
+
+  exam:
+    "https://majhinaukri.in/category/examination/",
 };
-
-const CATEGORY_ALIASES = {
-  mega: [
-    "megabharti",
-    "mega-bharti",
-    "mega-bharti-2",
-    "mega-bharti-2026",
-  ],
-
-  exam: [
-    "examination",
-    "exam",
-  ],
-};
-
-const BLOCKED_SLUGS = new Set([
-  "current-affairs",
-  "current_affairs",
-  "current-affair",
-]);
-
-const BLOCKED_NAMES = [
-  "current affairs",
-  "चालू घडामोडी",
-];
-
-const DATE_REGEX =
-  /\b(\d{1,2})[\/.\-](\d{1,2})[\/.\-](20\d{2})\b/;
 
 /* =========================================================
-   TEXT
+   HELPERS
 ========================================================= */
 
 function cleanText(value = "") {
@@ -50,10 +29,6 @@ function cleanText(value = "") {
     .replace(/\s+/g, " ")
     .trim();
 }
-
-/* =========================================================
-   URL
-========================================================= */
 
 function absoluteUrl(url = "") {
   if (!url) return "";
@@ -65,16 +40,13 @@ function absoluteUrl(url = "") {
   }
 }
 
-function slugFromUrl(url = "") {
+function getSlug(url = "") {
   try {
-    const parsed = new URL(url, SITE);
-
-    return (
-      parsed.pathname
-        .replace(/^\/|\/$/g, "")
-        .split("/")
-        .pop() || ""
-    );
+    return new URL(url, SITE)
+      .pathname
+      .replace(/^\/|\/$/g, "")
+      .split("/")
+      .pop() || "";
   } catch {
     return "";
   }
@@ -84,9 +56,10 @@ function slugFromUrl(url = "") {
    DATE
 ========================================================= */
 
-function parseDateDMY(value = "") {
-  const match =
-    cleanText(value).match(DATE_REGEX);
+function parseDMY(value = "") {
+  const match = cleanText(value).match(
+    /(\d{1,2})[\/.\-](\d{1,2})[\/.\-](20\d{2})/
+  );
 
   if (!match) return null;
 
@@ -113,92 +86,419 @@ function parseDateDMY(value = "") {
   return date;
 }
 
-function isFutureOrToday(value) {
-  const date = parseDateDMY(value);
+function isActiveDate(value = "") {
+  const date = parseDMY(value);
 
   if (!date) return false;
 
-  const today = new Date();
+  const now = new Date();
 
-  const todayUTC = new Date(
+  const today = new Date(
     Date.UTC(
-      today.getUTCFullYear(),
-      today.getUTCMonth(),
-      today.getUTCDate()
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
     )
   );
 
-  return date >= todayUTC;
-}
-
-function isRecent(value, days = 90) {
-  if (!value) return false;
-
-  const timestamp =
-    new Date(value).getTime();
-
-  if (!Number.isFinite(timestamp)) {
-    return false;
-  }
-
-  return (
-    Date.now() - timestamp <=
-    days *
-      24 *
-      60 *
-      60 *
-      1000
-  );
+  return date >= today;
 }
 
 /* =========================================================
-   CATEGORIES
+   CURRENT RECRUITMENT
 ========================================================= */
 
-function getCategories(post) {
-  return (
-    post?._embedded?.["wp:term"] || []
-  )
-    .flat()
-    .filter(
-      (term) =>
-        term?.taxonomy === "category"
+function parseCurrentRecruitment(html) {
+  const $ = cheerio.load(html);
+
+  const jobs = [];
+
+  $("table tr").each((index, row) => {
+    const cells = $(row).find("td");
+
+    if (cells.length < 2) return;
+
+    const titleCell = cells.eq(0);
+    const dateCell = cells.eq(1);
+
+    const title = cleanText(
+      titleCell.text()
     );
-}
 
-function isBlockedCategory(category) {
-  const slug = String(
-    category?.slug || ""
-  ).toLowerCase();
+    const lastDate = cleanText(
+      dateCell.text()
+    );
 
-  const name = String(
-    category?.name || ""
-  ).toLowerCase();
+    const link = absoluteUrl(
+      titleCell
+        .find("a")
+        .first()
+        .attr("href")
+    );
 
-  if (BLOCKED_SLUGS.has(slug)) {
-    return true;
-  }
+    if (!title || !link) return;
 
-  return BLOCKED_NAMES.some((blocked) =>
-    name.includes(blocked)
-  );
-}
+    if (
+      title.toLowerCase().includes(
+        "current affairs"
+      ) ||
+      title.includes(
+        "चालू घडामोडी"
+      )
+    ) {
+      return;
+    }
 
-function isBlockedPost(post) {
-  return getCategories(post).some(
-    isBlockedCategory
-  );
+    const slug = getSlug(link);
+
+    jobs.push({
+      id:
+        `current-${slug || index}`,
+
+      title,
+
+      slug,
+
+      url: link,
+
+      lastDate,
+
+      categoryNames: [
+        "वर्तमान भरती:2026",
+      ],
+
+      categorySlugs: [
+        "current-recruitment",
+      ],
+
+      type: "recruitment",
+
+      isNew: index < 5,
+    });
+  });
+
+  /*
+   * IMPORTANT:
+   * Old / expired jobs are removed here.
+   */
+
+  return jobs
+    .filter((job) =>
+      isActiveDate(
+        job.lastDate
+      )
+    )
+    .slice(0, 30);
 }
 
 /* =========================================================
-   HTML EXTRACTION
+   HALL TICKET
 ========================================================= */
 
-function extractJobData(html = "") {
+function parseHallTicket(html) {
+  const $ = cheerio.load(html);
+
+  const jobs = [];
+
+  $("table tr").each((index, row) => {
+    const cells = $(row).find("td");
+
+    if (cells.length < 2) return;
+
+    const titleCell = cells.eq(0);
+
+    const title = cleanText(
+      titleCell.text()
+    );
+
+    const examDate = cleanText(
+      cells.eq(1).text()
+    );
+
+    const link = absoluteUrl(
+      titleCell
+        .find("a")
+        .first()
+        .attr("href")
+    );
+
+    if (!title || !link) return;
+
+    if (
+      title.toLowerCase() ===
+      "examination"
+    ) {
+      return;
+    }
+
+    jobs.push({
+      id:
+        `hall-${getSlug(link) || index}`,
+
+      title,
+
+      slug: getSlug(link),
+
+      url: link,
+
+      examDate,
+
+      lastDate: examDate,
+
+      categoryNames: [
+        "प्रवेशपत्र",
+      ],
+
+      categorySlugs: [
+        "hall-ticket",
+      ],
+
+      type: "hall",
+
+      isNew: index < 5,
+    });
+  });
+
+  return jobs.slice(0, 30);
+}
+
+/* =========================================================
+   RESULT
+========================================================= */
+
+function parseResult(html) {
+  const $ = cheerio.load(html);
+
+  const jobs = [];
+
+  const seen = new Set();
+
+  $("a[href]").each((index, element) => {
+    const link = absoluteUrl(
+      $(element).attr("href")
+    );
+
+    const title = cleanText(
+      $(element).text()
+    );
+
+    if (!link || !title) return;
+
+    if (seen.has(link)) return;
+
+    if (
+      link ===
+      `${SITE}/result/`
+    ) {
+      return;
+    }
+
+    const lower =
+      title.toLowerCase();
+
+    const isResult =
+      lower.includes("result") ||
+      title.includes("निकाल") ||
+      lower.includes(
+        "answer key"
+      ) ||
+      title.includes(
+        "उत्तरतालिका"
+      );
+
+    if (!isResult) return;
+
+    seen.add(link);
+
+    jobs.push({
+      id:
+        `result-${getSlug(link) || index}`,
+
+      title,
+
+      slug: getSlug(link),
+
+      url: link,
+
+      categoryNames: [
+        "निकाल",
+      ],
+
+      categorySlugs: [
+        "result",
+      ],
+
+      type: "result",
+
+      isNew: index < 5,
+    });
+  });
+
+  return jobs.slice(0, 30);
+}
+
+/* =========================================================
+   GENERIC PAGE
+========================================================= */
+
+async function fetchPage(url) {
+  const response = await fetch(url, {
+    method: "GET",
+
+    headers: {
+      Accept:
+        "text/html,application/xhtml+xml",
+
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151.0 Safari/537.36",
+
+      "Accept-Language":
+        "mr-IN,mr;q=0.9,en-US;q=0.8,en;q=0.7",
+
+      "Cache-Control":
+        "no-cache",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Majhi Naukri returned ${response.status}`
+    );
+  }
+
+  return response.text();
+}
+
+/* =========================================================
+   MEGA / EXAM
+========================================================= */
+
+function parsePostLinks(
+  html,
+  source
+) {
+  const $ = cheerio.load(html);
+
+  const jobs = [];
+
+  const seen = new Set();
+
+  $(
+    "article a[href], .entry-content a[href], main a[href]"
+  ).each((index, element) => {
+    const link = absoluteUrl(
+      $(element).attr("href")
+    );
+
+    const title = cleanText(
+      $(element).text()
+    );
+
+    if (!link || !title) return;
+
+    if (
+      link === SITE ||
+      link === `${SITE}/`
+    ) {
+      return;
+    }
+
+    if (seen.has(link)) return;
+
+    const lowerTitle =
+      title.toLowerCase();
+
+    /*
+     * NEVER allow Current Affairs.
+     */
+
+    if (
+      lowerTitle.includes(
+        "current affairs"
+      ) ||
+      title.includes(
+        "चालू घडामोडी"
+      )
+    ) {
+      return;
+    }
+
+    /*
+     * Ignore navigation/tool links.
+     */
+
+    const ignored = [
+      "home",
+      "contact",
+      "about",
+      "privacy",
+      "disclaimer",
+      "career",
+      "tools",
+      "age calculator",
+      "gst calculator",
+      "image resizer",
+      "image to pdf",
+    ];
+
+    if (
+      ignored.some((item) =>
+        lowerTitle === item
+      )
+    ) {
+      return;
+    }
+
+    /*
+     * Only Majhi Naukri internal posts.
+     */
+
+    if (!link.startsWith(SITE)) {
+      return;
+    }
+
+    seen.add(link);
+
+    jobs.push({
+      id:
+        `${source}-${getSlug(link) || index}`,
+
+      title,
+
+      slug: getSlug(link),
+
+      url: link,
+
+      categoryNames: [
+        source === "mega"
+          ? "मेगाभरती"
+          : "परीक्षा",
+      ],
+
+      categorySlugs: [
+        source === "mega"
+          ? "mega-bharti"
+          : "examination",
+      ],
+
+      type: source,
+
+      isNew: jobs.length < 5,
+    });
+  });
+
+  return jobs.slice(0, 30);
+}
+
+/* =========================================================
+   SINGLE POST DETAILS
+========================================================= */
+
+function extractDetails(html) {
   const $ = cheerio.load(html);
 
   const text = cleanText(
-    $.root().text()
+    $("body").text()
   );
 
   const find = (patterns) => {
@@ -213,52 +513,6 @@ function extractJobData(html = "") {
     return "";
   };
 
-  return {
-    advtNo: find([
-      /जाहिरात\s*क्र\.?\s*:?\s*([^\n|]+)/i,
-      /Advertisement\s*No\.?\s*:?\s*([^\n|]+)/i,
-    ]),
-
-    totalPosts: find([
-      /एकूण\s*(?:पदे|जागा)\s*:?\s*([^\n|]+)/i,
-      /Total\s*(?:Posts)?\s*:?\s*([0-9,]+)/i,
-    ]),
-
-    education: find([
-      /शैक्षणिक\s*पात्रता\s*:?\s*([^\n|]+)/i,
-      /Educational\s*Qualification\s*:?\s*([^\n|]+)/i,
-    ]),
-
-    ageLimit: find([
-      /वयाची\s*अट\s*:?\s*([^\n|]+)/i,
-      /Age\s*Limit\s*:?\s*([^\n|]+)/i,
-    ]),
-
-    location: find([
-      /नोकरी\s*ठिकाण\s*:?\s*([^\n|]+)/i,
-      /Job\s*Location\s*:?\s*([^\n|]+)/i,
-    ]),
-
-    applyMethod: find([
-      /अर्ज\s*करण्याची\s*पद्धत\s*:?\s*([^\n|]+)/i,
-      /Application\s*Mode\s*:?\s*([^\n|]+)/i,
-    ]),
-
-    lastDate: find([
-      /Last\s*Date\s*of\s*Online\s*Application\s*:?\s*([^\n|]+)/i,
-      /Online\s*अर्ज\s*करण्याची\s*शेवटची\s*तारीख\s*:?\s*([^\n|]+)/i,
-      /शेवटची\s*तारीख\s*:?\s*([^\n|]+)/i,
-    ]),
-  };
-}
-
-/* =========================================================
-   LINKS
-========================================================= */
-
-function extractLinks(html = "") {
-  const $ = cheerio.load(html);
-
   let pdfLink = "";
   let applyLink = "";
   let officialLink = "";
@@ -268,20 +522,25 @@ function extractLinks(html = "") {
       $(element).attr("href")
     );
 
-    const text = cleanText(
+    const linkText = cleanText(
       $(element).text()
     ).toLowerCase();
 
-    const lowerHref =
-      href.toLowerCase();
+    if (!href) return;
 
     if (
       !pdfLink &&
       (
-        lowerHref.includes(".pdf") ||
-        text.includes("जाहिरात") ||
-        text.includes("notification") ||
-        text.includes("advertisement")
+        href.toLowerCase().includes(".pdf") ||
+        linkText.includes(
+          "pdf"
+        ) ||
+        linkText.includes(
+          "जाहिरात"
+        ) ||
+        linkText.includes(
+          "notification"
+        )
       )
     ) {
       pdfLink = href;
@@ -290,9 +549,16 @@ function extractLinks(html = "") {
     if (
       !applyLink &&
       (
-        text.includes("apply") ||
-        text.includes("अर्ज") ||
-        text.includes("online application")
+        linkText.includes(
+          "apply online"
+        ) ||
+        linkText === "apply" ||
+        linkText.includes(
+          "अर्ज करा"
+        ) ||
+        linkText.includes(
+          "online application"
+        )
       )
     ) {
       applyLink = href;
@@ -301,10 +567,10 @@ function extractLinks(html = "") {
     if (
       !officialLink &&
       (
-        text.includes(
+        linkText.includes(
           "official website"
         ) ||
-        text.includes(
+        linkText.includes(
           "अधिकृत वेबसाइट"
         )
       )
@@ -314,758 +580,270 @@ function extractLinks(html = "") {
   });
 
   return {
+    advtNo: find([
+      /जाहिरात\s*क्र\.?\s*:?\s*([^\n]+)/i,
+      /Advertisement\s*No\.?\s*:?\s*([^\n]+)/i,
+    ]),
+
+    totalPosts: find([
+      /Total\s*:?\s*([0-9,]+\s*(?:जागा|Posts)?)/i,
+      /एकूण\s*:?\s*([0-9,]+\s*(?:जागा|पदे)?)/i,
+    ]),
+
+    education: find([
+      /Educational Qualification\s*:?\s*([^\n]+)/i,
+      /शैक्षणिक पात्रता\s*:?\s*([^\n]+)/i,
+    ]),
+
+    ageLimit: find([
+      /Age Limit\s*:?\s*([^\n]+)/i,
+      /वयाची अट\s*:?\s*([^\n]+)/i,
+    ]),
+
+    location: find([
+      /Job Location\s*:?\s*([^\n]+)/i,
+      /नोकरी ठिकाण\s*:?\s*([^\n]+)/i,
+    ]),
+
+    applyMethod: find([
+      /Application Mode\s*:?\s*([^\n]+)/i,
+      /अर्ज पद्धत\s*:?\s*([^\n]+)/i,
+    ]),
+
+    lastDate: find([
+      /Last Date[^:\n]*:?\s*([^\n]+)/i,
+      /शेवटची तारीख\s*:?\s*([^\n]+)/i,
+    ]),
+
     pdfLink,
+
     applyLink,
+
     officialLink,
+
+    content: $(".entry-content")
+      .first()
+      .html() || "",
   };
 }
 
 /* =========================================================
-   NORMALIZE WORDPRESS POST
+   HANDLER
 ========================================================= */
 
-function normalizePost(post) {
-  const content =
-    post?.content?.rendered || "";
-
-  const categories =
-    getCategories(post);
-
-  const title = cleanText(
-    cheerio
-      .load(
-        post?.title?.rendered || ""
-      )
-      .text()
+module.exports = async function handler(
+  req,
+  res
+) {
+  res.setHeader(
+    "Content-Type",
+    "application/json; charset=utf-8"
   );
 
-  return {
-    id: post?.id,
+  /*
+   * Cache for 5 minutes.
+   * This means your users don't repeatedly
+   * hit Majhi Naukri.
+   */
 
-    title,
-
-    slug: post?.slug || "",
-
-    url: absoluteUrl(
-      post?.link
-    ),
-
-    date: post?.date || "",
-
-    modified:
-      post?.modified || "",
-
-    content,
-
-    image:
-      post?._embedded?.[
-        "wp:featuredmedia"
-      ]?.[0]?.source_url || "",
-
-    categoryNames:
-      categories.map(
-        (category) =>
-          category.name
-      ),
-
-    categorySlugs:
-      categories.map(
-        (category) =>
-          category.slug
-      ),
-
-    ...extractJobData(content),
-
-    ...extractLinks(content),
-  };
-}
-
-/* =========================================================
-   CURRENT RECRUITMENT PAGE
-========================================================= */
-
-function parseCurrentRecruitment(
-  html = ""
-) {
-  const $ = cheerio.load(html);
-
-  const jobs = [];
-
-  $("table tr").each(
-    (index, row) => {
-      const cells =
-        $(row).find("td");
-
-      if (cells.length < 2) {
-        return;
-      }
-
-      const titleCell =
-        cells.eq(0);
-
-      const dateCell =
-        cells.eq(1);
-
-      const title = cleanText(
-        titleCell.text()
-      );
-
-      const lastDate = cleanText(
-        dateCell.text()
-      );
-
-      const link = absoluteUrl(
-        titleCell
-          .find("a")
-          .first()
-          .attr("href")
-      );
-
-      if (!title || !link) {
-        return;
-      }
-
-      if (
-        /job title/i.test(
-          title
-        )
-      ) {
-        return;
-      }
-
-      if (
-        /current affairs/i.test(
-          title
-        ) ||
-        /चालू घडामोडी/.test(
-          title
-        )
-      ) {
-        return;
-      }
-
-      jobs.push({
-        id:
-          `current-${slugFromUrl(
-            link
-          ) || index}`,
-
-        title,
-
-        slug:
-          slugFromUrl(link),
-
-        url: link,
-
-        lastDate,
-
-        categoryNames: [
-          "वर्तमान भरती:2026",
-        ],
-
-        categorySlugs: [
-          "current-recruitment",
-        ],
-
-        type: "recruitment",
-      });
-    }
+  res.setHeader(
+    "Cache-Control",
+    "s-maxage=300, stale-while-revalidate=600"
   );
 
-  return jobs;
-}
-
-/* =========================================================
-   HALL TICKET
-========================================================= */
-
-function parseHallTicket(
-  html = ""
-) {
-  const $ = cheerio.load(html);
-
-  const jobs = [];
-
-  $("table tr").each(
-    (index, row) => {
-      const cells =
-        $(row).find("td");
-
-      if (cells.length < 2) {
-        return;
-      }
-
-      const titleCell =
-        cells.eq(0);
-
-      const title = cleanText(
-        titleCell.text()
-      );
-
-      const examDate = cleanText(
-        cells.eq(1).text()
-      );
-
-      const link = absoluteUrl(
-        titleCell
-          .find("a")
-          .first()
-          .attr("href")
-      );
-
-      if (!title || !link) {
-        return;
-      }
-
-      if (
-        /examination/i.test(
-          title
-        ) &&
-        /exam date/i.test(
-          examDate
-        )
-      ) {
-        return;
-      }
-
-      jobs.push({
-        id:
-          `hall-${slugFromUrl(
-            link
-          ) || index}`,
-
-        title,
-
-        slug:
-          slugFromUrl(link),
-
-        url: link,
-
-        examDate,
-
-        lastDate: examDate,
-
-        categoryNames: [
-          "प्रवेशपत्र",
-        ],
-
-        categorySlugs: [
-          "hall-ticket",
-        ],
-
-        type: "hall",
-      });
-    }
-  );
-
-  return jobs;
-}
-
-/* =========================================================
-   RESULTS
-========================================================= */
-
-function parseResults(
-  html = ""
-) {
-  const $ = cheerio.load(html);
-
-  const jobs = [];
-
-  const seen = new Set();
-
-  $(
-    "main a[href], .entry-content a[href], article a[href]"
-  ).each((_, element) => {
-    const href = absoluteUrl(
-      $(element).attr("href")
+  try {
+    const source = String(
+      req.query?.source ||
+        "current"
     );
 
-    const title = cleanText(
-      $(element).text()
+    const action = String(
+      req.query?.action ||
+        "feed"
     );
 
-    if (
-      !href ||
-      !title ||
-      seen.has(href)
-    ) {
-      return;
-    }
+    /* =====================================
+       SINGLE POST
+    ===================================== */
 
     if (
-      !href.startsWith(SITE)
+      action === "post"
     ) {
-      return;
-    }
-
-    if (
-      href === `${SITE}/result/` ||
-      href === `${SITE}/`
-    ) {
-      return;
-    }
-
-    const lower =
-      title.toLowerCase();
-
-    const isResult =
-      lower.includes("result") ||
-      lower.includes(
-        "answer key"
-      ) ||
-      title.includes("निकाल") ||
-      title.includes(
-        "उत्तरतालिका"
+      const slug = String(
+        req.query?.slug || ""
       );
 
-    if (!isResult) {
-      return;
-    }
+      if (!slug) {
+        return res.status(400).json({
+          success: false,
+          error:
+            "Post slug missing",
+        });
+      }
 
-    seen.add(href);
+      const url =
+        `${SITE}/${slug}/`;
 
-    jobs.push({
-      id:
-        `result-${slugFromUrl(
-          href
-        ) || jobs.length}`,
+      const html =
+        await fetchPage(url);
 
-      title,
+      const details =
+        extractDetails(html);
 
-      slug:
-        slugFromUrl(href),
+      return res.status(200).json({
+        success: true,
 
-      url: href,
+        job: {
+          slug,
+          url,
 
-      categoryNames: [
-        "निकाल",
-      ],
-
-      categorySlugs: [
-        "result",
-      ],
-
-      type: "result",
-    });
-  });
-
-  return jobs;
-}
-
-/* =========================================================
-   WORDPRESS API
-========================================================= */
-
-async function wpFetch(path) {
-  const response =
-    await fetch(
-      `${WP_API}${path}`,
-      {
-        headers: {
-          Accept:
-            "application/json",
-
-          "User-Agent":
-            "MajhiNaukriJobsWidget/2.0",
+          ...details,
         },
-      }
-    );
-
-  if (!response.ok) {
-    throw new Error(
-      `WordPress API ${response.status}`
-    );
-  }
-
-  return response.json();
-}
-
-/* =========================================================
-   PAGE
-========================================================= */
-
-async function getPage(slug) {
-  const pages =
-    await wpFetch(
-      `/pages?slug=${encodeURIComponent(
-        slug
-      )}&per_page=1`
-    );
-
-  if (
-    !Array.isArray(pages) ||
-    !pages[0]
-  ) {
-    throw new Error(
-      `Page not found: ${slug}`
-    );
-  }
-
-  return pages[0];
-}
-
-/* =========================================================
-   CATEGORY
-========================================================= */
-
-async function resolveCategoryId(
-  aliases
-) {
-  const categories =
-    await wpFetch(
-      "/categories?per_page=100&hide_empty=false"
-    );
-
-  for (const alias of aliases) {
-    const found =
-      categories.find(
-        (category) =>
-          String(
-            category.slug
-          ).toLowerCase() ===
-          alias.toLowerCase()
-      );
-
-    if (found) {
-      return found.id;
+      });
     }
-  }
 
-  return null;
-}
+    /* =====================================
+       CURRENT
+    ===================================== */
 
-/* =========================================================
-   CATEGORY POSTS
-========================================================= */
-
-async function getCategoryPosts(
-  source
-) {
-  const aliases =
-    CATEGORY_ALIASES[source];
-
-  const categoryId =
-    await resolveCategoryId(
-      aliases
-    );
-
-  if (!categoryId) {
-    throw new Error(
-      `Category not found: ${source}`
-    );
-  }
-
-  const posts =
-    await wpFetch(
-      `/posts?_embed=1&categories=${categoryId}&per_page=50&orderby=date&order=desc`
-    );
-
-  return posts
-    .filter(
-      (post) =>
-        !isBlockedPost(post)
-    )
-    .map(normalizePost);
-}
-
-/* =========================================================
-   SINGLE POST
-========================================================= */
-
-async function getPostBySlug(
-  slug
-) {
-  if (!slug) {
-    throw new Error(
-      "Missing slug"
-    );
-  }
-
-  const posts =
-    await wpFetch(
-      `/posts?slug=${encodeURIComponent(
-        slug
-      )}&_embed=1&per_page=1`
-    );
-
-  if (!posts?.[0]) {
-    throw new Error(
-      "Post not found"
-    );
-  }
-
-  if (
-    isBlockedPost(
-      posts[0]
-    )
-  ) {
-    throw new Error(
-      "Blocked category"
-    );
-  }
-
-  return normalizePost(
-    posts[0]
-  );
-}
-
-/* =========================================================
-   FILTER LATEST
-========================================================= */
-
-function filterLatest(
-  source,
-  jobs
-) {
-  if (source === "current") {
-    return jobs
-      .filter(
-        (job) =>
-          isFutureOrToday(
-            job.lastDate
-          )
-      )
-      .slice(0, 30);
-  }
-
-  if (source === "mega") {
-    return jobs
-      .filter(
-        (job) =>
-          !isBlockedPost(job)
-      )
-      .filter(
-        (job) =>
-          isFutureOrToday(
-            job.lastDate
-          )
-      )
-      .slice(0, 30);
-  }
-
-  if (source === "exam") {
-    return jobs
-      .filter(
-        (job) =>
-          !isBlockedPost(job)
-      )
-      .filter(
-        (job) =>
-          isRecent(
-            job.modified ||
-              job.date,
-            90
-          )
-      )
-      .slice(0, 30);
-  }
-
-  if (source === "hall") {
-    return jobs
-      .slice(0, 20);
-  }
-
-  if (source === "result") {
-    return jobs
-      .slice(0, 20);
-  }
-
-  return [];
-}
-
-/* =========================================================
-   VERCEL HANDLER
-========================================================= */
-
-module.exports =
-  async function handler(
-    req,
-    res
-  ) {
-    res.setHeader(
-      "Cache-Control",
-      "s-maxage=300, stale-while-revalidate=600"
-    );
-
-    res.setHeader(
-      "Content-Type",
-      "application/json; charset=utf-8"
-    );
-
-    try {
-      const source = String(
-        req.query?.source ||
-          "current"
-      );
-
-      const action = String(
-        req.query?.action ||
-          "feed"
-      );
-
-      /* ---------------------------------
-         SINGLE POST
-      --------------------------------- */
-
-      if (
-        action === "post"
-      ) {
-        const slug = String(
-          req.query?.slug || ""
+    if (
+      source === "current"
+    ) {
+      const html =
+        await fetchPage(
+          SOURCE_PAGES.current
         );
 
-        const job =
-          await getPostBySlug(
-            slug
-          );
+      const jobs =
+        parseCurrentRecruitment(
+          html
+        );
 
-        return res.status(200).json({
-          success: true,
-          job,
-        });
-      }
-
-      /* ---------------------------------
-         CURRENT RECRUITMENT
-      --------------------------------- */
-
-      if (
-        source === "current"
-      ) {
-        const page =
-          await getPage(
-            PAGE_SLUGS.current
-          );
-
-        const jobs =
-          parseCurrentRecruitment(
-            page.content
-              ?.rendered || ""
-          );
-
-        const latest =
-          filterLatest(
-            "current",
-            jobs
-          );
-
-        return res.status(200).json({
-          success: true,
-          source,
-          jobs: latest,
-          total: latest.length,
-        });
-      }
-
-      /* ---------------------------------
-         HALL TICKET
-      --------------------------------- */
-
-      if (
-        source === "hall"
-      ) {
-        const page =
-          await getPage(
-            PAGE_SLUGS.hall
-          );
-
-        const jobs =
-          parseHallTicket(
-            page.content
-              ?.rendered || ""
-          );
-
-        const latest =
-          filterLatest(
-            "hall",
-            jobs
-          );
-
-        return res.status(200).json({
-          success: true,
-          source,
-          jobs: latest,
-          total: latest.length,
-        });
-      }
-
-      /* ---------------------------------
-         RESULT
-      --------------------------------- */
-
-      if (
-        source === "result"
-      ) {
-        const page =
-          await getPage(
-            PAGE_SLUGS.result
-          );
-
-        const jobs =
-          parseResults(
-            page.content
-              ?.rendered || ""
-          );
-
-        const latest =
-          filterLatest(
-            "result",
-            jobs
-          );
-
-        return res.status(200).json({
-          success: true,
-          source,
-          jobs: latest,
-          total: latest.length,
-        });
-      }
-
-      /* ---------------------------------
-         MEGA / EXAM
-      --------------------------------- */
-
-      if (
-        source === "mega" ||
-        source === "exam"
-      ) {
-        const posts =
-          await getCategoryPosts(
-            source
-          );
-
-        const latest =
-          filterLatest(
-            source,
-            posts
-          );
-
-        return res.status(200).json({
-          success: true,
-          source,
-          jobs: latest,
-          total: latest.length,
-        });
-      }
-
-      return res.status(400).json({
-        success: false,
-        error:
-          "Invalid source",
-      });
-    } catch (error) {
-      console.error(
-        "Majhi Naukri API error:",
-        error
-      );
-
-      return res.status(500).json({
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to fetch job updates",
+      return res.status(200).json({
+        success: true,
+        source,
+        total: jobs.length,
+        jobs,
       });
     }
-  };
+
+    /* =====================================
+       HALL
+    ===================================== */
+
+    if (
+      source === "hall"
+    ) {
+      const html =
+        await fetchPage(
+          SOURCE_PAGES.hall
+        );
+
+      const jobs =
+        parseHallTicket(
+          html
+        );
+
+      return res.status(200).json({
+        success: true,
+        source,
+        total: jobs.length,
+        jobs,
+      });
+    }
+
+    /* =====================================
+       RESULT
+    ===================================== */
+
+    if (
+      source === "result"
+    ) {
+      const html =
+        await fetchPage(
+          SOURCE_PAGES.result
+        );
+
+      const jobs =
+        parseResult(html);
+
+      return res.status(200).json({
+        success: true,
+        source,
+        total: jobs.length,
+        jobs,
+      });
+    }
+
+    /* =====================================
+       MEGA
+    ===================================== */
+
+    if (
+      source === "mega"
+    ) {
+      const html =
+        await fetchPage(
+          SOURCE_PAGES.mega
+        );
+
+      const jobs =
+        parsePostLinks(
+          html,
+          "mega"
+        );
+
+      return res.status(200).json({
+        success: true,
+        source,
+        total: jobs.length,
+        jobs,
+      });
+    }
+
+    /* =====================================
+       EXAM
+    ===================================== */
+
+    if (
+      source === "exam"
+    ) {
+      const html =
+        await fetchPage(
+          SOURCE_PAGES.exam
+        );
+
+      const jobs =
+        parsePostLinks(
+          html,
+          "exam"
+        );
+
+      return res.status(200).json({
+        success: true,
+        source,
+        total: jobs.length,
+        jobs,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      error:
+        "Invalid source",
+    });
+  } catch (error) {
+    console.error(
+      "Majhi Naukri API error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+
+      error:
+        error?.message ||
+        "Unable to fetch Majhi Naukri",
+    });
+  }
+};
