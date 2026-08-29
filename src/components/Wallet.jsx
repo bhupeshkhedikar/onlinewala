@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 
 import "./Wallet.css";
+import AddMoney from "./AddMoney";
 
 export default function Wallet() {
   /* =========================================================
@@ -34,6 +35,13 @@ export default function Wallet() {
 
   const [error, setError] =
     useState("");
+
+  // =========================================================
+  // ADD MONEY POPUP
+  // =========================================================
+
+  const [showAddMoney, setShowAddMoney] =
+    useState(false);
 
   /* =========================================================
      LOAD WALLET
@@ -664,10 +672,6 @@ export default function Wallet() {
 
         {/* =================================================
             ADD MONEY / PAYMENT
-
-            Currently disabled placeholder.
-            Payment gateway will be connected
-            in next component.
         ================================================= */}
 
         <section className="wallet-action-card">
@@ -693,15 +697,49 @@ export default function Wallet() {
             type="button"
             className="add-money-btn"
             onClick={() => {
-              alert(
-                "Payment Gateway next step में connect किया जाएगा."
-              );
+              setShowAddMoney(true);
             }}
           >
             + Add Money
           </button>
 
         </section>
+
+        {/* =================================================
+            ADD MONEY POPUP
+
+            Opens when user clicks Add Money.
+            The actual Razorpay payment logic remains
+            inside AddMoney.jsx.
+        ================================================= */}
+
+        {showAddMoney && (
+          <AddMoney
+            onClose={() => {
+              setShowAddMoney(false);
+            }}
+
+            onSuccess={async (paymentData) => {
+
+              console.log(
+                "Wallet recharge successful:",
+                paymentData
+              );
+
+              /*
+               * Close popup after successful payment.
+               */
+              setShowAddMoney(false);
+
+              /*
+               * Reload wallet balance and transactions
+               * so the newly added amount appears.
+               */
+              await loadWallet();
+
+            }}
+          />
+        )}
 
 
         {/* =================================================

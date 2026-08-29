@@ -299,6 +299,7 @@ export default function Signup({
               referrer
                 ? cleanReferralCode
                 : null,
+                password:password,
 
             tickets:
               1,
