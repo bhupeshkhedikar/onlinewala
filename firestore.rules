@@ -1,0 +1,261 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* =====================================================
+       HELPER FUNCTIONS
+    ===================================================== */
+
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isLoggedIn()
+        && request.auth.uid == userId;
+    }
+
+    /*
+     * IMPORTANT:
+     * Production में admin role Firestore users document
+     * से verify करना बेहतर है।
+     *
+     * Temporary admin UID:
+     * local_admin_bypass
+     *
+     * इसे वास्तविक Firebase admin UID से replace करें।
+     */
+    function isAdmin() {
+      return isLoggedIn()
+        && request.auth.token.admin == true;
+    }
+
+
+    /* =====================================================
+       USERS
+    ===================================================== */
+
+    match /users/{userId} {
+
+      /*
+       * User अपना profile read कर सकता है।
+       */
+      allow read: if isOwner(userId) || isAdmin();
+
+
+      /*
+       * Signup के समय user अपना profile create कर सकता है।
+       *
+       * IMPORTANT:
+       * Wallet fields client से create नहीं होने देने चाहिए।
+       */
+      allow create: if isOwner(userId)
+        && request.resource.data.role == "user"
+        && request.resource.data.walletBalance == 0
+        && request.resource.data.availableBalance == 0
+        && request.resource.data.pendingReferralAmount == 0;
+
+
+      /*
+       * Normal user wallet-related fields modify नहीं कर सकता।
+       *
+       * User केवल basic profile fields update कर सकता है।
+       */
+      allow update: if isAdmin()
+        || (
+          isOwner(userId)
+          && request.resource.data.walletBalance
+              == resource.data.walletBalance
+          && request.resource.data.availableBalance
+              == resource.data.availableBalance
+          && request.resource.data.pendingReferralAmount
+              == resource.data.pendingReferralAmount
+          && request.resource.data.role
+              == resource.data.role
+          && request.resource.data.tickets
+              == resource.data.tickets
+        );
+
+
+      /*
+       * User अपना account delete नहीं कर सकता।
+       */
+      allow delete: if isAdmin();
+    }
+
+
+    /* =====================================================
+       REFERRALS
+    ===================================================== */
+
+    match /referrals/{referralId} {
+
+      /*
+       * User अपना referral देख सकता है।
+       * Admin सभी referrals देख सकता है।
+       */
+      allow read: if isAdmin()
+        || (
+          isLoggedIn()
+          && (
+            resource.data.referrerId
+              == request.auth.uid
+            ||
+            resource.data.referredUserId
+              == request.auth.uid
+          )
+        );
+
+
+      /*
+       * Referral creation को सामान्य user के लिए
+       * limited रखा गया है।
+       *
+       * Reward amount client से arbitrary नहीं होना चाहिए।
+       */
+      allow create: if isLoggedIn()
+        && request.resource.data.referrerId
+            == request.auth.uid
+        && request.resource.data.status
+            == "pending"
+        && request.resource.data.rewardAmount >= 10
+        && request.resource.data.rewardAmount <= 100
+        && request.resource.data.serviceBooked
+            == false;
+
+
+      /*
+       * Referral status और reward admin ही बदल सकता है।
+       *
+       * इससे user खुद:
+       *
+       * pending → confirmed
+       *
+       * नहीं कर सकता।
+       */
+      allow update: if isAdmin();
+
+
+      allow delete: if isAdmin();
+    }
+
+
+    /* =====================================================
+       WALLET TRANSACTIONS
+    ===================================================== */
+
+    match /walletTransactions/{transactionId} {
+
+      /*
+       * User अपनी transactions पढ़ सकता है।
+       * Admin सभी transactions पढ़ सकता है।
+       */
+      allow read: if isAdmin()
+        || (
+          isLoggedIn()
+          && resource.data.userId
+              == request.auth.uid
+        );
+
+
+      /*
+       * IMPORTANT:
+       *
+       * User wallet transaction manually create
+       * नहीं कर सकता।
+       *
+       * केवल trusted admin/server process करेगा।
+       */
+      allow create: if isAdmin();
+
+
+      /*
+       * Existing transaction को user modify/delete
+       * नहीं कर सकता।
+       */
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+
+    /* =====================================================
+       WALLET RECHARGE REQUESTS
+    ===================================================== */
+
+    match /walletRechargeRequests/{requestId} {
+
+      /*
+       * User अपने recharge requests create/read कर सकता है।
+       */
+      allow create: if isLoggedIn()
+        && request.resource.data.userId
+            == request.auth.uid
+        && request.resource.data.status
+            == "pending"
+        && request.resource.data.amount > 0;
+
+
+      allow read: if isAdmin()
+        || (
+          isLoggedIn()
+          && resource.data.userId
+              == request.auth.uid
+        );
+
+
+      /*
+       * Payment verification admin/server करेगा।
+       */
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+
+    /* =====================================================
+       SERVICE BOOKINGS
+    ===================================================== */
+
+    match /serviceBookings/{bookingId} {
+
+      /*
+       * User अपनी bookings देख सकता है।
+       */
+      allow read: if isAdmin()
+        || (
+          isLoggedIn()
+          && resource.data.userId
+              == request.auth.uid
+        );
+
+
+      /*
+       * User booking create कर सकता है।
+       */
+      allow create: if isLoggedIn()
+        && request.resource.data.userId
+            == request.auth.uid;
+
+
+      /*
+       * Booking status/payment verification
+       * admin ही कर सके।
+       */
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+
+    /* =====================================================
+       DEFAULT DENY
+    ===================================================== */
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

@@ -1,0 +1,642 @@
+
+.add-money-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background: rgba(15, 23, 42, 0.55);
+
+  backdrop-filter: blur(7px);
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.add-money-modal {
+  width: 100%;
+  max-width: 440px;
+
+  max-height: 92vh;
+
+  overflow-y: auto;
+
+  padding: 25px;
+
+  box-sizing: border-box;
+
+  border-radius: 22px;
+
+  background: white;
+
+  box-shadow:
+    0 25px 70px rgba(15, 23, 42, 0.25);
+
+  animation:
+    addMoneyPopup 0.25s ease;
+}
+
+@keyframes addMoneyPopup {
+
+  from {
+    opacity: 0;
+    transform:
+      translateY(15px)
+      scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.add-money-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.add-money-label {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #7c3aed;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+.add-money-header h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 23px;
+
+  font-weight: 850;
+}
+
+.add-money-header p {
+  margin: 4px 0 0;
+
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+.add-money-close {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: #f1f5f9;
+
+  color: #64748b;
+
+  font-size: 22px;
+
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.add-money-close:hover {
+  background: #e2e8f0;
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.add-money-icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 22px auto 20px;
+
+  border-radius: 18px;
+
+  background: #ede9fe;
+
+  font-size: 28px;
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+.amount-section label,
+.preset-section label,
+.payment-method-section > label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #334155;
+
+  font-size: 11px;
+
+  font-weight: 750;
+}
+
+
+/* =========================================================
+   AMOUNT INPUT
+========================================================= */
+
+.amount-input-wrapper {
+  display: flex;
+  align-items: center;
+
+  height: 57px;
+
+  padding: 0 15px;
+
+  box-sizing: border-box;
+
+  border: 2px solid #ddd6fe;
+
+  border-radius: 14px;
+
+  background: #faf9ff;
+
+  transition: 0.2s ease;
+}
+
+.amount-input-wrapper:focus-within {
+  border-color: #7c3aed;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(124, 58, 237, 0.08);
+}
+
+.amount-input-wrapper > span {
+  margin-right: 7px;
+
+  color: #7c3aed;
+
+  font-size: 23px;
+
+  font-weight: 800;
+}
+
+.amount-input-wrapper input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #0f172a;
+
+  font-size: 25px;
+
+  font-weight: 800;
+}
+
+.amount-input-wrapper input::-webkit-inner-spin-button,
+.amount-input-wrapper input::-webkit-outer-spin-button {
+  margin: 0;
+
+  -webkit-appearance: none;
+}
+
+.amount-section small {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #94a3b8;
+
+  font-size: 8px;
+}
+
+
+/* =========================================================
+   PRESETS
+========================================================= */
+
+.preset-section {
+  margin-top: 19px;
+}
+
+.preset-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, 1fr);
+
+  gap: 7px;
+}
+
+.preset-grid button {
+  height: 38px;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 9px;
+
+  background: #f8fafc;
+
+  color: #475569;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.preset-grid button:hover {
+  border-color: #c4b5fd;
+
+  background: #f5f3ff;
+
+  color: #6d28d9;
+}
+
+.preset-grid button.selected {
+  border-color: #7c3aed;
+
+  background: #7c3aed;
+
+  color: white;
+}
+
+
+/* =========================================================
+   PAYMENT METHOD
+========================================================= */
+
+.payment-method-section {
+  margin-top: 20px;
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 12px;
+
+  border: 1px solid #ddd6fe;
+
+  border-radius: 13px;
+
+  background: #faf9ff;
+}
+
+.payment-method-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  background: #ede9fe;
+
+  color: #6d28d9;
+
+  font-size: 9px;
+
+  font-weight: 900;
+}
+
+.payment-method > div:nth-child(2) {
+  flex: 1;
+}
+
+.payment-method strong {
+  display: block;
+
+  color: #1e293b;
+
+  font-size: 11px;
+}
+
+.payment-method span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #64748b;
+
+  font-size: 8px;
+}
+
+.payment-check {
+  width: 23px;
+  height: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #7c3aed;
+
+  color: white;
+
+  font-size: 11px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.add-money-error {
+  margin-top: 13px;
+
+  padding: 10px 12px;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 9px;
+
+  background: #fef2f2;
+
+  color: #b91c1c;
+
+  font-size: 9px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.add-money-success {
+  margin-top: 13px;
+
+  padding: 10px 12px;
+
+  border: 1px solid #a7f3d0;
+
+  border-radius: 9px;
+
+  background: #ecfdf5;
+
+  color: #047857;
+
+  font-size: 9px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   PAYMENT BUTTON
+========================================================= */
+
+.proceed-payment-btn {
+  width: 100%;
+
+  height: 47px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  margin-top: 17px;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #9333ea
+    );
+
+  color: white;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 18px
+    rgba(124, 58, 237, 0.2);
+
+  transition: 0.2s ease;
+}
+
+.proceed-payment-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 10px 22px
+    rgba(124, 58, 237, 0.27);
+}
+
+.proceed-payment-btn:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   BUTTON SPINNER
+========================================================= */
+
+.button-spinner {
+  width: 14px;
+  height: 14px;
+
+  border: 2px solid
+    rgba(255, 255, 255, 0.35);
+
+  border-top-color: white;
+
+  border-radius: 50%;
+
+  animation:
+    addMoneySpin 0.7s linear infinite;
+}
+
+@keyframes addMoneySpin {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+.payment-security {
+  margin-top: 12px;
+
+  text-align: center;
+
+  color: #94a3b8;
+
+  font-size: 8px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 520px) {
+
+  .add-money-overlay {
+    align-items: flex-end;
+
+    padding: 0;
+  }
+
+  .add-money-modal {
+    max-width: none;
+
+    max-height: 94vh;
+
+    padding: 20px;
+
+    border-radius:
+      22px 22px 0 0;
+  }
+
+  .add-money-header h2 {
+    font-size: 20px;
+  }
+
+  .add-money-icon {
+    width: 50px;
+    height: 50px;
+
+    margin:
+      17px auto;
+    
+    border-radius: 15px;
+
+    font-size: 23px;
+  }
+
+  .amount-input-wrapper {
+    height: 53px;
+  }
+
+  .amount-input-wrapper input {
+    font-size: 22px;
+  }
+
+  .preset-grid {
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+  .preset-grid button {
+    height: 36px;
+  }
+
+  .payment-method {
+    padding: 10px;
+  }
+
+  .proceed-payment-btn {
+    height: 45px;
+
+    font-size: 11px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 360px) {
+
+  .add-money-modal {
+    padding: 16px;
+  }
+
+  .preset-grid {
+    gap: 5px;
+  }
+
+  .preset-grid button {
+    font-size: 9px;
+  }
+
+  .amount-input-wrapper {
+    height: 50px;
+  }
+
+  .amount-input-wrapper > span {
+    font-size: 20px;
+  }
+
+  .amount-input-wrapper input {
+    font-size: 21px;
+  }
+
+}
+

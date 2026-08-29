@@ -29,6 +29,10 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import AgeCalculator from "./components/AgeCalculator";
 import Footer from "./components/Footer";
 import InvoiceDashboard from "./components/admin/InvoiceDashboard";
+import Referral from "./components/Referral";
+import Wallet from "./components/Wallet";
+import AdminReferrals from "./components/admin/AdminReferrals";
+import AddMoney from "./components/AddMoney";
 
 
 // --- HELPERS ---
@@ -36,6 +40,10 @@ const Home = ({ authUser }) => (
   <>
     <div className="hero-wrapper">
       <Hero />
+      <Referral user={authUser} />
+      <Wallet user={authUser} />
+      <AdminReferrals user={authUser} />  
+      {/* <AddMoney user={authUser} /> */}
       <BookingBar user={authUser} />
     </div>
     <ServicesIcons user={authUser} />

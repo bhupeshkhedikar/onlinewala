@@ -29,5 +29,5 @@ const db = getFirestore(app); // Use getDatabase instead of directly using .ref
 const storage = getStorage(app);
 const analytics = getAnalytics(app);
 
-export { auth, db,analytics,storage };  // Export db and auth
+export { auth, db,analytics,storage,app };  // Export db and auth
 export { signInWithEmailAndPassword, createUserWithEmailAndPassword };
