@@ -1,9 +1,7 @@
 import React, { useState, useRef } from "react";
-// Uncomment the line below after running: npm install html2pdf.js
 import html2pdf from "html2pdf.js";
 import "./BiodataBuilder.css";
 
-// 🔥 TRANSLATION DICTIONARIES
 const mrToEn = {
   "नाव": "Name",
   "जन्म तारीख": "Date of Birth",
@@ -37,20 +35,16 @@ const enToMr = Object.entries(mrToEn).reduce((acc, [mr, en]) => {
 export default function BiodataBuilder() {
   const biodataRef = useRef();
   const [activeTab, setActiveTab] = useState("edit"); 
-  const [lang, setLang] = useState("mr"); // 'mr' or 'en'
+  const [lang, setLang] = useState("mr");
 
-  const titleOptions = lang === 'mr' ? [
-    "॥ श्री गणेशाय नमः ॥",
-    "भगवान बाबा हनुमानजी को प्रणाम\nमहानत्यागी बाबा जुमदेवजी को प्रणाम\n।। परमात्मा एक ।।",
-    "Custom"
-  ] : [
+  const titleOptions = [
     "॥ श्री गणेशाय नमः ॥",
     "भगवान बाबा हनुमानजी को प्रणाम\nमहानत्यागी बाबा जुमदेवजी को प्रणाम\n।। परमात्मा एक ।।",
     "Custom"
   ];
 
   const godImageOptions = [
-    { id: "ganpati", name: "Ganpati", url: "https://png.pngtree.com/png-clipart/20220720/original/pngtree-ganesh-chaturthi-wishes-png-design-png-image_8390969.png" },
+    { id: "ganpati", name: "Ganpati", url: "https://i.pinimg.com/1200x/7b/61/0f/7b610f30b15efe1b1986ced114cfe2bb.jpg" },
     { id: "gajanan", name: "Gajanan Maharaj", url: "https://pluspng.com/img-png/gajanan-maharaj-png-shri-satguru-gajanan-maharaj-of-shegoen-145.png" },
     { id: "hanuman", name: "Hanumanji", url: "https://i.pinimg.com/736x/b6/fd/6e/b6fd6e25743629976301758ee0940e96.jpg" },
     { id: "jumdev", name: "Baba Jumdevji", url: "https://sevakparivar.in/wp-content/uploads/2025/09/IMG_20200429_160041.jpg" },
@@ -65,7 +59,7 @@ export default function BiodataBuilder() {
     
     godImageSelection: "ganpati",
     ganpatiUrl: "https://png.pngtree.com/png-vector/20250121/ourmid/pngtree-ganesha-the-embodiment-of-prosperity-and-joy-png-image_15287837.png",
-    imageSize: 65,
+    imageSize: 55,
 
     photoUrl: "https://img.freepik.com/free-photo/handsome-confident-smiling-man-with-hands-crossed-chest_176420-18743.jpg",
 
@@ -92,10 +86,10 @@ export default function BiodataBuilder() {
       { id: 4, label: "आईचे नाव", value: "सौ. आशालता राजाराम पाटील (गृहिणी)" },
       { id: 5, label: "भाऊ", value: "चि. अदित्य राजाराम पाटील" },
       { id: 6, label: "बहीण", value: "कु. सुजाता राजाराम पाटील" },
-      { id: 7, label: "चुलते", value: "श्री. शामराव साहेबराव पाटील\nश्री. भाऊसाहेब साहेबराव पाटील" },
-      { id: 8, label: "मामा", value: "श्री. सोपान रामभाऊ दाभाडे (खराडी, ता. खेड, जि. पुणे)\nश्री. दिपक रामभाऊ दाभाडे (खराडी, ता. खेड, जि. पुणे)" },
-      { id: 9, label: "काका", value: "श्री. सचिन कारभारी पानसरे (चंदननगर, ता. खेड, जि. पुणे)" },
-      { id: 10, label: "नातेवाईक", value: "पाटील, दाभाडे, पानसरे, देशमुख, राहाणे, बोरकर,\nथोरात, खानवीलकर, जाधव" }
+      { id: 7, label: "चुलते", value: "श्री. शामराव पाटील, श्री. भाऊसाहेब पाटील" },
+      { id: 8, label: "मामा", value: "श्री. सोपान रामभाऊ दाभाडे, श्री. दिपक दाभाडे" },
+      { id: 9, label: "काका", value: "श्री. सचिन कारभारी पानसरे" },
+      { id: 10, label: "नातेवाईक", value: "पाटील, दाभाडे, पानसरे, देशमुख, राहाणे, बोरकर, थोरात" }
     ],
 
     contactDetails: [
@@ -104,19 +98,16 @@ export default function BiodataBuilder() {
     ]
   });
 
-  // 🔥 LANGUAGE TOGGLE LOGIC
   const toggleLanguage = (newLang) => {
     if (lang === newLang) return;
     const tMap = newLang === "en" ? mrToEn : enToMr;
 
     setData(prev => {
-      // Helper function to translate arrays
       const translateArray = (arr) => arr.map(item => ({
         ...item,
         label: tMap[item.label] || item.label
       }));
 
-      // Translate Main Titles
       let newTitleMain = prev.titleMain;
       if (newLang === "en" && prev.titleMain === "परिचय पत्रिका") newTitleMain = "BIODATA";
       if (newLang === "mr" && prev.titleMain === "BIODATA") newTitleMain = "परिचय पत्रिका";
@@ -195,48 +186,41 @@ export default function BiodataBuilder() {
     const element = biodataRef.current;
     if (!element) return;
 
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) element.classList.add('export-mode');
+    element.classList.add('pdf-rendering');
 
     const personName = data.personalDetails[0]?.value || "Biodata";
 
     const opt = {
-      margin: 0, 
+      margin: 0,
       filename: `${personName.replace(/\s+/g, '_')}_Biodata.pdf`,
-      image: { type: 'jpeg', quality: 1 },
-      html2canvas: { scale: 2, useCORS: true, scrollY: 0, allowTaint: true }, 
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      image: { type: 'jpeg', quality: 1.0 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        scrollY: 0,
+        logging: false
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait' 
+      },
+      pagebreak: { mode: ['avoid-all', 'css'] }
     };
 
-    try {
-      html2pdf().set(opt).from(element).save().then(() => {
-        if (isMobile) element.classList.remove('export-mode');
-      }).catch(err => {
-        console.error("PDF Generation Error:", err);
-        if (isMobile) element.classList.remove('export-mode');
-      });
-    } catch (err) {
-      console.error("html2pdf is not initialized:", err);
-      alert("Something went wrong with the PDF generator. Ensure it is imported correctly.");
-      if (isMobile) element.classList.remove('export-mode');
-    }
+    html2pdf().set(opt).from(element).save().then(() => {
+      element.classList.remove('pdf-rendering');
+    }).catch(err => {
+      console.error("PDF Generation Error:", err);
+      element.classList.remove('pdf-rendering');
+    });
   };
 
   return (
     <div className="builder-container">
       
-      {/* MOBILE NAV */}
-      <div className="mobile-bottom-nav">
-        <button className={activeTab === 'edit' ? "active" : ""} onClick={() => setActiveTab('edit')}>
-          📝 Edit Details
-        </button>
-        <button className={activeTab === 'preview' ? "active" : ""} onClick={() => setActiveTab('preview')}>
-          👁️ Preview & Download
-        </button>
-      </div>
-
-      {/* DESKTOP NAV */}
-      <div className="top-tabs desktop-only">
+      {/* 🚀 TOP NAVIGATION TABS */}
+      <div className="top-tabs">
         <button className={`tab-btn ${activeTab === 'edit' ? 'active' : ''}`} onClick={() => setActiveTab('edit')}>
           📝 Edit Details
         </button>
@@ -247,15 +231,14 @@ export default function BiodataBuilder() {
 
       <div className="tab-content-area">
         
-        {/* ================= TAB 1: EDIT DETAILS ================= */}
+        {/* TAB 1: EDIT DETAILS */}
         {activeTab === 'edit' && (
           <div className="form-pane">
             <div className="form-header">
-              <h4>Biodata Details</h4>
-              <p style={{fontSize:'10px'}}>Select your language, theme, and customize your details below.</p>
+              <h2>Biodata Details</h2>
+              <p>भाषा आणि माहिती संपादित करा</p>
             </div>
 
-            {/* 🔥 LANGUAGE TOGGLE */}
             <div className="form-card">
               <h3>Language / भाषा</h3>
               <div className="lang-switch-container">
@@ -264,10 +247,8 @@ export default function BiodataBuilder() {
               </div>
             </div>
 
-            {/* THEME & HEADER */}
             <div className="form-card">
               <h3>Theme & Header Settings</h3>
-              
               <div className="form-group">
                 <label>Main Title (मुख्य शीर्षक)</label>
                 <input type="text" name="titleMain" value={data.titleMain} onChange={handleChange} />
@@ -296,7 +277,7 @@ export default function BiodataBuilder() {
                 {data.titleSelection === "Custom" && (
                   <textarea 
                     name="titleTop" 
-                    rows="3"
+                    rows="3" 
                     value={data.titleTop} 
                     onChange={handleChange} 
                     placeholder="Enter custom greeting..." 
@@ -332,7 +313,7 @@ export default function BiodataBuilder() {
                       <span style={{color: '#0b5ed7'}}>{data.imageSize}px</span>
                     </label>
                     <input 
-                      type="range" name="imageSize" min="30" max="150" 
+                      type="range" name="imageSize" min="30" max="90" 
                       value={data.imageSize} onChange={handleChange} className="size-slider"
                     />
                   </div>
@@ -340,7 +321,6 @@ export default function BiodataBuilder() {
               </div>
             </div>
             
-            {/* PROFILE PHOTO */}
             <div className="form-card">
               <h3>Profile Photo</h3>
               <div className="form-group">
@@ -348,7 +328,6 @@ export default function BiodataBuilder() {
               </div>
             </div>
 
-            {/* DYNAMIC PERSONAL DETAILS */}
             <div className="form-card">
               <h3>Personal Details (वैयक्तिक माहिती)</h3>
               {data.personalDetails.map((item) => (
@@ -361,7 +340,6 @@ export default function BiodataBuilder() {
               <button className="add-btn" onClick={() => addDynamicField('personalDetails')}>+ Add Personal Detail</button>
             </div>
 
-            {/* DYNAMIC EDUCATION DETAILS */}
             <div className="form-card">
               <h3>Education & Profession (शिक्षण व व्यवसाय)</h3>
               {data.educationDetails.map((item) => (
@@ -374,26 +352,24 @@ export default function BiodataBuilder() {
               <button className="add-btn" onClick={() => addDynamicField('educationDetails')}>+ Add Education/Profession</button>
             </div>
 
-            {/* DYNAMIC FAMILY DETAILS */}
             <div className="form-card">
               <h3>Family Details (कौटुंबिक माहिती)</h3>
               {data.familyDetails.map((item) => (
                 <div className="dynamic-row" key={item.id}>
                   <input type="text" value={item.label} onChange={(e) => handleDynamicChange('familyDetails', item.id, 'label', e.target.value)} placeholder="Field Name" className="label-input" />
-                  <textarea value={item.value} onChange={(e) => handleDynamicChange('familyDetails', item.id, 'value', e.target.value)} placeholder="Value (Press Enter for new line)" rows="2" />
+                  <textarea value={item.value} onChange={(e) => handleDynamicChange('familyDetails', item.id, 'value', e.target.value)} placeholder="Value" rows="2" />
                   <button className="remove-btn" onClick={() => removeDynamicField('familyDetails', item.id)}>✕</button>
                 </div>
               ))}
               <button className="add-btn" onClick={() => addDynamicField('familyDetails')}>+ Add Family Detail</button>
             </div>
 
-            {/* DYNAMIC CONTACT DETAILS */}
-            <div className="form-card" style={{marginBottom: '100px'}}>
+            <div className="form-card" style={{marginBottom: '50px'}}>
               <h3>Contact (संपर्क)</h3>
               {data.contactDetails.map((item) => (
                 <div className="dynamic-row" key={item.id}>
                   <input type="text" value={item.label} onChange={(e) => handleDynamicChange('contactDetails', item.id, 'label', e.target.value)} placeholder="Field Name" className="label-input" />
-                  <textarea value={item.value} onChange={(e) => handleDynamicChange('contactDetails', item.id, 'value', e.target.value)} placeholder="Value (Press Enter for new line)" rows="2" />
+                  <textarea value={item.value} onChange={(e) => handleDynamicChange('contactDetails', item.id, 'value', e.target.value)} placeholder="Value" rows="2" />
                   <button className="remove-btn" onClick={() => removeDynamicField('contactDetails', item.id)}>✕</button>
                 </div>
               ))}
@@ -403,12 +379,12 @@ export default function BiodataBuilder() {
           </div>
         )}
 
-        {/* ================= TAB 2: PREVIEW & DOWNLOAD ================= */}
+        {/* TAB 2: PREVIEW & DOWNLOAD */}
         {activeTab === 'preview' && (
           <div className="preview-pane">
             <div className="preview-actions">
               <button className="download-btn" onClick={handleDownloadPDF}>
-                ⬇ Download Biodata
+                ⬇ Download Biodata (PDF)
               </button>
             </div>
 
@@ -416,92 +392,118 @@ export default function BiodataBuilder() {
               <div className="biodata-paper" ref={biodataRef}>
                 <div className="biodata-inner-border">
                   
-                  {/* Header */}
+                  {/* Header Area */}
                   <div className="bio-header">
                     {data.ganpatiUrl && (
                       <img 
                         src={getSafeImageUrl(data.ganpatiUrl)} 
                         alt="Header Deity" 
-                        className="bio-ganpati" 
+                        className="bio-ganpati-icon"
                         style={{ width: `${data.imageSize}px`, height: `${data.imageSize}px` }}
                         crossOrigin="anonymous"
                       />
                     )}
                     <div className="bio-titles">
                       {data.titleTop && (
-                        <h4 className="top-shree">
+                        <div className="top-shree">
                           {data.titleTop.split('\n').map((line, i) => (
                             <div key={i}>{line}</div>
                           ))}
-                        </h4>
+                        </div>
                       )}
                       {data.titleMain && (
-                        <div className="main-title-box">
-                          <h1 className="main-title">{data.titleMain}</h1>
+                        <div className="main-title-wrap">
+                          <span className="main-title">{data.titleMain}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Top Row: Personal Details & Photo */}
-                  <div className="bio-top-row">
-                    <table className="bio-table main-info-table">
+                  {/* Top Section: Personal Details + Photo (Flex) */}
+                  <div className="bio-section-top">
+                    <table className="bio-table">
+                      <colgroup>
+                        <col style={{ width: '125px' }} />
+                        <col style={{ width: '16px' }} />
+                        <col style={{ width: 'auto' }} />
+                      </colgroup>
                       <tbody>
                         {data.personalDetails.map((item, idx) => (
-                          <tr key={item.id}>
-                            <td className="bio-label align-top">{item.label}</td>
-                            <td className="bio-colon align-top">:</td>
-                            <td className={`bio-value align-top ${idx === 0 ? 'bold-text' : ''}`}>
-                              {item.value.split('\n').map((line, i) => <div key={i}>{line}</div>)}
+                          <tr key={`personal-${item.id}`}>
+                            <td className="bio-label">{item.label}</td>
+                            <td className="bio-colon">:</td>
+                            <td className={`bio-val ${idx === 0 ? 'bold-name' : ''}`}>
+                              {item.value.split('\n').map((line, i) => (
+                                <div key={i}>{line}</div>
+                              ))}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    
-                    <div className="bio-photo-box">
-                      {data.photoUrl && <img src={getSafeImageUrl(data.photoUrl)} alt="Profile" crossOrigin="anonymous" />}
-                    </div>
+
+                    {data.photoUrl && (
+                      <div className="bio-photo-box">
+                        <img src={getSafeImageUrl(data.photoUrl)} alt="Profile" crossOrigin="anonymous" />
+                      </div>
+                    )}
                   </div>
 
-                  {/* Bottom Row: Rest of the Dynamic Details */}
-                  <table className="bio-table">
-                    <tbody>
-                      {data.educationDetails.map((item) => (
-                        <tr key={item.id}>
-                          <td className="bio-label align-top">{item.label}</td>
-                          <td className="bio-colon align-top">:</td>
-                          <td className="bio-value align-top">
-                            {item.value.split('\n').map((line, i) => <div key={i} className="mb-2">{line}</div>)}
-                          </td>
-                        </tr>
-                      ))}
+                  {/* Bottom Section: Education, Family & Contact */}
+                  <div className="bio-section-bottom">
+                    <table className="bio-table">
+                      <colgroup>
+                        <col style={{ width: '125px' }} />
+                        <col style={{ width: '16px' }} />
+                        <col style={{ width: 'auto' }} />
+                      </colgroup>
+                      <tbody>
+                        {data.educationDetails.map((item) => (
+                          <tr key={`edu-${item.id}`}>
+                            <td className="bio-label">{item.label}</td>
+                            <td className="bio-colon">:</td>
+                            <td className="bio-val">
+                              {item.value.split('\n').map((line, i) => (
+                                <div key={i}>{line}</div>
+                              ))}
+                            </td>
+                          </tr>
+                        ))}
 
-                      {data.familyDetails.map((item) => (
-                        <tr key={item.id}>
-                          <td className="bio-label align-top">{item.label}</td>
-                          <td className="bio-colon align-top">:</td>
-                          <td className="bio-value align-top">
-                            {item.value.split('\n').map((line, i) => <div key={i} className="mb-2">{line}</div>)}
-                          </td>
-                        </tr>
-                      ))}
-                      
-                      {data.contactDetails.length > 0 && (
-                        <tr><td colSpan="3"><hr className="bio-divider" /></td></tr>
-                      )}
+                        {data.familyDetails.map((item) => (
+                          <tr key={`fam-${item.id}`}>
+                            <td className="bio-label">{item.label}</td>
+                            <td className="bio-colon">:</td>
+                            <td className="bio-val">
+                              {item.value.split('\n').map((line, i) => (
+                                <div key={i}>{line}</div>
+                              ))}
+                            </td>
+                          </tr>
+                        ))}
 
-                      {data.contactDetails.map((item, idx) => (
-                        <tr key={item.id}>
-                          <td className="bio-label align-top">{item.label}</td>
-                          <td className="bio-colon align-top">:</td>
-                          <td className={`bio-value align-top ${idx === data.contactDetails.length - 1 ? 'bold-text' : ''}`}>
-                            {item.value.split('\n').map((line, i) => <div key={i} className="mb-2">{line}</div>)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                        {data.contactDetails.length > 0 && (
+                          <tr>
+                            <td colSpan="3" style={{ padding: '6px 0 4px 0' }}>
+                              <div className="bio-divider-line"></div>
+                            </td>
+                          </tr>
+                        )}
+
+                        {data.contactDetails.map((item, idx) => (
+                          <tr key={`contact-${item.id}`}>
+                            <td className="bio-label">{item.label}</td>
+                            <td className="bio-colon">:</td>
+                            <td className={`bio-val ${idx === data.contactDetails.length - 1 ? 'bold-contact' : ''}`}>
+                              {item.value.split('\n').map((line, i) => (
+                                <div key={i}>{line}</div>
+                              ))}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
                 </div>
               </div>
