@@ -1,91 +1,70 @@
 /* =========================================================
-   BEAUTIFUL PREMIUM NAVBAR
-   Unique class names - no conflicts with other components
-========================================================= */
+   ONLINEWALA
+   PREMIUM FLOATING BOTTOM NAVIGATION
+   ========================================================= */
 
 :root {
-  --main-nav-dark: #0f1f4d;
-  --main-nav-blue: #1d4ed8;
-  --main-nav-blue-light: #3b82f6;
+  --ow-blue: #2563eb;
+  --ow-blue-dark: #1747b5;
+  --ow-blue-light: #eff6ff;
 
-  --main-nav-white: #ffffff;
-  --main-nav-text: #eaf2ff;
+  --ow-sky: #38bdf8;
 
-  --main-nav-gold: #fbbf24;
+  --ow-orange: #f59e0b;
+  --ow-orange-dark: #ea580c;
+
+  --ow-purple: #7c3aed;
+  --ow-pink: #ec4899;
+
+  --ow-text: #475569;
+  --ow-muted: #94a3b8;
+
+  --ow-white: #ffffff;
 }
 
 /* =========================================================
-   MAIN NAVBAR
-========================================================= */
+   NAV ROOT
+   ========================================================= */
 
-.main-saas-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 9999;
+.ow-bottom-nav {
+  position: fixed;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 99999;
 
   width: 100%;
 
-  padding: 8px 12px;
+  padding:
+    12px
+    10px
+    calc(12px + env(safe-area-inset-bottom));
 
-  background:
-    linear-gradient(
-      120deg,
-      #0f1f4d 0%,
-      #17398f 45%,
-      #1d4ed8 100%
-    );
-
-  border-bottom:
-    1px solid
-    rgba(255, 255, 255, 0.12);
-
-  box-shadow:
-    0 8px 28px
-    rgba(15, 23, 42, 0.18);
-
-  isolation: isolate;
-}
-
-/* =========================================================
-   TOP LIGHT
-========================================================= */
-
-.main-saas-navbar::before {
-  content: "";
-
-  position: absolute;
-
-  top: 0;
-  left: 15%;
-  right: 15%;
-
-  height: 1px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.6),
-      transparent
-    );
-
-  opacity: 0.7;
+  box-sizing: border-box;
 
   pointer-events: none;
+
+  font-family:
+    "Inter",
+    "Noto Sans Devanagari",
+    system-ui,
+    sans-serif;
 }
 
 /* =========================================================
-   BACKGROUND GLOW
-========================================================= */
+   GLOW
+   ========================================================= */
 
-.main-nav-glow {
+.ow-bottom-nav-glow {
   position: absolute;
 
-  top: -80px;
   left: 50%;
+  bottom: -40px;
 
-  width: 500px;
-  height: 150px;
+  width: 430px;
+  height: 90px;
 
   transform: translateX(-50%);
 
@@ -93,498 +72,670 @@
 
   background:
     radial-gradient(
-      ellipse,
-      rgba(96, 165, 250, 0.18),
-      transparent 70%
+      circle at 25% 50%,
+      rgba(37, 99, 235, 0.22),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 75% 50%,
+      rgba(245, 158, 11, 0.18),
+      transparent 38%
     );
 
-  filter: blur(10px);
+  filter: blur(25px);
 
   pointer-events: none;
 }
 
 /* =========================================================
-   WRAPPER
-========================================================= */
+   MAIN BAR
+   ========================================================= */
 
-.main-nav-wrapper {
+.ow-bottom-bar {
   position: relative;
   z-index: 2;
 
-  width: 100%;
+  width: min(100%, 620px);
 
-  max-width: 1100px;
+  height: 70px;
 
   margin: 0 auto;
 
+  padding: 5px 6px;
+
   display: flex;
-
-  justify-content: center;
-
   align-items: center;
-}
 
-/* =========================================================
-   FLOATING PILL
-========================================================= */
-
-.main-nav-pills {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 5px;
-
-  padding: 5px;
-
-  border-radius: 18px;
+  box-sizing: border-box;
 
   background:
-    rgba(255, 255, 255, 0.075);
+    rgba(255, 255, 255, 0.97);
 
   border:
-    1px solid
-    rgba(255, 255, 255, 0.12);
+    1px solid rgba(226, 232, 240, 0.95);
+
+  border-radius: 23px;
 
   box-shadow:
-    inset 0 1px 0
-      rgba(255, 255, 255, 0.10),
-    0 8px 25px
-      rgba(0, 0, 0, 0.10);
+    0 18px 40px rgba(15, 23, 42, 0.17),
+    0 5px 18px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0 #ffffff;
 
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+
+  pointer-events: auto;
 }
 
 /* =========================================================
-   NAV LINK
-========================================================= */
+   TOP BRAND LINE
+   ========================================================= */
 
-.main-nav-link {
+.ow-bottom-bar::before {
+  content: "";
+
+  position: absolute;
+
+  top: -1px;
+  left: 18%;
+
+  width: 64%;
+  height: 2px;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #38bdf8,
+      #f59e0b
+    );
+
+  opacity: 0.8;
+}
+
+/* =========================================================
+   LEFT / RIGHT GROUP
+   ========================================================= */
+
+.ow-bottom-group {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+
+  justify-content: space-around;
+
+  gap: 3px;
+}
+
+/* =========================================================
+   NAV ITEM
+   ========================================================= */
+
+.ow-nav-item {
   position: relative;
 
-  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+
+  height: 58px;
+
+  padding: 4px 3px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
 
   align-items: center;
   justify-content: center;
 
-  gap: 7px;
+  gap: 3px;
 
-  min-height: 39px;
-
-  padding: 0 15px;
-
-  border-radius: 13px;
-
-  color:
-    rgba(255, 255, 255, 0.78);
+  border-radius: 16px;
 
   text-decoration: none;
 
-  white-space: nowrap;
+  color: var(--ow-text);
 
-  font-family:
-    "Inter",
-    "Noto Sans Devanagari",
-    system-ui,
-    sans-serif;
+  font-size: 10.5px;
+  font-weight: 650;
 
-  font-size: 12px;
-
-  font-weight: 600;
-
-  letter-spacing: 0.05px;
-
-  border:
-    1px solid transparent;
+  line-height: 1.15;
 
   transition:
-    color 0.25s ease,
-    background 0.25s ease,
-    border-color 0.25s ease,
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+    background 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease;
 }
 
 /* =========================================================
    ICON
-========================================================= */
+   ========================================================= */
 
-.main-nav-link-icon {
-  width: 22px;
-  height: 22px;
+.ow-nav-icon {
+  width: 29px;
+  height: 28px;
 
-  display: inline-flex;
-
+  display: flex;
   align-items: center;
   justify-content: center;
 
-  flex: 0 0 22px;
+  border-radius: 9px;
 
-  border-radius: 7px;
+  background: #f8fafc;
 
-  color:
-    rgba(255, 255, 255, 0.78);
-
-  background:
-    rgba(255, 255, 255, 0.08);
-
-  font-size: 13px;
+  color: #64748b;
 
   transition:
-    color 0.25s ease,
-    background 0.25s ease,
-    transform 0.25s ease;
+    background 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.ow-nav-icon svg {
+  width: 17px;
+  height: 17px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* =========================================================
-   TEXT
-========================================================= */
+   LABEL
+   ========================================================= */
 
-.main-nav-link-text {
-  position: relative;
+.ow-nav-label {
+  display: block;
 
-  top: 1px;
+  max-width: 100%;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+
+  color: #475569;
+
+  transition:
+    color 0.22s ease;
+}
+
+/* =========================================================
+   INDIVIDUAL ICON COLORS
+   ========================================================= */
+
+.ow-bottom-group:first-child
+.ow-nav-item:first-child
+.ow-nav-icon {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.ow-bottom-group:first-child
+.ow-nav-item:nth-child(2)
+.ow-nav-icon {
+  color: #7c3aed;
+  background: #f5f3ff;
+}
+
+.ow-bottom-group:last-child
+.ow-nav-item:first-child
+.ow-nav-icon {
+  color: #ec4899;
+  background: #fdf2f8;
+}
+
+.ow-bottom-group:last-child
+.ow-nav-item:nth-child(2)
+.ow-nav-icon {
+  color: #f59e0b;
+  background: #fffbeb;
 }
 
 /* =========================================================
    HOVER
-========================================================= */
+   ========================================================= */
 
-.main-nav-link:hover {
-  color: #ffffff;
+.ow-nav-item:hover {
+  background: #f8fbff;
 
-  background:
-    rgba(255, 255, 255, 0.105);
-
-  border-color:
-    rgba(255, 255, 255, 0.13);
-
-  transform:
-    translateY(-1px);
-
-  box-shadow:
-    0 5px 15px
-    rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
-.main-nav-link:hover
-.main-nav-link-icon {
-  color: #ffffff;
+.ow-nav-item:hover .ow-nav-icon {
+  transform: translateY(-1px) scale(1.05);
 
-  background:
-    rgba(255, 255, 255, 0.15);
-
-  transform:
-    scale(1.08)
-    rotate(-3deg);
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.10);
 }
 
 /* =========================================================
-   ACTIVE LINK
-========================================================= */
+   ACTIVE
+   ========================================================= */
 
-.main-nav-link-active {
-  color: #132451 !important;
+.ow-nav-item-active {
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #ffffff
+    );
+
+  box-shadow:
+    inset 0 0 0 1px rgba(37, 99, 235, 0.07);
+
+  transform: translateY(-1px);
+}
+
+.ow-nav-item-active .ow-nav-icon {
+  color: #ffffff !important;
 
   background:
     linear-gradient(
       135deg,
-      #ffffff 0%,
-      #eef5ff 100%
-    );
-
-  border-color:
-    rgba(255, 255, 255, 0.8);
+      #2563eb,
+      #3b82f6
+    ) !important;
 
   box-shadow:
-    0 6px 20px
-      rgba(0, 0, 0, 0.16),
-    inset 0 1px 0
-      rgba(255, 255, 255, 1);
+    0 5px 12px rgba(37, 99, 235, 0.22);
+
+  transform: translateY(-1px);
+}
+
+.ow-nav-item-active .ow-nav-label {
+  color: #1747b5;
 
   font-weight: 750;
 }
 
 /* =========================================================
-   ACTIVE ICON
-========================================================= */
+   ACTIVE ORANGE INDICATOR
+   ========================================================= */
 
-.main-nav-link-active
-.main-nav-link-icon {
-  color: #1d4ed8;
-
-  background:
-    linear-gradient(
-      135deg,
-      #dbeafe,
-      #eff6ff
-    );
-
-  box-shadow:
-    inset 0 1px 1px
-      rgba(255, 255, 255, 0.8);
-}
-
-/* =========================================================
-   ACTIVE DOT
-========================================================= */
-
-.main-nav-active-dot {
-  position: absolute;
-
-  bottom: -4px;
-  left: 50%;
-
-  width: 18px;
-  height: 3px;
-
-  transform:
-    translateX(-50%);
-
-  border-radius: 999px;
-
-  background:
-    var(--main-nav-gold);
-
-  box-shadow:
-    0 0 7px
-    rgba(251, 191, 36, 0.75);
-
-  animation:
-    navDotIn 0.25s ease;
-}
-
-@keyframes navDotIn {
-  from {
-    width: 5px;
-    opacity: 0;
-  }
-
-  to {
-    width: 18px;
-    opacity: 1;
-  }
-}
-
-/* =========================================================
-   DESKTOP HOVER SHINE
-========================================================= */
-
-.main-nav-link::before {
+.ow-nav-item-active::after {
   content: "";
 
   position: absolute;
 
-  top: 0;
-  left: -80%;
+  left: 50%;
+  bottom: 1px;
 
-  width: 45%;
-  height: 100%;
+  width: 18px;
+  height: 2.5px;
 
-  transform: skewX(-20deg);
+  transform: translateX(-50%);
+
+  border-radius: 999px;
 
   background:
     linear-gradient(
       90deg,
-      transparent,
-      rgba(255, 255, 255, 0.12),
-      transparent
+      #f59e0b,
+      #f97316
     );
 
-  opacity: 0;
+  box-shadow:
+    0 0 7px rgba(245, 158, 11, 0.45);
+}
+
+/* =========================================================
+   CENTER CREATE BUTTON
+   ========================================================= */
+
+.ow-create-button {
+  position: relative;
+
+  flex: 0 0 61px;
+
+  width: 61px;
+  height: 61px;
+
+  margin-top: -29px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #2563eb 0%,
+      #3b82f6 55%,
+      #06b6d4 100%
+    );
+
+  border: 4px solid #ffffff;
+
+  text-decoration: none;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.28),
+    0 2px 7px rgba(15, 23, 42, 0.12);
+
+  z-index: 20;
 
   transition:
-    left 0.5s ease,
-    opacity 0.5s ease;
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* =========================================================
+   FAB INNER
+   ========================================================= */
+
+.ow-create-button-inner {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fbbf24,
+      #f97316
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.45),
+    0 4px 10px rgba(234, 88, 12, 0.25);
+
+  transition:
+    transform 0.25s ease;
+}
+
+.ow-create-button-inner svg {
+  width: 21px;
+  height: 21px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 2.4;
+
+  stroke-linecap: round;
+}
+
+/* =========================================================
+   FAB SHINE
+   ========================================================= */
+
+.ow-create-button-shine {
+  position: absolute;
+
+  top: 5px;
+  left: 13px;
+
+  width: 22px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 255, 255, 0.30);
+
+  filter: blur(2px);
+
+  transform: rotate(-25deg);
 
   pointer-events: none;
 }
 
-.main-nav-link:hover::before {
-  left: 130%;
+/* =========================================================
+   FAB HOVER
+   ========================================================= */
 
-  opacity: 1;
+.ow-create-button:hover {
+  transform:
+    translateY(-5px)
+    scale(1.04);
+
+  box-shadow:
+    0 13px 27px rgba(37, 99, 235, 0.34),
+    0 3px 10px rgba(15, 23, 42, 0.12);
 }
 
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width: 900px) {
-  .main-saas-navbar {
-    padding: 7px 8px;
-  }
-
-  .main-nav-pills {
-    gap: 4px;
-
-    padding: 4px;
-  }
-
-  .main-nav-link {
-    min-height: 37px;
-
-    padding: 0 11px;
-
-    font-size: 11px;
-  }
-
-  .main-nav-link-icon {
-    width: 20px;
-    height: 20px;
-
-    flex-basis: 20px;
-
-    font-size: 12px;
-  }
+.ow-create-button:hover
+.ow-create-button-inner {
+  transform: rotate(90deg);
 }
 
 /* =========================================================
    MOBILE
-   ALWAYS CENTERED
-========================================================= */
+   ========================================================= */
 
 @media (max-width: 768px) {
-  .main-saas-navbar {
-    padding: 6px 4px;
+  .ow-bottom-nav {
+    padding:
+      9px
+      7px
+      calc(9px + env(safe-area-inset-bottom));
   }
 
-  .main-nav-wrapper {
-    width: 100%;
+  .ow-bottom-bar {
+    height: 69px;
 
-    justify-content: center;
+    border-radius: 22px;
+
+    padding: 5px;
   }
 
-  .main-nav-pills {
-    width: auto;
+  .ow-nav-item {
+    height: 56px;
 
-    max-width: 100%;
-
-    gap: 2px;
-
-    padding: 3px;
-
-    border-radius: 15px;
+    font-size: 10px;
   }
 
-  .main-nav-link {
-    min-height: 34px;
-
-    padding: 0 8px;
-
-    gap: 5px;
-
-    border-radius: 10px;
-
-    font-size: 9.5px;
+  .ow-nav-icon {
+    width: 28px;
+    height: 27px;
   }
 
-  .main-nav-link-icon {
-    width: 18px;
-    height: 18px;
-
-    flex-basis: 18px;
-
-    border-radius: 6px;
-
-    font-size: 11px;
+  .ow-nav-icon svg {
+    width: 16px;
+    height: 16px;
   }
 
-  .main-nav-active-dot {
-    bottom: -3px;
+  .ow-create-button {
+    flex-basis: 59px;
 
-    height: 2px;
+    width: 59px;
+    height: 59px;
+
+    margin-top: -28px;
+  }
+
+  .ow-create-button-inner {
+    width: 41px;
+    height: 41px;
   }
 }
 
 /* =========================================================
    SMALL MOBILE
-========================================================= */
+   ========================================================= */
 
-@media (max-width: 520px) {
-  .main-saas-navbar {
-    padding: 5px 2px;
+@media (max-width: 480px) {
+  .ow-bottom-nav {
+    padding:
+      8px
+      5px
+      calc(8px + env(safe-area-inset-bottom));
   }
 
-  .main-nav-pills {
-    gap: 1px;
+  .ow-bottom-bar {
+    height: 67px;
 
-    padding: 3px;
+    padding: 4px;
+
+    gap: 2px;
+
+    border-radius: 21px;
   }
 
-  .main-nav-link {
-    min-height: 32px;
+  .ow-nav-item {
+    height: 54px;
 
-    padding: 0 6px;
+    font-size: 9.5px;
 
-    gap: 4px;
-
-    font-size: 8.5px;
+    border-radius: 14px;
   }
 
-  .main-nav-link-icon {
-    width: 16px;
-    height: 16px;
+  .ow-nav-icon {
+    width: 27px;
+    height: 26px;
 
-    flex-basis: 16px;
+    border-radius: 8px;
+  }
 
-    font-size: 9px;
+  .ow-nav-icon svg {
+    width: 15px;
+    height: 15px;
+  }
 
-    border-radius: 5px;
+  .ow-create-button {
+    flex-basis: 57px;
+
+    width: 57px;
+    height: 57px;
+
+    margin-top: -27px;
+
+    border-width: 4px;
+  }
+
+  .ow-create-button-inner {
+    width: 39px;
+    height: 39px;
+  }
+
+  .ow-create-button-inner svg {
+    width: 19px;
+    height: 19px;
   }
 }
 
 /* =========================================================
-   VERY SMALL MOBILE
-========================================================= */
+   VERY SMALL DEVICES
+   ========================================================= */
 
-@media (max-width: 390px) {
-  .main-nav-link {
-    min-height: 30px;
-
-    padding: 0 5px;
-
-    font-size: 7.8px;
+@media (max-width: 360px) {
+  .ow-bottom-nav {
+    padding:
+      7px
+      4px
+      calc(7px + env(safe-area-inset-bottom));
   }
 
-  .main-nav-link-icon {
+  .ow-bottom-bar {
+    height: 64px;
+
+    border-radius: 19px;
+  }
+
+  .ow-nav-item {
+    height: 51px;
+
+    font-size: 9px;
+  }
+
+  .ow-nav-icon {
+    width: 25px;
+    height: 24px;
+  }
+
+  .ow-nav-icon svg {
     width: 14px;
     height: 14px;
-
-    flex-basis: 14px;
-
-    font-size: 8px;
   }
 
-  .main-nav-pills {
-    border-radius: 12px;
+  .ow-create-button {
+    flex-basis: 53px;
+
+    width: 53px;
+    height: 53px;
+
+    margin-top: -25px;
+  }
+
+  .ow-create-button-inner {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* =========================================================
+   TOUCH
+   ========================================================= */
+
+@media (hover: none) {
+  .ow-nav-item:hover {
+    background: transparent;
+    transform: none;
+  }
+
+  .ow-nav-item:hover .ow-nav-icon {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .ow-create-button:hover {
+    transform: none;
+  }
+
+  .ow-create-button:hover
+  .ow-create-button-inner {
+    transform: none;
   }
 }
 
 /* =========================================================
    ACCESSIBILITY
-========================================================= */
+   ========================================================= */
 
-.main-nav-link:focus-visible {
-  outline:
-    2px solid
-    rgba(251, 191, 36, 0.9);
-
-  outline-offset: 2px;
+.ow-nav-item:focus-visible,
+.ow-create-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
 }
 
 /* =========================================================
    REDUCED MOTION
-========================================================= */
+   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-  .main-nav-link,
-  .main-nav-link-icon,
-  .main-nav-active-dot {
-    animation: none !important;
-
+  .ow-nav-item,
+  .ow-nav-icon,
+  .ow-create-button,
+  .ow-create-button-inner {
     transition: none !important;
   }
 }
