@@ -1,241 +1,1547 @@
-/* 🎨 THEME VARIABLES */
+/* =========================================================
+   AGE CALCULATOR
+   MODERN / RESPONSIVE / PREMIUM UI
+========================================================= */
+
 :root {
   --ac-blue: #2563eb;
   --ac-blue-dark: #1e3a8a;
+  --ac-blue-light: #60a5fa;
   --ac-blue-soft: #eff6ff;
+
   --ac-yellow: #f59e0b;
-  --ac-yellow-hover: #d97706;
+  --ac-yellow-dark: #d97706;
+  --ac-yellow-soft: #fffbeb;
+
+  --ac-purple: #7c3aed;
+  --ac-green: #16a34a;
+  --ac-orange: #ea580c;
+  --ac-pink: #db2777;
+  --ac-cyan: #0891b2;
+
   --ac-dark: #0f172a;
+  --ac-text: #1e293b;
   --ac-muted: #64748b;
+  --ac-light: #94a3b8;
+
   --ac-border: #e2e8f0;
+  --ac-bg: #f8fafc;
+
+  --ac-danger: #dc2626;
+  --ac-danger-bg: #fef2f2;
 }
 
-/* 🌍 WRAPPER */
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
 .ac-wrapper {
-  padding: 15px 10px;
+  width: 100%;
+  min-height: 100%;
+  padding: 24px 14px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  font-family: 'Inter', system-ui, sans-serif;
-}
+  align-items: flex-start;
 
-/* 🃏 MAIN CARD (Ultra Compact) */
-.ac-card {
-  background: #ffffff;
-  width: 100%;
-  max-width: 380px; /* Reduced width for tight layout */
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.06);
-  border: 1px solid var(--ac-border);
+  font-family:
+    "Inter",
+    "Noto Sans Devanagari",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
   box-sizing: border-box;
 }
 
-/* 🏷️ HEADER */
+
+/* =========================================================
+   MAIN CARD
+========================================================= */
+
+.ac-card {
+  width: 100%;
+  max-width: 620px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fbfdff 100%
+    );
+
+  border: 1px solid rgba(226, 232, 240, 0.9);
+
+  border-radius: 24px;
+
+  padding: 24px;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.08),
+    0 4px 18px rgba(37, 99, 235, 0.05);
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+
+/* Decorative top glow */
+
+.ac-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 220px;
+  height: 220px;
+
+  top: -150px;
+  right: -100px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(37, 99, 235, 0.12),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
 .ac-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+
+  gap: 14px;
+
+  margin-bottom: 24px;
 }
+
+.ac-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .ac-icon {
-  font-size: 1.5rem; /* Small icon */
-  background: var(--ac-blue-soft);
-  width: 40px; height: 40px;
-  display: flex; justify-content: center; align-items: center;
-  border-radius: 10px;
-  color: var(--ac-blue);
-}
-.ac-header-text {
-  display: flex; flex-direction: column; gap: 2px;
-}
-.ac-title {
-  margin: 0;
-  font-size: 0.95rem; /* Micro heading */
-  font-weight: 800;
-  color: var(--ac-dark);
-}
-.ac-subtitle {
-  margin: 0;
-  font-size: 0.65rem; /* Very small text */
-  color: var(--ac-muted);
-}
+  width: 50px;
+  height: 50px;
 
-/* 📝 INPUTS */
-.ac-input-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.ac-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.ac-input-group label {
-  font-size: 0.6rem; /* Ultra small label */
-  font-weight: 700;
-  color: var(--ac-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.ac-input-group input {
-  padding: 8px 10px;
-  border: 1px solid var(--ac-border);
-  border-radius: 8px;
-  font-size: 0.75rem; /* Small input text */
-  color: var(--ac-dark);
-  background: #f8fafc;
-  outline: none;
-  transition: 0.2s;
-  width: 100%;
-  box-sizing: border-box;
-}
-.ac-input-group input:focus {
-  border-color: var(--ac-blue);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.ac-error {
-  color: #ef4444; font-size: 0.65rem; font-weight: 600;
-  background: #fef2f2; padding: 6px 10px; border-radius: 6px;
-  margin-bottom: 12px; border-left: 2px solid #ef4444;
-}
-
-/* 🔘 BUTTON */
-.ac-btn-calc {
-  width: 100%;
-  padding: 10px;
-  background: var(--ac-yellow);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.8rem; /* Small button text */
-  font-weight: 800;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: 0.2s ease;
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
-}
-.ac-btn-calc:active { transform: scale(0.98); }
-
-/* 📊 RESULTS SECTION */
-.ac-results-container {
-  margin-top: 16px;
-  border-top: 1px dashed var(--ac-border);
-  padding-top: 16px;
-}
-
-/* Exact Age Box */
-.ac-age-display {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.ac-age-box {
-  background: linear-gradient(135deg, var(--ac-blue) 0%, var(--ac-blue-dark) 100%);
-  color: white;
-  padding: 10px;
-  border-radius: 12px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
-}
-.ac-age-num {
-  font-size: 1.2rem; /* Scaled down number */
-  font-weight: 900;
-  line-height: 1.1;
-}
-.ac-age-lbl {
-  font-size: 0.55rem; /* Micro label */
-  font-weight: 600;
-  opacity: 0.8;
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-
-/* Small Stats Grid */
-.ac-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.ac-stat-box {
-  background: var(--ac-blue-soft);
-  padding: 8px 4px;
-  border-radius: 8px;
-  text-align: center;
-  border: 1px solid #dbeafe;
-}
-.ac-stat-lbl {
-  display: block;
-  font-size: 0.5rem; /* Extremely small text */
-  color: var(--ac-muted);
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.ac-stat-val {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--ac-blue-dark);
-}
-
-/* Next Birthday Block */
-.ac-next-bday-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-  border: 1px solid #fde68a;
-  padding: 10px 12px;
-  border-radius: 10px;
+
+  border-radius: 15px;
+
+  font-size: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #dbeafe
+    );
+
+  border: 1px solid #bfdbfe;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.12);
 }
-.ac-nb-icon {
-  font-size: 1.4rem;
+
+.ac-icon-glow {
+  position: absolute;
+
+  width: 8px;
+  height: 8px;
+
+  right: -2px;
+  top: -2px;
+
+  border-radius: 50%;
+
+  background: #f59e0b;
+
+  box-shadow:
+    0 0 0 4px #fff,
+    0 0 12px rgba(245, 158, 11, 0.6);
 }
-.ac-nb-details h4 {
-  margin: 0 0 2px 0;
+
+.ac-header-text {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.ac-title-row {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.ac-title {
+  margin: 0;
+
   color: var(--ac-dark);
-  font-size: 0.7rem; /* Tiny text */
+
+  font-size: 1.3rem;
+
+  font-weight: 900;
+
+  letter-spacing: -0.3px;
 }
-.ac-nb-details h4 strong {
-  color: var(--ac-yellow-hover);
+
+.ac-badge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 3px 7px;
+
+  border-radius: 20px;
+
+  background: #ecfdf5;
+
+  color: #15803d;
+
+  border: 1px solid #bbf7d0;
+
+  font-size: 0.55rem;
+
+  font-weight: 900;
+
+  letter-spacing: 0.5px;
+}
+
+.ac-subtitle {
+  margin: 0;
+
+  color: var(--ac-muted);
+
+  font-size: 0.76rem;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   INPUT SECTION
+========================================================= */
+
+.ac-input-section {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 14px;
+
+  margin-bottom: 16px;
+}
+
+.ac-input-group {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  position: relative;
+}
+
+.ac-input-group label {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #475569;
+
+  font-size: 0.72rem;
+
   font-weight: 800;
-  font-size: 0.75rem;
 }
+
+.ac-label-icon {
+  font-size: 0.9rem;
+}
+
+.ac-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.ac-input-group input {
+  width: 100%;
+
+  height: 46px;
+
+  padding:
+    0 12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--ac-border);
+
+  border-radius: 12px;
+
+  outline: none;
+
+  background: #f8fafc;
+
+  color: var(--ac-dark);
+
+  font-family: inherit;
+
+  font-size: 0.82rem;
+
+  font-weight: 600;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ac-input-group input:hover {
+  border-color: #cbd5e1;
+
+  background: #ffffff;
+}
+
+.ac-input-group input:focus {
+  border-color: var(--ac-blue);
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.ac-clear-input {
+  position: absolute;
+
+  right: 8px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 25px;
+  height: 25px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #e2e8f0;
+
+  color: #64748b;
+
+  font-size: 17px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s ease;
+}
+
+.ac-clear-input:hover {
+  background: #cbd5e1;
+
+  color: #0f172a;
+}
+
+.ac-date-preview {
+  color: var(--ac-light);
+
+  font-size: 0.58rem;
+
+  font-weight: 600;
+}
+
+.ac-today-btn {
+  align-self: flex-start;
+
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: var(--ac-blue);
+
+  font-size: 0.61rem;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.ac-today-btn:hover {
+  color: var(--ac-blue-dark);
+
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.ac-error {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 10px 12px;
+
+  margin-bottom: 14px;
+
+  border-radius: 10px;
+
+  border: 1px solid #fecaca;
+
+  border-left: 4px solid var(--ac-danger);
+
+  background: var(--ac-danger-bg);
+
+  color: var(--ac-danger);
+
+  font-size: 0.7rem;
+
+  font-weight: 700;
+
+  line-height: 1.4;
+}
+
+.ac-error-icon {
+  width: 20px;
+  height: 20px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #fee2e2;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.ac-actions {
+  display: flex;
+
+  gap: 9px;
+
+  width: 100%;
+}
+
+.ac-btn-calc {
+  flex: 1;
+
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f59e0b,
+      #ea8a05
+    );
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 0.8rem;
+
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px rgba(245, 158, 11, 0.2);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.ac-btn-calc:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(245, 158, 11, 0.3);
+
+  filter: brightness(1.03);
+}
+
+.ac-btn-calc:active {
+  transform: translateY(0);
+}
+
+.ac-btn-icon {
+  font-size: 0.95rem;
+}
+
+.ac-btn-arrow {
+  font-size: 1rem;
+
+  transition:
+    transform 0.2s ease;
+}
+
+.ac-btn-calc:hover .ac-btn-arrow {
+  transform: translateX(3px);
+}
+
+.ac-reset-btn {
+  width: 82px;
+
+  border: 1px solid var(--ac-border);
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  color: var(--ac-muted);
+
+  font-family: inherit;
+
+  font-size: 0.68rem;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+
+  transition: 0.2s ease;
+}
+
+.ac-reset-btn:hover {
+  border-color: #cbd5e1;
+
+  color: var(--ac-dark);
+
+  background: #f8fafc;
+}
+
+
+/* =========================================================
+   RESULTS
+========================================================= */
+
+.ac-results-container {
+  margin-top: 22px;
+
+  padding-top: 20px;
+
+  border-top:
+    1px dashed #dbe2ea;
+}
+
+.fade-in {
+  animation:
+    acFadeIn 0.45s ease-out both;
+}
+
+@keyframes acFadeIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+}
+
+
+/* =========================================================
+   BIRTHDAY ALERT
+========================================================= */
+
+.ac-birthday-alert {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 12px 14px;
+
+  margin-bottom: 18px;
+
+  border-radius: 14px;
+
+  border: 1px solid #fde68a;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fffbeb,
+      #fef3c7
+    );
+
+  color: #92400e;
+}
+
+.ac-birthday-confetti {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  font-size: 20px;
+
+  box-shadow:
+    0 3px 10px rgba(146, 64, 14, 0.08);
+}
+
+.ac-birthday-alert strong {
+  display: block;
+
+  font-size: 0.75rem;
+
+  font-weight: 900;
+}
+
+.ac-birthday-alert span {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 0.62rem;
+
+  color: #a16207;
+}
+
+
+/* =========================================================
+   RESULT HEADING
+========================================================= */
+
+.ac-result-heading {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 14px;
+}
+
+.ac-result-kicker {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: var(--ac-muted);
+
+  font-size: 0.6rem;
+
+  font-weight: 700;
+}
+
+.ac-result-heading h3 {
+  margin: 0;
+
+  color: var(--ac-dark);
+
+  font-size: 0.95rem;
+
+  font-weight: 900;
+}
+
+.ac-result-check {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #dcfce7;
+
+  color: #16a34a;
+
+  font-size: 0.75rem;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   EXACT AGE
+========================================================= */
+
+.ac-age-display {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 14px;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1e3a8a,
+      #2563eb 55%,
+      #3b82f6
+    );
+
+  box-shadow:
+    0 12px 25px rgba(37, 99, 235, 0.2);
+
+  margin-bottom: 12px;
+}
+
+.ac-age-box {
+  flex: 1;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.ac-age-num {
+  color: #ffffff;
+
+  font-size: 1.8rem;
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: -1px;
+
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.ac-age-lbl {
+  margin-top: 5px;
+
+  color: rgba(255, 255, 255, 0.78);
+
+  font-size: 0.58rem;
+
+  font-weight: 700;
+}
+
+.ac-age-separator {
+  color: rgba(255, 255, 255, 0.35);
+
+  font-size: 1rem;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   DATE SUMMARY
+========================================================= */
+
+.ac-date-summary {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 10px 12px;
+
+  margin-bottom: 18px;
+
+  border: 1px solid var(--ac-border);
+
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.ac-summary-item {
+  flex: 1;
+
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.ac-summary-item span {
+  color: var(--ac-muted);
+
+  font-size: 0.54rem;
+
+  font-weight: 700;
+}
+
+.ac-summary-item strong {
+  color: var(--ac-dark);
+
+  font-size: 0.68rem;
+
+  font-weight: 800;
+}
+
+.ac-summary-arrow {
+  color: var(--ac-blue);
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   STATS TITLE
+========================================================= */
+
+.ac-stats-title {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 9px;
+
+  color: var(--ac-dark);
+
+  font-size: 0.7rem;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   STATS GRID
+========================================================= */
+
+.ac-stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 9px;
+
+  margin-bottom: 14px;
+}
+
+.ac-stat-box {
+  position: relative;
+
+  min-width: 0;
+
+  padding: 11px 8px;
+
+  border-radius: 13px;
+
+  border: 1px solid;
+
+  overflow: hidden;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ac-stat-box:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.07);
+}
+
+.ac-stat-icon {
+  display: block;
+
+  margin-bottom: 5px;
+
+  font-size: 0.85rem;
+}
+
+.ac-stat-lbl {
+  display: block;
+
+  color: var(--ac-muted);
+
+  font-size: 0.5rem;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.ac-stat-val {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--ac-dark);
+
+  font-size: 0.82rem;
+
+  font-weight: 900;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* Individual stat themes */
+
+.ac-stat-blue {
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+.ac-stat-purple {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.ac-stat-green {
+  background: #f0fdf4;
+  border-color: #dcfce7;
+}
+
+.ac-stat-orange {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.ac-stat-pink {
+  background: #fdf2f8;
+  border-color: #fbcfe8;
+}
+
+.ac-stat-cyan {
+  background: #ecfeff;
+  border-color: #cffafe;
+}
+
+
+/* =========================================================
+   DAY INFORMATION
+========================================================= */
+
+.ac-day-info {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 9px;
+
+  margin-bottom: 14px;
+}
+
+.ac-day-card {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 10px;
+
+  border: 1px solid var(--ac-border);
+
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.ac-day-icon {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: var(--ac-blue-soft);
+
+  font-size: 15px;
+}
+
+.ac-day-card div {
+  min-width: 0;
+}
+
+.ac-day-card span {
+  display: block;
+
+  color: var(--ac-muted);
+
+  font-size: 0.51rem;
+
+  font-weight: 700;
+}
+
+.ac-day-card strong {
+  display: block;
+
+  margin-top: 2px;
+
+  color: var(--ac-dark);
+
+  font-size: 0.7rem;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   NEXT BIRTHDAY
+========================================================= */
+
+.ac-next-bday-card {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 12px 13px;
+
+  margin-bottom: 15px;
+
+  border-radius: 14px;
+
+  border: 1px solid #fde68a;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fffdf5,
+      #fffbeb
+    );
+
+  box-shadow:
+    0 5px 15px rgba(245, 158, 11, 0.06);
+}
+
+.ac-nb-icon {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  font-size: 20px;
+
+  box-shadow:
+    0 3px 10px rgba(245, 158, 11, 0.1);
+}
+
+.ac-nb-details {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.ac-nb-small {
+  display: block;
+
+  color: #a16207;
+
+  font-size: 0.56rem;
+
+  font-weight: 700;
+}
+
+.ac-nb-details h4 {
+  margin: 2px 0;
+
+  color: var(--ac-dark);
+
+  font-size: 0.72rem;
+
+  font-weight: 800;
+}
+
+.ac-nb-details h4 strong {
+  color: var(--ac-yellow-dark);
+
+  font-size: 0.9rem;
+
+  font-weight: 900;
+}
+
 .ac-nb-details p {
   margin: 0;
-  font-size: 0.6rem;
+
   color: var(--ac-muted);
+
+  font-size: 0.56rem;
+
+  font-weight: 600;
 }
 
-/* Animations */
-.fade-in { animation: fadeIn 0.3s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.ac-nb-arrow {
+  color: var(--ac-yellow-dark);
 
-/* 📱 SUPER RESPONSIVE MOBILE TWEAKS */
-@media (max-width: 400px) {
-  .ac-card {
-    padding: 14px;
+  font-size: 1.1rem;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   YEAR PROGRESS
+========================================================= */
+
+.ac-year-progress {
+  padding: 11px 12px;
+
+  border: 1px solid #e0e7ff;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8faff,
+      #f1f5ff
+    );
+}
+
+.ac-progress-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 7px;
+}
+
+.ac-progress-header span {
+  color: var(--ac-muted);
+
+  font-size: 0.57rem;
+
+  font-weight: 700;
+}
+
+.ac-progress-header strong {
+  color: var(--ac-blue);
+
+  font-size: 0.62rem;
+
+  font-weight: 900;
+}
+
+.ac-progress-track {
+  width: 100%;
+
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 10px;
+
+  background: #dbeafe;
+}
+
+.ac-progress-bar {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #60a5fa
+    );
+
+  transition:
+    width 0.7s ease;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .ac-wrapper {
+    padding: 15px 10px;
   }
-  .ac-input-grid {
-    grid-template-columns: 1fr; /* Inputs stack on very small phones */
+
+  .ac-card {
+    padding: 18px;
+
+    border-radius: 20px;
+  }
+
+  .ac-title {
+    font-size: 1.12rem;
+  }
+
+  .ac-subtitle {
+    font-size: 0.68rem;
+  }
+
+  .ac-input-section {
+    gap: 10px;
+  }
+
+  .ac-stats-grid {
+    gap: 7px;
+  }
+
+  .ac-stat-box {
+    padding: 9px 6px;
+  }
+
+  .ac-age-num {
+    font-size: 1.55rem;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .ac-wrapper {
+    padding: 10px 7px 20px;
+  }
+
+  .ac-card {
+    padding: 15px;
+
+    border-radius: 18px;
+
+    box-shadow:
+      0 10px 35px rgba(15, 23, 42, 0.07);
+  }
+
+  .ac-header {
+    gap: 10px;
+
+    margin-bottom: 18px;
+  }
+
+  .ac-icon {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+
+    font-size: 20px;
+  }
+
+  .ac-title {
+    font-size: 1rem;
+  }
+
+  .ac-subtitle {
+    font-size: 0.61rem;
+  }
+
+  .ac-badge {
+    font-size: 0.48rem;
+
+    padding: 2px 5px;
+  }
+
+  .ac-input-section {
+    grid-template-columns: 1fr;
+
+    gap: 11px;
+  }
+
+  .ac-input-group input {
+    height: 44px;
+
+    font-size: 0.78rem;
+  }
+
+  .ac-actions {
+    gap: 7px;
+  }
+
+  .ac-btn-calc {
+    min-height: 44px;
+
+    font-size: 0.73rem;
+  }
+
+  .ac-reset-btn {
+    width: 70px;
+  }
+
+  .ac-results-container {
+    margin-top: 18px;
+
+    padding-top: 17px;
+  }
+
+  .ac-age-display {
+    padding: 12px 7px;
+
+    gap: 3px;
+
+    border-radius: 14px;
+  }
+
+  .ac-age-num {
+    font-size: 1.45rem;
+  }
+
+  .ac-age-lbl {
+    font-size: 0.52rem;
+  }
+
+  .ac-date-summary {
+    padding: 9px;
+
+    gap: 5px;
+  }
+
+  .ac-summary-item strong {
+    font-size: 0.6rem;
+  }
+
+  .ac-stats-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    gap: 7px;
+  }
+
+  .ac-stat-box {
+    padding: 10px 8px;
+  }
+
+  .ac-stat-val {
+    font-size: 0.78rem;
+  }
+
+  .ac-day-info {
+    grid-template-columns: 1fr;
+
+    gap: 7px;
+  }
+
+  .ac-next-bday-card {
+    padding: 10px;
+
     gap: 8px;
   }
-  .ac-stats-grid {
-    grid-template-columns: repeat(2, 1fr); /* Becomes 2x2 grid on tiny screens */
+
+  .ac-nb-icon {
+    width: 35px;
+    height: 35px;
+
+    font-size: 17px;
   }
-  .ac-age-num { font-size: 1.1rem; }
+
+  .ac-birthday-alert {
+    padding: 10px;
+
+    gap: 8px;
+  }
+
+  .ac-birthday-confetti {
+    width: 33px;
+    height: 33px;
+
+    font-size: 17px;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 360px) {
+
+  .ac-wrapper {
+    padding: 7px 5px 15px;
+  }
+
+  .ac-card {
+    padding: 13px;
+
+    border-radius: 16px;
+  }
+
+  .ac-title {
+    font-size: 0.92rem;
+  }
+
+  .ac-subtitle {
+    font-size: 0.57rem;
+  }
+
+  .ac-title-row {
+    gap: 5px;
+  }
+
+  .ac-age-display {
+    padding: 10px 4px;
+  }
+
+  .ac-age-num {
+    font-size: 1.25rem;
+  }
+
+  .ac-age-lbl {
+    font-size: 0.48rem;
+  }
+
+  .ac-stat-lbl {
+    font-size: 0.47rem;
+  }
+
+  .ac-stat-val {
+    font-size: 0.7rem;
+  }
+
+  .ac-stat-icon {
+    font-size: 0.75rem;
+  }
+
   .ac-next-bday-card {
-    padding: 8px;
+    padding: 9px;
+  }
+
+  .ac-nb-details h4 {
+    font-size: 0.65rem;
+  }
+
+  .ac-nb-details h4 strong {
+    font-size: 0.8rem;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.ac-btn-calc:focus-visible,
+.ac-reset-btn:focus-visible,
+.ac-today-btn:focus-visible,
+.ac-clear-input:focus-visible,
+.ac-input-group input:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.25);
+
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .fade-in,
+  .ac-btn-calc,
+  .ac-stat-box,
+  .ac-progress-bar,
+  .ac-btn-arrow {
+    animation: none !important;
+
+    transition: none !important;
   }
 }

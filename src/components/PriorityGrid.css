@@ -1,145 +1,1155 @@
-/* 🌍 WRAPPER & GRID */
-.priorityGrid-wrapper {
-  width: 100%;
-  max-width: 800px;
-  margin: 10px auto; /* Thoda top-bottom margin add kiya */
+/* =========================================================
+   PRIORITY GRID
+   MODERN COLORFUL RESPONSIVE DESIGN
+========================================================= */
+
+:root {
+  --pg-dark: #0f172a;
+  --pg-text: #1e293b;
+  --pg-muted: #64748b;
+  --pg-border: #e2e8f0;
+  --pg-blue: #2563eb;
+  --pg-purple: #7c3aed;
 }
 
-/* 🔥 NEW: HEADER STYLES */
+
+/* =========================================================
+   WRAPPER
+========================================================= */
+
+.priorityGrid-wrapper {
+  width: 100%;
+  max-width: 1050px;
+
+  margin: 8px auto 0;
+
+  padding: 12px 16px 20px;
+
+  box-sizing: border-box;
+
+  font-family:
+    "Inter",
+    "Noto Sans Devanagari",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
 .pGrid-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 11px;
+
+  margin-bottom: 13px;
+
   text-align: center;
-  padding: 0 20px;
-  margin-bottom: 5px;
+}
+
+.pHeader-icon {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fff7ed,
+      #fef3c7
+    );
+
+  border: 1px solid #fde68a;
+
+  font-size: 19px;
+
+  box-shadow:
+    0 5px 15px
+      rgba(245, 158, 11, 0.1);
+}
+
+.pHeader-content {
+  min-width: 0;
+}
+
+.pTitle-row {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
 }
 
 .pGrid-header h2 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+
+  color: var(--pg-dark);
+
+  font-size: 1.05rem;
+
+  font-weight: 900;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.3px;
 }
 
 .pGrid-header p {
-  margin: 4px 0 0 0;
-  font-size: 0.8rem;
-  color: #64748b;
+  margin: 3px 0 0;
+
+  color: var(--pg-muted);
+
+  font-size: 0.67rem;
+
   font-weight: 500;
+
+  line-height: 1.4;
 }
+
+.pService-count {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 3px 7px;
+
+  border-radius: 20px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  border: 1px solid #dbeafe;
+
+  font-size: 0.48rem;
+
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
 
 .priorityGrid {
-  display: grid; 
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 16px; 
-  padding: 20px;
+  display: grid;
+
+  grid-template-columns:
+    repeat(6, minmax(0, 1fr));
+
+  gap: 12px;
+
+  width: 100%;
 }
 
-/* 🃏 SAAS PREMIUM CARD */
-.pCard { 
-  background: #ffffff; 
-  border-radius: 16px; 
-  padding: 16px 12px; 
-  text-align: center; 
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); 
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s ease;
-  cursor: pointer;
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.pCard {
+  --card-color-1: #2563eb;
+  --card-color-2: #60a5fa;
+  --card-bg-1: #ffffff;
+  --card-bg-2: #eff6ff;
+
+  position: relative;
+
+  min-width: 0;
+
+  min-height: 142px;
+
+  padding:
+    14px
+    8px
+    11px;
+
+  box-sizing: border-box;
+
+  border-radius: 17px;
+
   display: flex;
+
   flex-direction: column;
-  align-items: center;
-}
 
-.pCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.08);
-  border-color: #bfdbfe;
-}
-
-/* 🖼️ ICON BOX WITH AUTOMATIC GRADIENTS */
-.pIcon { 
-  width: 56px; 
-  height: 56px; 
-  border-radius: 14px; 
-  margin: 0 auto 10px; 
-  display: flex;
-  justify-content: center;
   align-items: center;
+
+  text-align: center;
+
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+
+  isolation: isolate;
+
+  cursor: pointer;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--card-bg-1),
+      var(--card-bg-2)
+    );
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.9);
+
+  box-shadow:
+    0 5px 18px
+      rgba(15, 23, 42, 0.055);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+
+/* =========================================================
+   AUTOMATIC CARD COLORS
+========================================================= */
+
+.pCard:nth-child(6n + 1) {
+  --card-color-1: #2563eb;
+  --card-color-2: #38bdf8;
+  --card-bg-2: #eff6ff;
+}
+
+.pCard:nth-child(6n + 2) {
+  --card-color-1: #7c3aed;
+  --card-color-2: #c084fc;
+  --card-bg-2: #f5f3ff;
+}
+
+.pCard:nth-child(6n + 3) {
+  --card-color-1: #ea580c;
+  --card-color-2: #fbbf24;
+  --card-bg-2: #fff7ed;
+}
+
+.pCard:nth-child(6n + 4) {
+  --card-color-1: #16a34a;
+  --card-color-2: #4ade80;
+  --card-bg-2: #f0fdf4;
+}
+
+.pCard:nth-child(6n + 5) {
+  --card-color-1: #db2777;
+  --card-color-2: #f472b6;
+  --card-bg-2: #fdf2f8;
+}
+
+.pCard:nth-child(6n + 6) {
+  --card-color-1: #0891b2;
+  --card-color-2: #22d3ee;
+  --card-bg-2: #ecfeff;
+}
+
+
+/* =========================================================
+   GRADIENT BORDER
+========================================================= */
+
+.pCard::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: inherit;
+
+  padding: 1.5px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--card-color-1),
+      var(--card-color-2),
+      var(--card-color-1)
+    );
+
+  background-size: 220% 220%;
+
+  -webkit-mask:
+    linear-gradient(#fff 0 0)
+      content-box,
+    linear-gradient(#fff 0 0);
+
+  -webkit-mask-composite: xor;
+
+  mask-composite: exclude;
+
+  opacity: 0.55;
+
+  animation:
+    pBorderMove 6s ease infinite;
+
+  pointer-events: none;
+
+  z-index: 4;
+}
+
+@keyframes pBorderMove {
+
+  0% {
+    background-position:
+      0% 50%;
+  }
+
+  50% {
+    background-position:
+      100% 50%;
+  }
+
+  100% {
+    background-position:
+      0% 50%;
+  }
+
+}
+
+
+/* =========================================================
+   BACKGROUND GLOW
+========================================================= */
+
+.pCard-glow {
+  position: absolute;
+
+  width: 90px;
+  height: 90px;
+
+  top: -45px;
+  right: -35px;
+
+  border-radius: 50%;
+
+  background:
+    var(--card-color-2);
+
+  opacity: 0.2;
+
+  filter: blur(7px);
+
+  z-index: -1;
+
+  transition:
+    transform 0.4s ease,
+    opacity 0.3s ease;
+}
+
+
+/* =========================================================
+   NUMBER
+========================================================= */
+
+.pCard-number {
+  position: absolute;
+
+  top: 7px;
+  right: 8px;
+
+  padding:
+    3px
+    5px;
+
+  border-radius: 6px;
+
+  background:
+    rgba(255, 255, 255, 0.72);
+
+  color:
+    var(--card-color-1);
+
+  font-size: 0.43rem;
+
+  font-weight: 900;
+
+  letter-spacing: 0.4px;
+
+  backdrop-filter: blur(5px);
+
+  z-index: 5;
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.pIcon {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  margin:
+    4px
+    auto
+    9px;
+
+  padding: 8px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background:
+    rgba(255, 255, 255, 0.78);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.95);
+
+  box-shadow:
+    0 6px 15px
+      rgba(15, 23, 42, 0.07);
+
+  backdrop-filter: blur(7px);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .pIcon img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
 
-.pCard:hover .pIcon img {
-  transform: scale(1.1);
+  object-fit: contain;
+
+  display: block;
+
+  transition:
+    transform 0.3s ease;
 }
 
 .pFallback {
-  font-size: 24px;
-  opacity: 0.8;
+  width: 100%;
+  height: 100%;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--card-color-1),
+      var(--card-color-2)
+    );
+
+  color: #ffffff;
+
+  font-size: 21px;
 }
 
-/* 🎨 THE MAGIC: Rotating Pastel Gradients for each card */
-.pCard:nth-child(6n+1) .pIcon { background: linear-gradient(135deg, #eff6ff, #bfdbfe); color: #1e3a8a; }
-.pCard:nth-child(6n+2) .pIcon { background: linear-gradient(135deg, #fdf4ff, #fecdd3); color: #831843; }
-.pCard:nth-child(6n+3) .pIcon { background: linear-gradient(135deg, #f0fdf4, #bbf7d0); color: #14532d; }
-.pCard:nth-child(6n+4) .pIcon { background: linear-gradient(135deg, #fffbeb, #fde68a); color: #78350f; }
-.pCard:nth-child(6n+5) .pIcon { background: linear-gradient(135deg, #f5f3ff, #e9d5ff); color: #4c1d95; }
-.pCard:nth-child(6n+6) .pIcon { background: linear-gradient(135deg, #ecfeff, #a5f3fc); color: #164e63; }
 
-/* 📝 TYPOGRAPHY */
-.pCard p { 
-  font-size: 0.75rem; 
-  font-weight: 600;
-  color: #1e293b;
+/* =========================================================
+   TITLE
+========================================================= */
+
+.pCard-title {
+  width: 100%;
+
+  min-height: 29px;
+
   margin: 0;
-  line-height: 1.3;
+
+  color: var(--pg-text);
+
+  font-size: 0.68rem;
+
+  font-weight: 800;
+
+  line-height: 1.35;
+
   display: -webkit-box;
+
   -webkit-line-clamp: 2;
+
   -webkit-box-orient: vertical;
+
   overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  position: relative;
+
+  z-index: 2;
 }
 
-.pLoading, .pEmpty {
+
+/* =========================================================
+   ACTION
+========================================================= */
+
+.pCard-action {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 4px;
+
+  margin-top: 5px;
+
+  color:
+    var(--card-color-1);
+
+  font-size: 0.47rem;
+
+  font-weight: 900;
+
+  position: relative;
+
+  z-index: 2;
+
+  transition:
+    gap 0.25s ease;
+}
+
+.pArrow {
+  font-size: 0.7rem;
+
+  transition:
+    transform 0.25s ease;
+}
+
+
+/* =========================================================
+   BOTTOM LINE
+========================================================= */
+
+.pBottom-line {
+  position: absolute;
+
+  left: 25%;
+  right: 25%;
+
+  bottom: 5px;
+
+  height: 2px;
+
+  border-radius: 5px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--card-color-1),
+      var(--card-color-2),
+      transparent
+    );
+
+  opacity: 0.4;
+
+  transition:
+    left 0.3s ease,
+    right 0.3s ease,
+    opacity 0.3s ease;
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.pCard:hover {
+  transform:
+    translateY(-5px)
+    scale(1.015);
+
+  box-shadow:
+    0 15px 32px
+      rgba(15, 23, 42, 0.1);
+}
+
+.pCard:hover .pCard-glow {
+  transform: scale(1.5);
+
+  opacity: 0.45;
+}
+
+.pCard:hover .pIcon {
+  transform:
+    translateY(-3px)
+    scale(1.06);
+
+  box-shadow:
+    0 10px 20px
+      rgba(15, 23, 42, 0.1);
+}
+
+.pCard:hover .pIcon img {
+  transform: scale(1.08);
+}
+
+.pCard:hover .pCard-action {
+  gap: 7px;
+}
+
+.pCard:hover .pArrow {
+  transform: translateX(3px);
+}
+
+.pCard:hover .pBottom-line {
+  left: 10%;
+  right: 10%;
+
+  opacity: 0.9;
+}
+
+
+/* =========================================================
+   MORE BUTTON
+========================================================= */
+
+.pMore-wrapper {
+  display: flex;
+
+  justify-content: center;
+
+  margin-top: 13px;
+}
+
+.pMore-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  min-width: 130px;
+
+  padding:
+    8px
+    15px;
+
+  border-radius: 30px;
+
+  border:
+    1px solid #dbeafe;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #eff6ff
+    );
+
+  color: #2563eb;
+
+  font-family: inherit;
+
+  font-size: 0.62rem;
+
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 12px
+      rgba(37, 99, 235, 0.07);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.pMore-btn:hover {
+  transform: translateY(-2px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #dbeafe
+    );
+
+  box-shadow:
+    0 8px 18px
+      rgba(37, 99, 235, 0.12);
+}
+
+.pMore-btn:active {
+  transform: scale(0.96);
+}
+
+.pMore-arrow {
+  display: inline-flex;
+
+  transition:
+    transform 0.3s ease;
+}
+
+.pMore-arrow.rotate {
+  transform:
+    rotate(180deg);
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.pEmpty {
+  grid-column: 1 / -1;
+
+  padding:
+    32px
+    20px;
+
   text-align: center;
-  padding: 30px;
-  color: #64748b;
-  font-size: 0.85rem;
-  font-weight: 500;
-  grid-column: span 3;
+
+  border:
+    1px dashed #cbd5e1;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc,
+      #ffffff
+    );
 }
 
-/* 📱 MOBILE RESPONSIVE */
-@media (max-width: 600px) {
-  .pGrid-header h2 { font-size: 1.15rem; }
-  .pGrid-header p { font-size: 0.75rem; }
-  
+.pEmpty-icon {
+  width: 48px;
+  height: 48px;
+
+  margin:
+    0 auto
+    9px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #f1f5f9;
+
+  font-size: 23px;
+}
+
+.pEmpty h3 {
+  margin: 0 0 4px;
+
+  color: #334155;
+
+  font-size: 0.8rem;
+
+  font-weight: 800;
+}
+
+.pEmpty p {
+  margin: 0;
+
+  color: #94a3b8;
+
+  font-size: 0.61rem;
+}
+
+
+/* =========================================================
+   SKELETON
+========================================================= */
+
+.pSkeletonCard {
+  cursor: default;
+
+  background:
+    linear-gradient(
+      110deg,
+      #f1f5f9 8%,
+      #ffffff 18%,
+      #f1f5f9 33%
+    );
+
+  background-size:
+    200% 100%;
+
+  animation:
+    pSkeleton 1.5s linear infinite;
+}
+
+.pSkeletonCard::before {
+  display: none;
+}
+
+.pSkeleton-icon {
+  width: 58px;
+  height: 58px;
+
+  margin:
+    4px
+    auto
+    12px;
+
+  border-radius: 16px;
+
+  background: #e2e8f0;
+}
+
+.pSkeleton-line {
+  width: 75%;
+  height: 8px;
+
+  margin: 0 auto 6px;
+
+  border-radius: 5px;
+
+  background: #e2e8f0;
+}
+
+.pSkeleton-line.small {
+  width: 45%;
+}
+
+@keyframes pSkeleton {
+
+  0% {
+    background-position:
+      200% 0;
+  }
+
+  100% {
+    background-position:
+      -200% 0;
+  }
+
+}
+
+
+/* =========================================================
+   LARGE TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
   .priorityGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+  }
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .priorityGrid-wrapper {
+    padding:
+      10px
+      12px
+      18px;
+  }
+
+  .priorityGrid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
     gap: 10px;
-    padding: 15px;
   }
+
   .pCard {
-    padding: 12px 8px;
-    border-radius: 14px;
+    min-height: 137px;
+
+    padding:
+      13px
+      7px
+      10px;
+
+    border-radius: 15px;
   }
+
   .pIcon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 54px;
+    height: 54px;
+
+    border-radius: 15px;
   }
-  .pCard p {
-    font-size: 0.65rem;
+
+  .pCard-title {
+    font-size: 0.63rem;
   }
+
+  .pCard-action {
+    font-size: 0.44rem;
+  }
+
 }
 
-@media (max-width: 380px) {
-  .priorityGrid {
-    grid-template-columns: repeat(2, 1fr);
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .priorityGrid-wrapper {
+    padding:
+      9px
+      8px
+      16px;
   }
+
+  .pGrid-header {
+    gap: 8px;
+
+    margin-bottom: 11px;
+  }
+
+  .pHeader-icon {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 10px;
+
+    font-size: 16px;
+  }
+
+  .pGrid-header h2 {
+    font-size: 0.9rem;
+  }
+
+  .pGrid-header p {
+    font-size: 0.55rem;
+  }
+
+  .pService-count {
+    font-size: 0.42rem;
+
+    padding:
+      2px
+      5px;
+  }
+
+  .priorityGrid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .pCard {
+    min-height: 125px;
+
+    padding:
+      11px
+      5px
+      9px;
+
+    border-radius: 13px;
+  }
+
+  .pCard-number {
+    top: 5px;
+    right: 5px;
+
+    padding:
+      2px
+      4px;
+
+    font-size: 0.35rem;
+  }
+
+  .pIcon {
+    width: 47px;
+    height: 47px;
+
+    padding: 7px;
+
+    margin:
+      3px
+      auto
+      7px;
+
+    border-radius: 13px;
+  }
+
+  .pFallback {
+    font-size: 18px;
+  }
+
+  .pCard-title {
+    min-height: 26px;
+
+    font-size: 0.56rem;
+
+    line-height: 1.3;
+  }
+
+  .pCard-action {
+    margin-top: 3px;
+
+    font-size: 0.39rem;
+
+    gap: 3px;
+  }
+
+  .pArrow {
+    font-size: 0.56rem;
+  }
+
+  .pBottom-line {
+    bottom: 4px;
+  }
+
+  .pMore-btn {
+    min-width: 120px;
+
+    padding:
+      7px
+      13px;
+
+    font-size: 0.56rem;
+  }
+
+  .pSkeletonCard {
+    min-height: 125px;
+  }
+
+  .pSkeleton-icon {
+    width: 47px;
+    height: 47px;
+
+    border-radius: 13px;
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 360px) {
+
+  .priorityGrid-wrapper {
+    padding:
+      8px
+      6px
+      14px;
+  }
+
+  .priorityGrid {
+    gap: 6px;
+  }
+
+  .pCard {
+    min-height: 113px;
+
+    padding:
+      9px
+      4px
+      7px;
+
+    border-radius: 11px;
+  }
+
+  .pCard-number {
+    display: none;
+  }
+
+  .pIcon {
+    width: 41px;
+    height: 41px;
+
+    padding: 6px;
+
+    border-radius: 11px;
+
+    margin-bottom: 6px;
+  }
+
+  .pCard-title {
+    font-size: 0.52rem;
+
+    min-height: 24px;
+  }
+
+  .pCard-action {
+    font-size: 0.35rem;
+  }
+
+  .pBottom-line {
+    display: none;
+  }
+
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.pMore-btn:focus-visible {
+  outline:
+    3px solid
+    rgba(37, 99, 235, 0.25);
+
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .pCard,
+  .pIcon,
+  .pIcon img,
+  .pCard-action,
+  .pArrow,
+  .pCard-glow,
+  .pBottom-line,
+  .pMore-btn,
+  .pMore-arrow {
+    transition: none !important;
+  }
+
+  .pCard::before,
+  .pSkeletonCard {
+    animation: none !important;
+  }
+
 }

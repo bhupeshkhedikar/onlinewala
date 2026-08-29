@@ -1,73 +1,590 @@
+/* =========================================================
+   BEAUTIFUL PREMIUM NAVBAR
+   Unique class names - no conflicts with other components
+========================================================= */
+
 :root {
-  --nav-blue: #1d4ed8;
-  --nav-blue-dark: #1e3a8a;
-  --nav-yellow: #f59e0b;
+  --main-nav-dark: #0f1f4d;
+  --main-nav-blue: #1d4ed8;
+  --main-nav-blue-light: #3b82f6;
+
+  --main-nav-white: #ffffff;
+  --main-nav-text: #eaf2ff;
+
+  --main-nav-gold: #fbbf24;
 }
 
-/* NAVBAR */
-.saas-navbar {
-  background: linear-gradient(90deg, var(--nav-blue-dark), var(--nav-blue));
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+/* =========================================================
+   MAIN NAVBAR
+========================================================= */
+
+.main-saas-navbar {
   position: sticky;
   top: 0;
-  z-index: 99;
+  z-index: 9999;
+
+  width: 100%;
+
+  padding: 8px 12px;
+
+  background:
+    linear-gradient(
+      120deg,
+      #0f1f4d 0%,
+      #17398f 45%,
+      #1d4ed8 100%
+    );
+
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  box-shadow:
+    0 8px 28px
+    rgba(15, 23, 42, 0.18);
+
+  isolation: isolate;
 }
 
-/* CONTAINER */
-.nav-scroll-container {
+/* =========================================================
+   TOP LIGHT
+========================================================= */
+
+.main-saas-navbar::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 15%;
+  right: 15%;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+
+  opacity: 0.7;
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   BACKGROUND GLOW
+========================================================= */
+
+.main-nav-glow {
+  position: absolute;
+
+  top: -80px;
+  left: 50%;
+
+  width: 500px;
+  height: 150px;
+
+  transform: translateX(-50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(96, 165, 250, 0.18),
+      transparent 70%
+    );
+
+  filter: blur(10px);
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   WRAPPER
+========================================================= */
+
+.main-nav-wrapper {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+
+  max-width: 1100px;
+
+  margin: 0 auto;
+
   display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+/* =========================================================
+   FLOATING PILL
+========================================================= */
+
+.main-nav-pills {
+  display: flex;
+
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
 
-/* NAV ITEM */
-.nav-item {
-  color: #f8fafc;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 6px 12px;
+  gap: 5px;
+
+  padding: 5px;
+
   border-radius: 18px;
-  white-space: nowrap;
+
+  background:
+    rgba(255, 255, 255, 0.075);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.10),
+    0 8px 25px
+      rgba(0, 0, 0, 0.10);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* =========================================================
+   NAV LINK
+========================================================= */
+
+.main-nav-link {
+  position: relative;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  min-height: 39px;
+
+  padding: 0 15px;
+
+  border-radius: 13px;
+
+  color:
+    rgba(255, 255, 255, 0.78);
+
   text-decoration: none;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+
+  white-space: nowrap;
+
+  font-family:
+    "Inter",
+    "Noto Sans Devanagari",
+    system-ui,
+    sans-serif;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  letter-spacing: 0.05px;
+
+  border:
+    1px solid transparent;
+
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-/* HOVER */
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--nav-yellow);
-  border-color: rgba(245, 158, 11, 0.3);
+/* =========================================================
+   ICON
+========================================================= */
+
+.main-nav-link-icon {
+  width: 22px;
+  height: 22px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 22px;
+
+  border-radius: 7px;
+
+  color:
+    rgba(255, 255, 255, 0.78);
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  font-size: 13px;
+
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    transform 0.25s ease;
 }
 
-/* 📱 MOBILE PERFECT */
+/* =========================================================
+   TEXT
+========================================================= */
+
+.main-nav-link-text {
+  position: relative;
+
+  top: 1px;
+}
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.main-nav-link:hover {
+  color: #ffffff;
+
+  background:
+    rgba(255, 255, 255, 0.105);
+
+  border-color:
+    rgba(255, 255, 255, 0.13);
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 5px 15px
+    rgba(0, 0, 0, 0.08);
+}
+
+.main-nav-link:hover
+.main-nav-link-icon {
+  color: #ffffff;
+
+  background:
+    rgba(255, 255, 255, 0.15);
+
+  transform:
+    scale(1.08)
+    rotate(-3deg);
+}
+
+/* =========================================================
+   ACTIVE LINK
+========================================================= */
+
+.main-nav-link-active {
+  color: #132451 !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #eef5ff 100%
+    );
+
+  border-color:
+    rgba(255, 255, 255, 0.8);
+
+  box-shadow:
+    0 6px 20px
+      rgba(0, 0, 0, 0.16),
+    inset 0 1px 0
+      rgba(255, 255, 255, 1);
+
+  font-weight: 750;
+}
+
+/* =========================================================
+   ACTIVE ICON
+========================================================= */
+
+.main-nav-link-active
+.main-nav-link-icon {
+  color: #1d4ed8;
+
+  background:
+    linear-gradient(
+      135deg,
+      #dbeafe,
+      #eff6ff
+    );
+
+  box-shadow:
+    inset 0 1px 1px
+      rgba(255, 255, 255, 0.8);
+}
+
+/* =========================================================
+   ACTIVE DOT
+========================================================= */
+
+.main-nav-active-dot {
+  position: absolute;
+
+  bottom: -4px;
+  left: 50%;
+
+  width: 18px;
+  height: 3px;
+
+  transform:
+    translateX(-50%);
+
+  border-radius: 999px;
+
+  background:
+    var(--main-nav-gold);
+
+  box-shadow:
+    0 0 7px
+    rgba(251, 191, 36, 0.75);
+
+  animation:
+    navDotIn 0.25s ease;
+}
+
+@keyframes navDotIn {
+  from {
+    width: 5px;
+    opacity: 0;
+  }
+
+  to {
+    width: 18px;
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   DESKTOP HOVER SHINE
+========================================================= */
+
+.main-nav-link::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: -80%;
+
+  width: 45%;
+  height: 100%;
+
+  transform: skewX(-20deg);
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.12),
+      transparent
+    );
+
+  opacity: 0;
+
+  transition:
+    left 0.5s ease,
+    opacity 0.5s ease;
+
+  pointer-events: none;
+}
+
+.main-nav-link:hover::before {
+  left: 130%;
+
+  opacity: 1;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+  .main-saas-navbar {
+    padding: 7px 8px;
+  }
+
+  .main-nav-pills {
+    gap: 4px;
+
+    padding: 4px;
+  }
+
+  .main-nav-link {
+    min-height: 37px;
+
+    padding: 0 11px;
+
+    font-size: 11px;
+  }
+
+  .main-nav-link-icon {
+    width: 20px;
+    height: 20px;
+
+    flex-basis: 20px;
+
+    font-size: 12px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ALWAYS CENTERED
+========================================================= */
+
 @media (max-width: 768px) {
-  .nav-scroll-container {
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding: 6px 8px;
-    gap: 8px;
-    scroll-behavior: smooth;
+  .main-saas-navbar {
+    padding: 6px 4px;
   }
 
-  .nav-scroll-container::-webkit-scrollbar {
-    display: none;
+  .main-nav-wrapper {
+    width: 100%;
+
+    justify-content: center;
   }
 
-  .nav-scroll-container {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .main-nav-pills {
+    width: auto;
+
+    max-width: 100%;
+
+    gap: 2px;
+
+    padding: 3px;
+
+    border-radius: 15px;
   }
 
-  .nav-item {
-    font-size: 0.68rem; /* 🔥 perfect small text */
-    padding: 5px 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 16px;
+  .main-nav-link {
+    min-height: 34px;
+
+    padding: 0 8px;
+
+    gap: 5px;
+
+    border-radius: 10px;
+
+    font-size: 9.5px;
+  }
+
+  .main-nav-link-icon {
+    width: 18px;
+    height: 18px;
+
+    flex-basis: 18px;
+
+    border-radius: 6px;
+
+    font-size: 11px;
+  }
+
+  .main-nav-active-dot {
+    bottom: -3px;
+
+    height: 2px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 520px) {
+  .main-saas-navbar {
+    padding: 5px 2px;
+  }
+
+  .main-nav-pills {
+    gap: 1px;
+
+    padding: 3px;
+  }
+
+  .main-nav-link {
+    min-height: 32px;
+
+    padding: 0 6px;
+
+    gap: 4px;
+
+    font-size: 8.5px;
+  }
+
+  .main-nav-link-icon {
+    width: 16px;
+    height: 16px;
+
+    flex-basis: 16px;
+
+    font-size: 9px;
+
+    border-radius: 5px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+  .main-nav-link {
+    min-height: 30px;
+
+    padding: 0 5px;
+
+    font-size: 7.8px;
+  }
+
+  .main-nav-link-icon {
+    width: 14px;
+    height: 14px;
+
+    flex-basis: 14px;
+
+    font-size: 8px;
+  }
+
+  .main-nav-pills {
+    border-radius: 12px;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.main-nav-link:focus-visible {
+  outline:
+    2px solid
+    rgba(251, 191, 36, 0.9);
+
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .main-nav-link,
+  .main-nav-link-icon,
+  .main-nav-active-dot {
+    animation: none !important;
+
+    transition: none !important;
   }
 }

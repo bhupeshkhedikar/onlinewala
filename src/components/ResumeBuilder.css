@@ -1,214 +1,2186 @@
-/* 🌍 BASE LAYOUT */
-.builder-container {
-  display: flex;
-  flex-direction: column; /* Stack Tabs and Content Vertically */
-  height: 100vh;
-  font-family: 'Inter', -apple-system, sans-serif;
-  background: #f1f5f9;
-  overflow: hidden; 
-}
+/* =========================================================
+   RESUME BUILDER
+   Modern / Premium / Responsive
+   All classes are prefixed with rb-
+========================================================= */
 
-/* 🚀 TOP NAVIGATION TABS */
-.top-tabs {
-  display: flex;
-  background: #ffffff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  z-index: 100;
-  flex-shrink: 0;
-}
+.rb-builder-container {
+  --rb-primary: #2563eb;
+  --rb-primary-dark: #1d4ed8;
+  --rb-primary-soft: #eff6ff;
 
-.tab-btn {
-  flex: 1;
-  padding: 16px 20px;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  color: #64748b;
-  font-size: 0.6rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+  --rb-purple: #7c3aed;
+  --rb-purple-soft: #f5f3ff;
 
-.tab-btn:hover { background: #f8fafc; color: #0f172a; }
+  --rb-green: #059669;
+  --rb-green-soft: #ecfdf5;
 
-.tab-btn.active {
-  color: #0b5ed7;
-  border-bottom-color: #0b5ed7;
-  background: #eff6ff;
-}
+  --rb-orange: #ea580c;
+  --rb-orange-soft: #fff7ed;
 
-/* 🔄 TAB CONTENT AREA */
-.tab-content-area {
-  flex: 1;
-  overflow-y: auto;
-  position: relative;
-}
+  --rb-text: #0f172a;
+  --rb-text-soft: #475569;
+  --rb-muted: #64748b;
 
-/* --- 📝 TAB 1: FORM STYLES --- */
-.form-pane {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 30px 20px;
-}
+  --rb-border: #e2e8f0;
+  --rb-border-light: #eef2f7;
 
-.form-header { margin-bottom: 25px; text-align: center; }
-.form-header h2 { margin: 0; color: #0f172a; font-size: 1.8rem; font-weight: 800; }
-.form-header p { margin: 8px 0 0 0; color: #64748b; font-size: 0.95rem; }
+  --rb-bg: #f1f5f9;
+  --rb-white: #ffffff;
 
-.form-card {
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-  margin-bottom: 20px;
-  border: 1px solid #e2e8f0;
-}
-
-.form-card h3 { color: #0f172a; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-
-.form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-.form-group-row { display: flex; gap: 15px; }
-.form-group-row .form-group { flex: 1; }
-
-.form-group label { font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 6px; }
-.form-group input, .form-group textarea {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; 
-  font-family: inherit; font-size: 0.95rem; transition: 0.2s; background: #f8fafc;
-}
-.form-group input:focus, .form-group textarea:focus { 
-  border-color: #0b5ed7; background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(11, 94, 215, 0.1); 
-}
-
-.dynamic-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-.dynamic-row input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
-
-.remove-btn {
-  background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; 
-  height: 42px; width: 42px; cursor: pointer; font-weight: bold; transition: 0.2s;
-  display: flex; justify-content: center; align-items: center; font-size: 1.1rem;
-}
-.remove-btn:hover { background: #fca5a5; }
-
-.add-btn {
-  background: transparent; color: #0b5ed7; border: 2px dashed #cbd5e1; 
-  padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; 
-  font-weight: 700; font-size: 0.9rem; transition: 0.2s; margin-top: 5px;
-}
-.add-btn:hover { border-color: #0b5ed7; background: #eff6ff; }
-
-.section-header-edit { margin-bottom: 15px; }
-.title-edit {
-  width: 100%; font-size: 1.2rem; font-weight: 800; color: #0b5ed7; border: none;
-  border-bottom: 2px solid #e2e8f0; padding: 5px 0; outline: none; background: transparent;
-}
-.title-edit:focus { border-bottom-color: #ff7a00; }
-
-/* --- 👁️ TAB 2: LIVE PREVIEW STYLES --- */
-.preview-pane {
-  background: #cbd5e1; /* Dark grey backdrop to make paper pop */
-  min-height: 100%;
-  padding-bottom: 50px;
-}
-
-.preview-actions {
-  display: flex;
-  justify-content: center;
-  position: sticky; 
-  top: 0; 
-  z-index: 50;
-  padding: 15px 20px;
-  background: #cbd5e1;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-}
-
-.download-btn {
-  background: #0b5ed7; color: white; font-weight: 800; padding: 14px 30px;
-  border: none; border-radius: 50px; cursor: pointer; transition: 0.2s;
-  box-shadow: 0 4px 15px rgba(11, 94, 215, 0.3); font-size: 1rem;
-}
-.download-btn:hover { background: #094eb5; transform: translateY(-2px); }
-
-/* --- 📄 STRICT A4 PDF REPLICA STYLES --- */
-.a4-wrapper {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 20px 0;
-}
+  height: 100vh;
 
-.a4-paper {
-  background: white;
-  width: 210mm !important; /* STRICT A4 WIDTH */
-  min-height: 297mm; 
-  padding: 20mm;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-  font-family: "Times New Roman", Times, serif; 
-  color: #000;
-  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  color: var(--rb-text);
+
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 12px;
+
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(37, 99, 235, 0.06),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 90% 90%,
+      rgba(124, 58, 237, 0.05),
+      transparent 25%
+    ),
+    var(--rb-bg);
+
   box-sizing: border-box;
 }
 
-.resume-title { text-align: center; font-size: 20px; text-decoration: underline; margin-top: 0; margin-bottom: 20px; }
-.header-info p { margin: 2px 0; font-size: 14px; }
-.section { margin-top: 25px; }
-.section-title { font-size: 16px; text-decoration: underline; text-transform: uppercase; margin-bottom: 10px; }
-.objective-text { font-size: 14px; text-align: justify; }
+.rb-builder-container *,
+.rb-builder-container *::before,
+.rb-builder-container *::after {
+  box-sizing: border-box;
+}
 
-.personal-table { width: 100%; font-size: 14px; border-collapse: collapse; }
-.personal-table td { padding: 4px 0; }
-.personal-table td:first-child { width: 200px; font-weight: bold; }
+.rb-builder-container button,
+.rb-builder-container input,
+.rb-builder-container textarea {
+  font: inherit;
+}
 
-.education-table { width: 100%; font-size: 14px; border-collapse: collapse; margin-top: 10px; }
-.education-table th, .education-table td { border: 1px solid #000; padding: 8px; text-align: center; }
+/* =========================================================
+   TOP BRAND BAR
+========================================================= */
 
-.declaration p { font-size: 14px; }
-.footer-info { display: flex; justify-content: space-between; margin-top: 50px; font-size: 14px; }
-.right-footer { text-align: right; font-weight: bold; }
+.rb-topbar {
+  flex: 0 0 auto;
 
+  min-height: 62px;
 
-/* =========================================
-   📱 MOBILE SPECIFIC STYLES (RESPONSIVE MAGIC)
-   ========================================= */
-@media (max-width: 768px) {
-  
-  .tab-btn { padding: 14px 10px; font-size: 0.8rem !important; }
-  
-  /* Form Mobile Adjustments */
-  .form-pane { padding: 15px; }
-  .form-card { padding: 15px; border-radius: 12px; }
-  .form-group-row { flex-direction: column; gap: 0; }
-  
-  .dynamic-row { flex-wrap: wrap; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
-  .dynamic-row input { flex: 1 1 100%; margin-bottom: 8px; }
-  
-  .education-row-mobile input { flex: 1 1 45%; }
-  .remove-btn { flex: 1 1 100%; height: 40px; margin-top: 5px; }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  /* Preview Pane Mobile Adjustments */
-  .preview-actions { padding: 15px 10px; }
-  .download-btn { width: 100%; text-align: center; }
+  padding: 0 25px;
 
-  /* 🔥 Scale A4 Paper to fit Mobile Screen exactly */
-  .a4-wrapper { overflow-x: hidden; padding-top: 10px; }
-  .a4-paper {
-    /* Magic zoom to fit 210mm paper onto phone screen natively */
-    zoom: 0.45; 
-    -moz-transform: scale(0.45);
-    -moz-transform-origin: top center;
-  }
-  
-  /* Reset scaling temporarily for high-quality PDF export */
-  .a4-paper.export-mode {
-    zoom: 1 !important;
-    -moz-transform: none !important;
+  background: #ffffff;
+
+  border-bottom: 1px solid var(--rb-border);
+
+  box-shadow:
+    0 3px 15px rgba(15, 23, 42, 0.04);
+
+  z-index: 110;
+}
+
+.rb-builder-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.rb-brand-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: -0.5px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #4f46e5
+    );
+
+  box-shadow:
+    0 7px 16px rgba(
+      37,
+      99,
+      235,
+      0.22
+    );
+}
+
+.rb-builder-brand strong {
+  display: block;
+
+  color: var(--rb-text);
+
+  font-size: 13px;
+  font-weight: 800;
+
+  line-height: 1.2;
+}
+
+.rb-builder-brand span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--rb-muted);
+
+  font-size: 9px;
+
+  line-height: 1.2;
+}
+
+/* =========================================================
+   STEPS
+========================================================= */
+
+.rb-step-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.rb-step-indicator > span {
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  color: #64748b;
+
+  background: #f1f5f9;
+
+  border: 1px solid #e2e8f0;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  transition: all 0.2s ease;
+}
+
+.rb-step-indicator
+.rb-step-active {
+  color: #ffffff;
+
+  border-color: var(--rb-primary);
+
+  background: var(--rb-primary);
+
+  box-shadow:
+    0 4px 12px rgba(
+      37,
+      99,
+      235,
+      0.25
+    );
+}
+
+.rb-step-line {
+  width: 35px;
+  height: 2px;
+
+  margin: 0 5px;
+
+  background: #e2e8f0;
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+
+.rb-top-tabs {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 7px 15px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid var(--rb-border);
+
+  z-index: 100;
+}
+
+.rb-tab-btn {
+  position: relative;
+
+  min-width: 180px;
+
+  min-height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 15px;
+
+  border: 1px solid transparent;
+
+  border-radius: 11px;
+
+  color: #64748b;
+
+  background: transparent;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.rb-tab-btn:hover {
+  color: var(--rb-primary);
+
+  background: #f8fafc;
+}
+
+.rb-tab-active {
+  color: var(--rb-primary);
+
+  background: var(--rb-primary-soft);
+
+  border-color: #dbeafe;
+}
+
+.rb-tab-icon {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  color: currentColor;
+
+  background: rgba(
+    37,
+    99,
+    235,
+    0.08
+  );
+
+  font-size: 12px;
+}
+
+.rb-tab-check {
+  position: absolute;
+
+  top: 5px;
+  right: 7px;
+
+  width: 13px;
+  height: 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+
+  background: var(--rb-primary);
+
+  font-size: 7px;
+}
+
+/* =========================================================
+   CONTENT AREA
+========================================================= */
+
+.rb-tab-content-area {
+  flex: 1;
+
+  min-height: 0;
+
+  overflow-y: auto;
+
+  overflow-x: hidden;
+
+  position: relative;
+
+  scroll-behavior: smooth;
+}
+
+.rb-tab-content-area::-webkit-scrollbar {
+  width: 7px;
+}
+
+.rb-tab-content-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rb-tab-content-area::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background: #cbd5e1;
+}
+
+.rb-tab-content-area::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* =========================================================
+   FORM PANE
+========================================================= */
+
+.rb-form-pane {
+  width: min(
+    900px,
+    calc(100% - 30px)
+  );
+
+  margin: 0 auto;
+
+  padding: 35px 0 50px;
+}
+
+/* =========================================================
+   FORM HEADER
+========================================================= */
+
+.rb-form-header {
+  text-align: center;
+
+  margin-bottom: 28px;
+}
+
+.rb-form-eyebrow {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 5px 9px;
+
+  margin-bottom: 9px;
+
+  border-radius: 999px;
+
+  color: var(--rb-primary);
+
+  background: var(--rb-primary-soft);
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.rb-form-header h1 {
+  margin: 0;
+
+  color: var(--rb-text);
+
+  font-size: 25px;
+
+  line-height: 1.2;
+
+  font-weight: 850;
+
+  letter-spacing: -0.6px;
+}
+
+.rb-form-header p {
+  margin: 8px auto 0;
+
+  max-width: 500px;
+
+  color: var(--rb-muted);
+
+  font-size: 10px;
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   FORM CARD
+========================================================= */
+
+.rb-form-card {
+  position: relative;
+
+  margin-bottom: 16px;
+
+  padding: 21px;
+
+  border: 1px solid var(--rb-border);
+
+  border-radius: 17px;
+
+  background: rgba(
+    255,
+    255,
+    255,
+    0.96
+  );
+
+  box-shadow:
+    0 5px 20px rgba(
+      15,
+      23,
+      42,
+      0.035
+    );
+
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.rb-form-card:hover {
+  border-color: #d8e1ec;
+
+  box-shadow:
+    0 10px 30px rgba(
+      15,
+      23,
+      42,
+      0.055
+    );
+}
+
+.rb-last-card {
+  margin-bottom: 0;
+}
+
+/* =========================================================
+   CARD HEADING
+========================================================= */
+
+.rb-card-heading {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+.rb-card-icon {
+  width: 39px;
+  height: 39px;
+
+  flex: 0 0 39px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  font-size: 16px;
+}
+
+.rb-blue-icon {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.rb-purple-icon {
+  color: #7c3aed;
+  background: #ede9fe;
+}
+
+.rb-green-icon {
+  color: #059669;
+  background: #d1fae5;
+}
+
+.rb-orange-icon {
+  color: #ea580c;
+  background: #ffedd5;
+}
+
+.rb-card-heading h2 {
+  margin: 0;
+
+  color: var(--rb-text);
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.rb-card-heading p {
+  margin: 3px 0 0;
+
+  color: var(--rb-muted);
+
+  font-size: 9px;
+}
+
+.rb-form-divider {
+  width: 100%;
+  height: 1px;
+
+  margin: 17px 0;
+  background: var(--rb-border-light);
+}
+
+/* =========================================================
+   FORM GROUP
+========================================================= */
+
+.rb-form-group {
+  display: flex;
+  flex-direction: column;
+
+  margin-bottom: 15px;
+}
+
+.rb-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.rb-form-group-row {
+  display: flex;
+
+  gap: 13px;
+}
+
+.rb-form-group-row
+.rb-form-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.rb-form-group label,
+.rb-title-editor label,
+.rb-mini-field label {
+  margin-bottom: 6px;
+
+  color: #475569;
+
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.rb-input-wrapper {
+  display: flex;
+  align-items: center;
+
+  min-height: 42px;
+
+  overflow: hidden;
+
+  border: 1px solid #d5dee9;
+
+  border-radius: 10px;
+
+  background: #f8fafc;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.rb-input-wrapper > span {
+  width: 35px;
+
+  flex: 0 0 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #94a3b8;
+
+  font-size: 12px;
+}
+
+.rb-input-wrapper input,
+.rb-input-wrapper textarea {
+  width: 100%;
+
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+
+  color: var(--rb-text);
+
+  background: transparent;
+
+  font-size: 11px;
+}
+
+.rb-input-wrapper input {
+  min-height: 40px;
+
+  padding: 0 11px 0 0;
+}
+
+.rb-input-wrapper textarea {
+  resize: vertical;
+
+  min-height: 90px;
+
+  padding: 11px 11px 11px 0;
+
+  line-height: 1.5;
+}
+
+.rb-input-wrapper input::placeholder,
+.rb-input-wrapper textarea::placeholder {
+  color: #a1afbf;
+}
+
+.rb-input-wrapper:focus-within {
+  border-color: #60a5fa;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px rgba(
+      37,
+      99,
+      235,
+      0.08
+    );
+}
+
+.rb-textarea-wrapper {
+  align-items: flex-start;
+}
+
+/* =========================================================
+   TITLE EDITOR
+========================================================= */
+
+.rb-title-editor {
+  margin-bottom: 15px;
+}
+
+.rb-title-editor input {
+  width: 100%;
+
+  min-height: 40px;
+
+  padding: 0 11px;
+
+  border: 1px solid #d5dee9;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  color: var(--rb-primary);
+
+  background: #f8fafc;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.rb-title-editor input:focus {
+  background: #ffffff;
+
+  border-color: #60a5fa;
+
+  box-shadow:
+    0 0 0 3px rgba(
+      37,
+      99,
+      235,
+      0.08
+    );
+}
+
+/* =========================================================
+   PERSONAL INFO ROW
+========================================================= */
+
+.rb-dynamic-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+.rb-dynamic-row {
+  display: grid;
+
+  grid-template-columns:
+    30px
+    minmax(120px, 0.8fr)
+    minmax(160px, 1.5fr)
+    34px;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.rb-row-number {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  color: #64748b;
+
+  background: #f1f5f9;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.rb-dynamic-row input,
+.rb-mini-field input {
+  width: 100%;
+
+  min-width: 0;
+
+  height: 38px;
+
+  padding: 0 10px;
+
+  border: 1px solid #d5dee9;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  color: var(--rb-text);
+
+  background: #f8fafc;
+
+  font-size: 10px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.rb-dynamic-row input:focus,
+.rb-mini-field input:focus {
+  background: #ffffff;
+
+  border-color: #60a5fa;
+
+  box-shadow:
+    0 0 0 3px rgba(
+      37,
+      99,
+      235,
+      0.07
+    );
+}
+
+.rb-remove-btn {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 8px;
+
+  color: #dc2626;
+
+  background: #fef2f2;
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.rb-remove-btn:hover {
+  background: #fee2e2;
+
+  transform: scale(1.04);
+}
+
+/* =========================================================
+   ADD BUTTON
+========================================================= */
+
+.rb-add-btn {
+  width: 100%;
+
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  border: 1.5px dashed #cbd5e1;
+
+  border-radius: 10px;
+
+  color: var(--rb-primary);
+
+  background: #fafcff;
+
+  font-size: 10px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.rb-add-btn span {
+  width: 21px;
+  height: 21px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  color: #ffffff;
+
+  background: var(--rb-primary);
+
+  font-size: 14px;
+}
+
+.rb-add-btn:hover {
+  border-color: #60a5fa;
+
+  background: #eff6ff;
+
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   EDUCATION
+========================================================= */
+
+.rb-education-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 11px;
+
+  margin-bottom: 12px;
+}
+
+.rb-education-row {
+  display: grid;
+
+  grid-template-columns:
+    30px
+    minmax(85px, 0.7fr)
+    minmax(150px, 1.5fr)
+    minmax(75px, 0.6fr)
+    minmax(75px, 0.6fr)
+    34px;
+
+  align-items: end;
+
+  gap: 8px;
+
+  padding: 10px;
+
+  border: 1px solid #edf2f7;
+
+  border-radius: 11px;
+
+  background: #fafcff;
+}
+
+.rb-mini-field {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.rb-mini-field label {
+  margin-bottom: 4px;
+
+  font-size: 8px;
+}
+
+/* =========================================================
+   INLINE INPUTS
+========================================================= */
+
+.rb-inline-inputs {
+  display: flex;
+
+  gap: 6px;
+}
+
+.rb-inline-inputs input:first-child {
+  width: 38%;
+}
+
+.rb-inline-inputs input:last-child {
+  width: 62%;
+}
+
+.rb-inline-inputs input {
+  min-width: 0;
+
+  height: 40px;
+
+  padding: 0 10px;
+
+  border: 1px solid #d5dee9;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  color: var(--rb-text);
+
+  background: #f8fafc;
+
+  font-size: 10px;
+}
+
+.rb-inline-inputs input:focus {
+  border-color: #60a5fa;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px rgba(
+      37,
+      99,
+      235,
+      0.07
+    );
+}
+
+/* =========================================================
+   DOWNLOAD TOAST
+========================================================= */
+
+.rb-download-toast {
+  position: fixed;
+
+  top: 78px;
+  left: 50%;
+
+  z-index: 10000;
+
+  transform: translateX(-50%);
+
+  min-width: 270px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 11px 16px;
+
+  border-radius: 12px;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 15px 40px rgba(
+      15,
+      23,
+      42,
+      0.22
+    );
+
+  animation:
+    rb-toast-in 0.25s ease both;
+}
+
+.rb-toast-loading {
+  background:
+    linear-gradient(
+      135deg,
+      #f59e0b,
+      #ea580c
+    );
+}
+
+.rb-toast-success {
+  background:
+    linear-gradient(
+      135deg,
+      #059669,
+      #10b981
+    );
+}
+
+.rb-toast-icon {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: rgba(
+    255,
+    255,
+    255,
+    0.15
+  );
+
+  font-size: 14px;
+}
+
+.rb-download-toast strong {
+  display: block;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.rb-download-toast span:not(.rb-toast-icon) {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 8px;
+
+  opacity: 0.85;
+}
+
+.rb-spin {
+  animation:
+    rb-spin 1s linear infinite;
+}
+
+@keyframes rb-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-@media (max-width: 400px) {
-  /* Smaller phones need slightly more zoom-out */
-  .a4-paper {
-    zoom: 0.40;
-    -moz-transform: scale(0.40);
+@keyframes rb-toast-in {
+  from {
+    opacity: 0;
+    transform:
+      translateX(-50%)
+      translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateX(-50%)
+      translateY(0);
+  }
+}
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+.rb-preview-pane {
+  min-height: 100%;
+
+  padding-bottom: 60px;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.8),
+      transparent 30%
+    ),
+    #dce3eb;
+}
+
+/* =========================================================
+   PREVIEW TOOLBAR
+========================================================= */
+
+.rb-preview-toolbar {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 50;
+
+  min-height: 65px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 10px 24px;
+
+  background:
+    rgba(255, 255, 255, 0.92);
+
+  border-bottom: 1px solid
+    rgba(203, 213, 225, 0.9);
+
+  box-shadow:
+    0 5px 20px rgba(
+      15,
+      23,
+      42,
+      0.06
+    );
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.rb-preview-status {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #334155;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.rb-preview-status > span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow:
+    0 0 0 4px rgba(
+      34,
+      197,
+      94,
+      0.12
+    );
+}
+
+.rb-preview-info p {
+  margin: 4px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 8px;
+}
+
+.rb-download-btn {
+  min-height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 17px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #1d4ed8
+    );
+
+  box-shadow:
+    0 8px 20px rgba(
+      37,
+      99,
+      235,
+      0.25
+    );
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.rb-download-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 26px rgba(
+      37,
+      99,
+      235,
+      0.33
+    );
+}
+
+.rb-download-btn:disabled {
+  opacity: 0.7;
+
+  cursor: wait;
+}
+
+/* =========================================================
+   A4 STAGE
+========================================================= */
+
+.rb-paper-stage {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+
+  padding:
+    25px 20px
+    50px;
+}
+
+.rb-paper-shadow {
+  position: relative;
+
+  filter:
+    drop-shadow(
+      0 20px 35px
+      rgba(15, 23, 42, 0.2)
+    );
+}
+
+/* =========================================================
+   A4 PAPER
+========================================================= */
+
+.rb-a4-paper {
+  width: 210mm !important;
+
+  min-height: 297mm;
+
+  padding: 20mm;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  font-family:
+    "Times New Roman",
+    Times,
+    serif;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+   RESUME CONTENT
+========================================================= */
+
+.rb-resume-title {
+  margin:
+    0 0 20px;
+
+  text-align: center;
+
+  color: #000000;
+
+  font-family:
+    "Times New Roman",
+    Times,
+    serif;
+
+  font-size: 20px;
+
+  font-weight: 700;
+
+  text-decoration: underline;
+}
+
+.rb-header-info p {
+  margin: 2px 0;
+
+  color: #000;
+
+  font-size: 14px;
+
+  line-height: 1.35;
+}
+
+.rb-resume-section {
+  margin-top: 25px;
+}
+
+.rb-resume-section-title {
+  margin:
+    0 0 10px;
+
+  color: #000;
+
+  font-family:
+    "Times New Roman",
+    Times,
+    serif;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  text-decoration: underline;
+}
+
+.rb-objective-text {
+  margin: 0;
+
+  color: #000;
+
+  font-size: 14px;
+
+  text-align: justify;
+}
+
+.rb-personal-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  color: #000;
+
+  font-size: 14px;
+}
+
+.rb-personal-table td {
+  padding: 4px 0;
+
+  vertical-align: top;
+}
+
+.rb-personal-table td:first-child {
+  width: 200px;
+
+  font-weight: 700;
+}
+
+/* =========================================================
+   EDUCATION TABLE
+========================================================= */
+
+.rb-table-responsive {
+  width: 100%;
+
+  overflow-x: visible;
+}
+
+.rb-education-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  color: #000;
+
+  font-size: 14px;
+}
+
+.rb-education-table th,
+.rb-education-table td {
+  padding: 8px;
+
+  border: 1px solid #000;
+
+  text-align: center;
+
+  vertical-align: middle;
+}
+
+.rb-education-table th {
+  font-weight: 700;
+}
+
+/* =========================================================
+   DECLARATION
+========================================================= */
+
+.rb-declaration p {
+  margin: 0;
+
+  color: #000;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.rb-footer-info {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-top: 50px;
+
+  color: #000;
+
+  font-size: 14px;
+}
+
+.rb-footer-info p {
+  margin: 2px 0;
+}
+
+.rb-right-footer {
+  text-align: right;
+
+  font-weight: 700;
+}
+
+/* =========================================================
+   PDF EXPORT MODE
+========================================================= */
+
+.rb-a4-paper.rb-export-mode {
+  width: 210mm !important;
+
+  min-height: 297mm;
+
+  transform: none !important;
+
+  zoom: 1 !important;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+  .rb-topbar {
+    padding: 0 18px;
+  }
+
+  .rb-form-pane {
+    width:
+      min(
+        800px,
+        calc(100% - 24px)
+      );
+
+    padding-top: 25px;
+  }
+
+  .rb-form-card {
+    padding: 18px;
+  }
+
+  .rb-education-row {
+    grid-template-columns:
+      30px
+      repeat(2, minmax(100px, 1fr))
+      75px
+      75px
+      34px;
+  }
+
+  .rb-board-field {
+    min-width: 0;
+  }
+}
+
+/* =========================================================
+   TABLET / SMALL LAPTOP
+========================================================= */
+
+@media (max-width: 768px) {
+  .rb-topbar {
+    min-height: 56px;
+
+    padding: 0 13px;
+  }
+
+  .rb-builder-brand span {
+    display: none;
+  }
+
+  .rb-brand-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .rb-builder-brand strong {
+    font-size: 11px;
+  }
+
+  .rb-step-indicator {
+    display: none;
+  }
+
+  .rb-top-tabs {
+    padding: 6px;
+
+    gap: 4px;
+  }
+
+  .rb-tab-btn {
+    min-width: 0;
+
+    flex: 1;
+
+    min-height: 38px;
+
+    padding: 0 9px;
+
+    font-size: 10px;
+  }
+
+  .rb-form-pane {
+    width:
+      calc(100% - 20px);
+
+    padding:
+      22px 0 40px;
+  }
+
+  .rb-form-header {
+    margin-bottom: 20px;
+  }
+
+  .rb-form-header h1 {
+    font-size: 22px;
+  }
+
+  .rb-form-card {
+    padding: 15px;
+
+    border-radius: 14px;
+  }
+
+  .rb-form-group-row {
+    flex-direction: column;
+
+    gap: 0;
+  }
+
+  .rb-form-group-row
+  .rb-form-group {
+    width: 100%;
+  }
+
+  .rb-dynamic-row {
+    grid-template-columns:
+      27px
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      32px;
+  }
+
+  .rb-dynamic-row input {
+    height: 38px;
+  }
+
+  .rb-education-row {
+    grid-template-columns:
+      27px
+      repeat(2, minmax(0, 1fr))
+      repeat(2, minmax(65px, 0.5fr))
+      32px;
+
+    gap: 6px;
+
+    padding: 8px;
+  }
+
+  .rb-row-number {
+    width: 27px;
+    height: 27px;
+  }
+
+  .rb-remove-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .rb-preview-toolbar {
+    min-height: 58px;
+
+    padding:
+      8px 12px;
+  }
+
+  .rb-preview-info p {
+    display: none;
+  }
+
+  .rb-download-btn {
+    min-height: 37px;
+
+    padding: 0 13px;
+  }
+
+  /* =====================================================
+     A4 MOBILE SCALING
+  ===================================================== */
+
+  .rb-paper-stage {
+    padding:
+      12px 0 40px;
+
+    overflow: hidden;
+  }
+
+  .rb-paper-shadow {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+  }
+
+  .rb-a4-paper {
+    flex: 0 0 auto;
+
+    zoom: 0.46;
+
+    -moz-transform:
+      scale(0.46);
+
+    -moz-transform-origin:
+      top center;
+
+    margin-bottom:
+      calc(
+        -297mm * 0.54
+      );
+  }
+
+  .rb-a4-paper.rb-export-mode {
+    zoom: 1 !important;
+
+    -moz-transform:
+      none !important;
+
+    margin-bottom: 0;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .rb-builder-container {
+    font-size: 12px;
+  }
+
+  .rb-topbar {
+    min-height: 51px;
+
+    padding: 0 10px;
+  }
+
+  .rb-brand-icon {
+    width: 31px;
+    height: 31px;
+
+    border-radius: 9px;
+
+    font-size: 9px;
+  }
+
+  .rb-builder-brand strong {
+    font-size: 10px;
+  }
+
+  .rb-top-tabs {
+    width: 100%;
+
+    padding: 5px;
+
+    border-bottom:
+      1px solid
+      var(--rb-border);
+  }
+
+  .rb-tab-btn {
+    min-height: 36px;
+
+    gap: 5px;
+
+    border-radius: 9px;
+
+    font-size: 9px;
+  }
+
+  .rb-tab-icon {
+    width: 19px;
+    height: 19px;
+
+    font-size: 10px;
+  }
+
+  .rb-form-pane {
+    width:
+      calc(100% - 14px);
+
+    padding-top: 18px;
+  }
+
+  .rb-form-header {
+    margin-bottom: 17px;
+  }
+
+  .rb-form-eyebrow {
+    font-size: 7px;
+  }
+
+  .rb-form-header h1 {
+    font-size: 20px;
+  }
+
+  .rb-form-header p {
+    font-size: 9px;
+  }
+
+  .rb-form-card {
+    margin-bottom: 10px;
+
+    padding: 13px;
+
+    border-radius: 12px;
+  }
+
+  .rb-card-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-basis: 34px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+  }
+
+  .rb-card-heading h2 {
+    font-size: 11px;
+  }
+
+  .rb-card-heading p {
+    font-size: 8px;
+  }
+
+  .rb-form-divider {
+    margin: 13px 0;
+  }
+
+  .rb-form-group {
+    margin-bottom: 12px;
+  }
+
+  .rb-form-group label,
+  .rb-title-editor label {
+    font-size: 8px;
+  }
+
+  .rb-input-wrapper {
+    min-height: 40px;
+
+    border-radius: 9px;
+  }
+
+  .rb-input-wrapper > span {
+    width: 30px;
+
+    flex-basis: 30px;
+
+    font-size: 10px;
+  }
+
+  .rb-input-wrapper input {
+    min-height: 38px;
+
+    font-size: 10px;
+  }
+
+  .rb-input-wrapper textarea {
+    min-height: 80px;
+
+    font-size: 10px;
+  }
+
+  /* Personal information */
+
+  .rb-dynamic-row {
+    grid-template-columns:
+      25px
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      30px;
+
+    gap: 5px;
+  }
+
+  .rb-dynamic-row input {
+    height: 36px;
+
+    padding: 0 7px;
+
+    font-size: 9px;
+  }
+
+  .rb-row-number {
+    width: 25px;
+    height: 25px;
+
+    border-radius: 7px;
+
+    font-size: 7px;
+  }
+
+  .rb-remove-btn {
+    width: 30px;
+    height: 30px;
+
+    border-radius: 7px;
+
+    font-size: 13px;
+  }
+
+  /* Education */
+
+  .rb-education-row {
+    display: grid;
+
+    grid-template-columns:
+      25px
+      repeat(2, minmax(0, 1fr));
+
+    gap: 7px;
+
+    padding: 9px;
+  }
+
+  .rb-education-row
+  .rb-mini-field:nth-child(4),
+  .rb-education-row
+  .rb-mini-field:nth-child(5) {
+    grid-row: 2;
+  }
+
+  .rb-education-row
+  .rb-remove-btn {
+    grid-column: 2 / 3;
+    grid-row: 2;
+
+    justify-self: end;
+  }
+
+  .rb-mini-field label {
+    font-size: 7px;
+  }
+
+  .rb-mini-field input {
+    height: 35px;
+
+    padding: 0 7px;
+
+    font-size: 9px;
+  }
+
+  /* Footer */
+
+  .rb-inline-inputs {
+    gap: 5px;
+  }
+
+  .rb-inline-inputs input {
+    height: 38px;
+
+    padding: 0 8px;
+
+    font-size: 9px;
+  }
+
+  /* Preview */
+
+  .rb-preview-toolbar {
+    padding:
+      7px 9px;
+  }
+
+  .rb-preview-status {
+    font-size: 8px;
+  }
+
+  .rb-preview-status > span {
+    width: 6px;
+    height: 6px;
+  }
+
+  .rb-download-btn {
+    min-height: 35px;
+
+    padding: 0 11px;
+
+    border-radius: 9px;
+
+    font-size: 9px;
+  }
+
+  .rb-paper-stage {
+    padding-top: 10px;
+  }
+
+  .rb-a4-paper {
+    zoom: 0.42;
+
+    -moz-transform:
+      scale(0.42);
+
+    margin-bottom:
+      calc(
+        -297mm * 0.58
+      );
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+  .rb-tab-btn {
+    font-size: 8px;
+
+    padding: 0 6px;
+  }
+
+  .rb-tab-icon {
+    width: 17px;
+    height: 17px;
+
+    font-size: 9px;
+  }
+
+  .rb-form-pane {
+    width:
+      calc(100% - 10px);
+  }
+
+  .rb-card-heading {
+    gap: 8px;
+  }
+
+  .rb-form-card {
+    padding: 11px;
+  }
+
+  .rb-dynamic-row {
+    grid-template-columns:
+      22px
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      28px;
+
+    gap: 4px;
+  }
+
+  .rb-row-number {
+    width: 22px;
+    height: 22px;
+
+    font-size: 6px;
+  }
+
+  .rb-remove-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .rb-dynamic-row input {
+    height: 34px;
+
+    padding: 0 6px;
+
+    font-size: 8px;
+  }
+
+  .rb-a4-paper {
+    zoom: 0.38;
+
+    -moz-transform:
+      scale(0.38);
+
+    margin-bottom:
+      calc(
+        -297mm * 0.62
+      );
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 360px) {
+  .rb-builder-brand strong {
+    font-size: 9px;
+  }
+
+  .rb-tab-btn {
+    min-height: 34px;
+
+    font-size: 7.5px;
+  }
+
+  .rb-form-header h1 {
+    font-size: 18px;
+  }
+
+  .rb-form-header p {
+    font-size: 8px;
+  }
+
+  .rb-card-heading h2 {
+    font-size: 10px;
+  }
+
+  .rb-card-heading p {
+    font-size: 7px;
+  }
+
+  .rb-a4-paper {
+    zoom: 0.35;
+
+    -moz-transform:
+      scale(0.35);
+
+    margin-bottom:
+      calc(
+        -297mm * 0.65
+      );
+  }
+}
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+.rb-builder-container
+button:focus-visible,
+.rb-builder-container
+input:focus-visible,
+.rb-builder-container
+textarea:focus-visible {
+  outline:
+    3px solid
+    rgba(
+      37,
+      99,
+      235,
+      0.18
+    );
+
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-builder-container *,
+  .rb-builder-container
+  *::before,
+  .rb-builder-container
+  *::after {
+    animation-duration:
+      0.01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    transition-duration:
+      0.01ms !important;
+
+    scroll-behavior: auto !important;
   }
 }

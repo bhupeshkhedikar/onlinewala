@@ -50,8 +50,8 @@ export default function BiodataBuilder() {
   ];
 
   const godImageOptions = [
-    { id: "ganpati", name: "Ganpati", url: "https://png.pngtree.com/png-vector/20250121/ourmid/pngtree-ganesha-the-embodiment-of-prosperity-and-joy-png-image_15287837.png" },
-    { id: "gajanan", name: "Gajanan Maharaj", url: "https://e7.pngegg.com/pngimages/461/123/png-clipart-shree-gajanan-maharaj-sansthan-shegaon-gajanan-maharaj-temples-saint-vidarbha-dna-2-miscellaneous-physical-fitness-thumbnail.png" },
+    { id: "ganpati", name: "Ganpati", url: "https://png.pngtree.com/png-clipart/20220720/original/pngtree-ganesh-chaturthi-wishes-png-design-png-image_8390969.png" },
+    { id: "gajanan", name: "Gajanan Maharaj", url: "https://pluspng.com/img-png/gajanan-maharaj-png-shri-satguru-gajanan-maharaj-of-shegoen-145.png" },
     { id: "hanuman", name: "Hanumanji", url: "https://i.pinimg.com/736x/b6/fd/6e/b6fd6e25743629976301758ee0940e96.jpg" },
     { id: "jumdev", name: "Baba Jumdevji", url: "https://sevakparivar.in/wp-content/uploads/2025/09/IMG_20200429_160041.jpg" },
     { id: "none", name: "No Image", url: "" },
