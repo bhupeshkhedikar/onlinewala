@@ -1,321 +1,221 @@
-.mobile-top-menu {
-  display: block;
-  width: 100%;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
-  box-sizing: border-box;
+/* ================= MENU BAR ================= */
+
+.mobile-top-menu{
+  display:block;
+  width:100%;
+  background:#fff;
+  border-bottom:1px solid #e2e8f0;
+  box-shadow:0 3px 12px rgba(15,23,42,.06);
+  box-sizing:border-box;
 }
 
-.mobile-menu-scroll {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 8px;
-
-  padding: 8px 16px;
-
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  box-sizing: border-box;
+.mobile-menu-scroll{
+  width:100%;
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:8px 16px;
+  overflow-x:auto;
+  scrollbar-width:none;
 }
 
-.mobile-menu-scroll::-webkit-scrollbar {
-  display: none;
+.mobile-menu-scroll::-webkit-scrollbar{
+  display:none;
 }
 
-.mobile-top-item {
-  flex: 0 0 auto;
+/* ================= BUTTON ================= */
 
-  min-width: 105px;
-  height: 42px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 7px;
-
-  padding: 6px 13px;
-
-  background: #f8fafc;
-  color: #64748b;
-
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  white-space: nowrap;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  -webkit-tap-highlight-color: transparent;
+.mobile-top-item{
+  position:relative;
+  flex:0 0 auto;
+  min-width:105px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:6px 13px;
+  background:#f8fafc;
+  color:#64748b;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.25s;
 }
 
-.mobile-top-icon {
-  width: 20px;
-  height: 20px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
+.mobile-top-item:hover{
+  background:#f1f5f9;
+  color:#2563eb;
+  transform:translateY(-1px);
+  box-shadow:0 4px 10px rgba(15,23,42,.08);
 }
 
-.mobile-top-icon svg {
-  width: 19px;
-  height: 19px;
-
-  display: block;
+.mobile-top-item.active{
+  background:#eff6ff;
+  color:#2563eb;
+  border-color:#bfdbfe;
 }
 
-.mobile-top-label {
-  font-size: 11px;
-  font-weight: 750;
-  line-height: 1;
-
-  white-space: nowrap;
+.mobile-top-icon{
+  width:20px;
+  height:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-.mobile-top-item:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #2563eb;
-
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 4px 10px rgba(15, 23, 42, 0.07);
+.mobile-top-icon svg{
+  width:19px;
+  height:19px;
 }
 
-.mobile-top-item:active {
-  transform: scale(0.97);
+.mobile-top-label{
+  font-size:11px;
+  font-weight:800;
 }
 
-.mobile-top-item.active {
-  background: #eff6ff;
-  color: #2563eb;
+/* ================= FREE CHIP ================= */
 
-  border-color: #bfdbfe;
-
-  box-shadow:
-    0 4px 10px rgba(37, 99, 235, 0.1);
+.free-chip{
+  position:absolute;
+  top:-7px;
+  right:-6px;
+  padding:2px 6px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff;
+  border:2px solid #fff;
+  border-radius:30px;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.4px;
+  line-height:1;
+  box-shadow:0 3px 10px rgba(22,163,74,.35);
+  animation:freePulse 1.6s infinite;
+  z-index:5;
 }
 
-.mobile-top-item.active .mobile-top-icon {
-  transform: translateY(-1px);
-}
-
-.referral-item {
-  color: #9333ea;
-  background: #faf5ff;
-  border-color: #e9d5ff;
-}
-
-.referral-item:hover {
-  color: #7e22ce;
-  background: #f3e8ff;
-  border-color: #d8b4fe;
-}
-
-.referral-item.active {
-  color: #7e22ce;
-  background: #f3e8ff;
-  border-color: #d8b4fe;
-
-  box-shadow:
-    0 4px 10px rgba(147, 51, 234, 0.1);
-}
-
-.wallet-item {
-  color: #d97706;
-  background: #fffaf0;
-  border-color: #fde68a;
-}
-
-.wallet-item:hover {
-  color: #b45309;
-  background: #fff7ed;
-  border-color: #fed7aa;
-}
-
-.wallet-item.active {
-  color: #d97706;
-  background: #fff7ed;
-  border-color: #fed7aa;
-
-  box-shadow:
-    0 4px 10px rgba(245, 158, 11, 0.12);
-}
-
-/* Desktop */
-
-@media (min-width: 769px) {
-  .mobile-top-menu {
-    position: sticky;
-    top: 0;
-    z-index: 999;
-
-    background: rgba(255, 255, 255, 0.97);
-
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+@keyframes freePulse{
+  0%,100%{
+    transform:scale(1);
+    box-shadow:0 3px 10px rgba(22,163,74,.35);
   }
-
-  .mobile-menu-scroll {
-    min-height: 54px;
+  50%{
+    transform:scale(1.12);
+    box-shadow:0 5px 16px rgba(22,163,74,.55);
   }
 }
 
-/* Tablet */
+/* ================= SPECIAL COLORS ================= */
 
-@media (max-width: 900px) and (min-width: 769px) {
-  .mobile-menu-scroll {
-    justify-content: flex-start;
-    padding: 7px 14px;
-    gap: 7px;
-  }
-
-  .mobile-top-item {
-    min-width: 95px;
-    height: 40px;
-
-    padding: 6px 11px;
-  }
-
-  .mobile-top-label {
-    font-size: 10px;
-  }
+.referral-item{
+  background:#faf5ff;
+  color:#9333ea;
+  border-color:#e9d5ff;
 }
 
-/* Mobile */
-
-@media (max-width: 768px) {
-  .mobile-top-menu {
-    position: sticky;
-    top: 0;
-    z-index: 999;
-
-    background: rgba(255, 255, 255, 0.98);
-
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  .mobile-menu-scroll {
-    justify-content: flex-start;
-
-    gap: 6px;
-
-    padding: 6px 8px;
-
-    overflow-x: auto;
-  }
-
-  .mobile-top-item {
-    min-width: 76px;
-    height: 42px;
-
-    padding: 5px 9px;
-
-    gap: 5px;
-
-    border-radius: 11px;
-  }
-
-  .mobile-top-icon {
-    width: 19px;
-    height: 19px;
-  }
-
-  .mobile-top-icon svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .mobile-top-label {
-    font-size: 8px;
-    font-weight: 800;
-  }
+.referral-item.active{
+  background:#f3e8ff;
+  color:#7e22ce;
 }
 
-/* Small Mobile */
-
-@media (max-width: 480px) {
-  .mobile-menu-scroll {
-    gap: 5px;
-    padding: 5px 6px;
-  }
-
-  .mobile-top-item {
-    min-width: 70px;
-    height: 40px;
-
-    padding: 4px 8px;
-
-    border-radius: 10px;
-  }
-
-  .mobile-top-icon {
-    width: 18px;
-    height: 18px;
-  }
-
-  .mobile-top-icon svg {
-    width: 17px;
-    height: 17px;
-  }
-
-  .mobile-top-label {
-    font-size: 7px;
-  }
+.wallet-item{
+  background:#fffaf0;
+  color:#d97706;
+  border-color:#fde68a;
 }
 
-/* Very Small Mobile */
+.wallet-item.active{
+  background:#fff7ed;
+  color:#b45309;
+}
 
-@media (max-width: 360px) {
-  .mobile-menu-scroll {
-    gap: 4px;
-    padding: 4px 5px;
+/* ================= DESKTOP ================= */
+
+@media (min-width:769px){
+
+  .mobile-top-menu{
+    position:sticky;
+    top:0;
+    z-index:999;
+    backdrop-filter:blur(12px);
   }
 
-  .mobile-top-item {
-    min-width: 63px;
-    height: 37px;
-
-    padding: 3px 6px;
-
-    gap: 4px;
+  .mobile-menu-scroll{
+    min-height:54px;
   }
 
-  .mobile-top-icon {
-    width: 16px;
-    height: 16px;
+}
+
+/* ================= TABLET ================= */
+
+@media (max-width:900px){
+
+  .mobile-menu-scroll{
+    justify-content:flex-start;
   }
 
-  .mobile-top-icon svg {
-    width: 15px;
-    height: 15px;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width:768px){
+
+  .mobile-top-menu{
+    position:sticky;
+    top:0;
+    z-index:999;
+    backdrop-filter:blur(12px);
   }
 
-  .mobile-top-label {
-    font-size: 6.5px;
+  .mobile-menu-scroll{
+    justify-content:flex-start;
+    gap:6px;
+    padding:6px 8px;
   }
+
+  .mobile-top-item{
+    min-width:76px;
+    height:42px;
+    padding:5px 9px;
+    gap:5px;
+  }
+
+  .mobile-top-label{
+    font-size:8px;
+  }
+
+  .free-chip{
+    top:-6px;
+    right:-5px;
+    font-size:6px;
+    padding:2px 5px;
+  }
+
+}
+
+/* ================= SMALL MOBILE ================= */
+
+@media (max-width:480px){
+
+  .mobile-top-item{
+    min-width:70px;
+    height:40px;
+    padding:4px 8px;
+  }
+
+  .mobile-top-label{
+    font-size:7px;
+  }
+
+  .free-chip{
+    font-size:5.8px;
+    padding:2px 4px;
+  }
+
 }

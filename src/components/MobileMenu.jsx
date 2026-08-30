@@ -2,6 +2,8 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./MobileMenu.css";
 
+/* ================= ICONS ================= */
+
 const HomeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M3 10.5 12 3l9 7.5" />
@@ -73,20 +75,23 @@ export default function MobileMenu() {
     {
       name: "रेजूम",
       path: "/resume-builder",
-      icon: <ResumeIcon />
+      icon: <ResumeIcon />,
+      free: true
     },
     {
       name: "बायोडाटा",
       path: "/biodata-builder",
-      icon: <BiodataIcon />
+      icon: <BiodataIcon />,
+      free: true
     },
     {
       name: "वय मोजा",
       path: "/age-calculator",
-      icon: <AgeIcon />
+      icon: <AgeIcon />,
+      free: true
     },
     {
-      name: "Refer & Earn",
+      name: "रेफर",
       path: "/referral",
       icon: <ReferralIcon />
     },
@@ -103,10 +108,7 @@ export default function MobileMenu() {
   ];
 
   const isActive = (path) => {
-    if (path === "/") {
-      return location.pathname === "/";
-    }
-
+    if (path === "/") return location.pathname === "/";
     return location.pathname === path;
   };
 
@@ -120,16 +122,18 @@ export default function MobileMenu() {
             className={`mobile-top-item ${
               isActive(item.path) ? "active" : ""
             } ${
-              item.path === "/wallet"
-                ? "wallet-item"
-                : ""
+              item.path === "/wallet" ? "wallet-item" : ""
             } ${
-              item.path === "/referral"
-                ? "referral-item"
-                : ""
+              item.path === "/referral" ? "referral-item" : ""
             }`}
             onClick={() => navigate(item.path)}
           >
+            {item.free && (
+              <span className="free-chip">
+                FREE
+              </span>
+            )}
+
             <span className="mobile-top-icon">
               {item.icon}
             </span>
