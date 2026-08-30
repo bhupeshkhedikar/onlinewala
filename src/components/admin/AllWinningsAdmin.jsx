@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { collection, getDocs, query, orderBy, doc, updateDoc, where, increment } from "firebase/firestore";
-import { db } from "../firebase"; 
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  updateDoc,
+  where,
+  increment
+} from "firebase/firestore";
+import { db } from "../firebase";
+import "./AllWinningsAdmin.css";
 
 export default function AllWinningsAdmin() {
   const [winnings, setWinnings] = useState([]);
-  const [filteredWinnings, setFilteredWinnings] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Filters State
-  const [filter, setFilter] = useState("all"); 
+  const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-
-  // 🔥 Add Ticket Modal States
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [ticketMobile, setTicketMobile] = useState("");
   const [ticketAmount, setTicketAmount] = useState(1);
@@ -19,33 +24,56 @@ export default function AllWinningsAdmin() {
 
   const fetchWinnings = async () => {
     setLoading(true);
+
     try {
-      const usersSnapshot = await getDocs(collection(db, "users"));
+      const usersSnapshot = await getDocs(
+        collection(db, "users")
+      );
+
       const usersDataMap = {};
-      usersSnapshot.forEach((doc) => {
-        usersDataMap[doc.id] = doc.data(); 
+
+      usersSnapshot.forEach((userDoc) => {
+        usersDataMap[userDoc.id] = userDoc.data();
       });
 
-      const q = query(collection(db, "winnings"), orderBy("wonAt", "desc"));
-      const snapshot = await getDocs(q);
-      
-      const data = [];
-      snapshot.forEach((document) => {
-        const docData = document.data();
-        const actualCustomer = usersDataMap[docData.userId] || {};
+      const winningsQuery = query(
+        collection(db, "winnings"),
+        orderBy("wonAt", "desc")
+      );
 
-        data.push({
-          id: document.id,
+      const snapshot = await getDocs(winningsQuery);
+
+      const data = snapshot.docs.map((winningDoc) => {
+        const docData = winningDoc.data();
+        const customer =
+          usersDataMap[docData.userId] || {};
+
+        return {
+          id: winningDoc.id,
           ...docData,
-          userName: actualCustomer.name || docData.userName || "Unknown",
-          userMobile: actualCustomer.mobile || docData.userMobile || "N/A",
-          wonAt: docData.wonAt?.toDate() || new Date(),
-          expiresAt: docData.expiresAt?.toDate() || new Date()
-        });
+          userName:
+            customer.name ||
+            docData.userName ||
+            "Unknown",
+          userMobile:
+            customer.mobile ||
+            docData.userMobile ||
+            "N/A",
+          wonAt:
+            docData.wonAt?.toDate?.() ||
+            new Date(),
+          expiresAt:
+            docData.expiresAt?.toDate?.() ||
+            new Date()
+        };
       });
+
       setWinnings(data);
     } catch (error) {
-      console.error("Error fetching all winnings:", error);
+      console.error(
+        "Error fetching all winnings:",
+        error
+      );
     } finally {
       setLoading(false);
     }
@@ -55,282 +83,864 @@ export default function AllWinningsAdmin() {
     fetchWinnings();
   }, []);
 
-  useEffect(() => {
+  const getStatus = (win) => {
     const now = new Date();
-    const nearExpiryDate = new Date();
-    nearExpiryDate.setDate(now.getDate() + 2); 
 
-    let result = winnings;
+    if (win.status === "redeemed") {
+      return {
+        type: "redeemed",
+        text: "Redeemed",
+        icon: "✓"
+      };
+    }
 
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
-      result = result.filter(w => 
-        (w.userMobile && w.userMobile.includes(lowerQuery)) || 
-        (w.userName && w.userName.toLowerCase().includes(lowerQuery))
+    if (
+      win.status === "expired" ||
+      (win.status === "active" &&
+        win.expiresAt < now)
+    ) {
+      return {
+        type: "expired",
+        text: "Expired",
+        icon: "!"
+      };
+    }
+
+    const diffTime =
+      win.expiresAt.getTime() - now.getTime();
+
+    const diffDays =
+      Math.ceil(
+        diffTime /
+          (1000 * 60 * 60 * 24)
       );
+
+    if (diffDays <= 2) {
+      return {
+        type: "expiring",
+        text: "Expiring Soon",
+        icon: "!"
+      };
+    }
+
+    return {
+      type: "active",
+      text: "Active",
+      icon: "✓"
+    };
+  };
+
+  const filteredWinnings = useMemo(() => {
+    const now = new Date();
+
+    const nearExpiryDate = new Date();
+    nearExpiryDate.setDate(
+      now.getDate() + 2
+    );
+
+    let result = [...winnings];
+
+    const search =
+      searchQuery.trim().toLowerCase();
+
+    if (search) {
+      result = result.filter((win) => {
+        const name =
+          win.userName?.toLowerCase() || "";
+
+        const mobile =
+          win.userMobile?.toString() || "";
+
+        const prize =
+          win.prizeName?.toLowerCase() || "";
+
+        return (
+          name.includes(search) ||
+          mobile.includes(search) ||
+          prize.includes(search)
+        );
+      });
     }
 
     if (filter === "active") {
-      result = result.filter(w => w.status === "active" && w.expiresAt > now);
-    } else if (filter === "expiring_soon") {
-      result = result.filter(w => w.status === "active" && w.expiresAt > now && w.expiresAt <= nearExpiryDate);
-    } else if (filter === "redeemed") {
-      result = result.filter(w => w.status === "redeemed");
-    } else if (filter === "expired") {
-      result = result.filter(w => w.status === "expired" || (w.status === "active" && w.expiresAt < now));
+      result = result.filter(
+        (win) =>
+          win.status === "active" &&
+          win.expiresAt > now
+      );
     }
 
-    setFilteredWinnings(result);
-  }, [winnings, filter, searchQuery]);
+    if (filter === "expiring_soon") {
+      result = result.filter(
+        (win) =>
+          win.status === "active" &&
+          win.expiresAt > now &&
+          win.expiresAt <= nearExpiryDate
+      );
+    }
+
+    if (filter === "redeemed") {
+      result = result.filter(
+        (win) =>
+          win.status === "redeemed"
+      );
+    }
+
+    if (filter === "expired") {
+      result = result.filter(
+        (win) =>
+          win.status === "expired" ||
+          (win.status === "active" &&
+            win.expiresAt < now)
+      );
+    }
+
+    return result;
+  }, [
+    winnings,
+    filter,
+    searchQuery
+  ]);
+
+  const stats = useMemo(() => {
+    const now = new Date();
+
+    let active = 0;
+    let expiring = 0;
+    let redeemed = 0;
+    let expired = 0;
+
+    winnings.forEach((win) => {
+      const status = getStatus(win);
+
+      if (status.type === "active") {
+        active++;
+      }
+
+      if (status.type === "expiring") {
+        expiring++;
+      }
+
+      if (status.type === "redeemed") {
+        redeemed++;
+      }
+
+      if (status.type === "expired") {
+        expired++;
+      }
+    });
+
+    return {
+      total: winnings.length,
+      active,
+      expiring,
+      redeemed,
+      expired
+    };
+  }, [winnings]);
 
   const handleRedeem = async (id) => {
-    if (!window.confirm("Are you sure you want to redeem this prize?")) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to redeem this prize?"
+    );
+
+    if (!confirmed) return;
+
     try {
-      await updateDoc(doc(db, "winnings", id), {
-        status: "redeemed",
-        redeemedAt: new Date()
-      });
-      setWinnings(prev => prev.map(w => w.id === id ? { ...w, status: "redeemed" } : w));
-      alert("Prize redeemed successfully!");
+      await updateDoc(
+        doc(db, "winnings", id),
+        {
+          status: "redeemed",
+          redeemedAt: new Date()
+        }
+      );
+
+      setWinnings((prev) =>
+        prev.map((win) =>
+          win.id === id
+            ? {
+                ...win,
+                status: "redeemed"
+              }
+            : win
+        )
+      );
+
+      alert(
+        "Prize redeemed successfully!"
+      );
     } catch (error) {
-      console.error("Error redeeming prize:", error);
+      console.error(
+        "Error redeeming prize:",
+        error
+      );
+
+      alert(
+        "Unable to redeem prize. Please try again."
+      );
     }
   };
 
-  // 🔥 NAYA FUNCTION: User ko Ticket Bhejna
   const handleAddTicket = async () => {
-    if (!ticketMobile || ticketAmount <= 0) {
-      alert("Please enter a valid mobile number and ticket amount.");
+    if (
+      !ticketMobile.trim() ||
+      ticketAmount <= 0
+    ) {
+      alert(
+        "Please enter a valid mobile number and ticket amount."
+      );
       return;
     }
-    
+
     setTicketLoading(true);
+
     try {
-      // 1. Mobile number se user dhoondo
-      const q = query(collection(db, "users"), where("mobile", "==", ticketMobile));
-      const querySnapshot = await getDocs(q);
+      const usersQuery = query(
+        collection(db, "users"),
+        where(
+          "mobile",
+          "==",
+          ticketMobile.trim()
+        )
+      );
+
+      const querySnapshot =
+        await getDocs(usersQuery);
 
       if (querySnapshot.empty) {
-        alert("No user found with this mobile number. Please check again.");
+        alert(
+          "No user found with this mobile number."
+        );
         setTicketLoading(false);
         return;
       }
 
-      // 2. User mil gaya, toh uski ticket badha do
-      const userDoc = querySnapshot.docs[0];
-      await updateDoc(doc(db, "users", userDoc.id), {
-        tickets: increment(ticketAmount)
-      });
+      const userDoc =
+        querySnapshot.docs[0];
 
-      alert(`Success! Added ${ticketAmount} ticket(s) to ${userDoc.data().name || "Customer"}'s account.`);
-      
-      // Modal band kardo aur state reset kardo
+      await updateDoc(
+        doc(db, "users", userDoc.id),
+        {
+          tickets: increment(
+            Number(ticketAmount)
+          )
+        }
+      );
+
+      alert(
+        `Successfully added ${ticketAmount} ticket(s) to ${
+          userDoc.data().name ||
+          "Customer"
+        }.`
+      );
+
       setShowTicketModal(false);
       setTicketMobile("");
       setTicketAmount(1);
-
     } catch (error) {
-      console.error("Error adding tickets:", error);
-      alert("Something went wrong. Please try again.");
+      console.error(
+        "Error adding tickets:",
+        error
+      );
+
+      alert(
+        "Something went wrong. Please try again."
+      );
     } finally {
       setTicketLoading(false);
     }
   };
 
+  const formatDate = (date) => {
+    if (!date) return "-";
+
+    return date.toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="winnings-admin-loading">
+        <div className="winnings-spinner"></div>
+        <strong>
+          Loading winnings...
+        </strong>
+        <span>
+          Fetching lucky draw records
+        </span>
+      </div>
+    );
+  }
+
   return (
-    <div style={styles.container}>
-      
-      {/* HEADER SECTION */}
-      <div style={styles.headerRow}>
-        <h2 style={styles.header}>🏆 Lucky Draw Management</h2>
-        
-        {/* 🔥 Bonus Ticket Button */}
-        <button onClick={() => setShowTicketModal(true)} style={styles.addTicketBtn}>
-          🎟️ Add Bonus Ticket
+    <div className="winnings-admin">
+      <div className="winnings-hero">
+        <div className="winnings-title-area">
+          <div className="winnings-icon">
+            🏆
+          </div>
+
+          <div>
+            <span className="winnings-eyebrow">
+              LUCKY DRAW MANAGEMENT
+            </span>
+
+            <h2>
+              Winnings
+            </h2>
+
+            <p>
+              Manage prizes, winners and
+              redemption status.
+            </p>
+          </div>
+        </div>
+
+        <button
+          className="bonus-ticket-btn"
+          onClick={() =>
+            setShowTicketModal(true)
+          }
+        >
+          <span>🎟️</span>
+          Add Bonus Ticket
         </button>
       </div>
 
-      {/* CONTROLS SECTION */}
-      <div style={styles.controlsBar}>
-        <input 
-          type="text" 
-          placeholder="Search by Name or Mobile..." 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={styles.input}
-        />
+      <div className="winnings-stats">
+        <div className="winning-stat total">
+          <div className="stat-icon">
+            🏆
+          </div>
 
-        <select 
-          value={filter} 
-          onChange={(e) => setFilter(e.target.value)} 
-          style={styles.select}
-        >
-          <option value="all">Total All Prizes</option>
-          <option value="active">🟢 Active (Valid)</option>
-          <option value="expiring_soon">🟠 Expiring Soon (&lt; 2 Days)</option>
-          <option value="redeemed">🔵 Redeemed (Used)</option>
-          <option value="expired">🔴 Expired</option>
-        </select>
-        
-        <button onClick={fetchWinnings} style={styles.refreshBtn}>🔄 Refresh</button>
+          <div>
+            <strong>
+              {stats.total}
+            </strong>
+            <span>Total Prizes</span>
+          </div>
+        </div>
+
+        <div className="winning-stat active">
+          <div className="stat-icon">
+            ✓
+          </div>
+
+          <div>
+            <strong>
+              {stats.active}
+            </strong>
+            <span>Active</span>
+          </div>
+        </div>
+
+        <div className="winning-stat expiring">
+          <div className="stat-icon">
+            !
+          </div>
+
+          <div>
+            <strong>
+              {stats.expiring}
+            </strong>
+            <span>Expiring Soon</span>
+          </div>
+        </div>
+
+        <div className="winning-stat redeemed">
+          <div className="stat-icon">
+            ✓
+          </div>
+
+          <div>
+            <strong>
+              {stats.redeemed}
+            </strong>
+            <span>Redeemed</span>
+          </div>
+        </div>
+
+        <div className="winning-stat expired">
+          <div className="stat-icon">
+            ×
+          </div>
+
+          <div>
+            <strong>
+              {stats.expired}
+            </strong>
+            <span>Expired</span>
+          </div>
+        </div>
       </div>
 
-      {/* DATA TABLE SECTION */}
-      <div style={styles.tableWrapper}>
-        {loading ? (
-          <p style={{ textAlign: "center", padding: "20px", color: "white" }}>Loading Database...</p>
-        ) : filteredWinnings.length === 0 ? (
-          <p style={{ textAlign: "center", padding: "20px", color: "#9ca3af" }}>No prizes found for this filter.</p>
-        ) : (
-          <table style={styles.table}>
-            <thead>
-              <tr style={styles.tableHead}>
-                <th style={styles.th}>Customer</th>
-                <th style={styles.th}>Mobile</th>
-                <th style={styles.th}>Prize Won</th>
-                <th style={styles.th}>Won On</th>
-                <th style={styles.th}>Expires On</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredWinnings.map((win) => {
-                const now = new Date();
-                const isExpired = win.status === "expired" || (win.status === "active" && win.expiresAt < now);
-                const isRedeemed = win.status === "redeemed";
-                
-                let badgeColor = "#10b981"; 
-                let statusText = "Active";
-                
-                if (isRedeemed) {
-                  badgeColor = "#3b82f6"; 
-                  statusText = "Redeemed";
-                } else if (isExpired) {
-                  badgeColor = "#ef4444"; 
-                  statusText = "Expired";
-                } else {
-                  const diffTime = Math.abs(win.expiresAt - now);
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                  if(diffDays <= 2) {
-                    badgeColor = "#f97316"; 
-                    statusText = "Expiring Soon";
+      <div className="winnings-controls">
+        <div className="winning-search">
+          <span>⌕</span>
+
+          <input
+            type="text"
+            placeholder="Search name, mobile or prize..."
+            value={searchQuery}
+            onChange={(e) =>
+              setSearchQuery(
+                e.target.value
+              )
+            }
+          />
+
+          {searchQuery && (
+            <button
+              onClick={() =>
+                setSearchQuery("")
+              }
+            >
+              ×
+            </button>
+          )}
+        </div>
+
+        <select
+          value={filter}
+          onChange={(e) =>
+            setFilter(e.target.value)
+          }
+          className="winning-filter"
+        >
+          <option value="all">
+            All Prizes
+          </option>
+
+          <option value="active">
+            Active
+          </option>
+
+          <option value="expiring_soon">
+            Expiring Soon
+          </option>
+
+          <option value="redeemed">
+            Redeemed
+          </option>
+
+          <option value="expired">
+            Expired
+          </option>
+        </select>
+
+        <button
+          className="winning-refresh"
+          onClick={fetchWinnings}
+        >
+          ↻
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <div className="results-row">
+        <span>
+          Showing{" "}
+          <strong>
+            {filteredWinnings.length}
+          </strong>{" "}
+          of{" "}
+          <strong>
+            {winnings.length}
+          </strong>{" "}
+          prizes
+        </span>
+      </div>
+
+      {filteredWinnings.length === 0 ? (
+        <div className="winnings-empty">
+          <div>🏆</div>
+
+          <h3>
+            No prizes found
+          </h3>
+
+          <p>
+            Try changing the search or
+            filter.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="winnings-table-wrapper">
+            <table className="winnings-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Mobile</th>
+                  <th>Prize</th>
+                  <th>Won On</th>
+                  <th>Expires</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredWinnings.map(
+                  (win) => {
+                    const status =
+                      getStatus(win);
+
+                    return (
+                      <tr key={win.id}>
+                        <td>
+                          <div className="customer-cell">
+                            <div className="customer-avatar">
+                              {(
+                                win.userName ||
+                                "U"
+                              )
+                                .charAt(0)
+                                .toUpperCase()}
+                            </div>
+
+                            <div>
+                              <strong>
+                                {win.userName}
+                              </strong>
+
+                              <small>
+                                Winner
+                              </small>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td>
+                          <span className="mobile-number">
+                            {win.userMobile}
+                          </span>
+                        </td>
+
+                        <td>
+                          <div className="prize-cell">
+                            <span>
+                              🎁
+                            </span>
+
+                            <strong>
+                              {win.prizeName}
+                            </strong>
+                          </div>
+                        </td>
+
+                        <td>
+                          {formatDate(
+                            win.wonAt
+                          )}
+                        </td>
+
+                        <td>
+                          {formatDate(
+                            win.expiresAt
+                          )}
+                        </td>
+
+                        <td>
+                          <span
+                            className={`winning-status ${status.type}`}
+                          >
+                            <i>
+                              {status.icon}
+                            </i>
+
+                            {status.text}
+                          </span>
+                        </td>
+
+                        <td>
+                          {status.type ===
+                            "active" ||
+                          status.type ===
+                            "expiring" ? (
+                            <button
+                              className="redeem-btn"
+                              onClick={() =>
+                                handleRedeem(
+                                  win.id
+                                )
+                              }
+                            >
+                              Redeem
+                            </button>
+                          ) : (
+                            <span className="no-action">
+                              —
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
                   }
-                }
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="winnings-mobile-list">
+            {filteredWinnings.map(
+              (win) => {
+                const status =
+                  getStatus(win);
 
                 return (
-                  <tr key={win.id} style={styles.tr}>
-                    <td style={{...styles.td, fontWeight: "bold"}}>{win.userName}</td>
-                    <td style={styles.td}>{win.userMobile}</td>
-                    <td style={{...styles.td, fontWeight: "bold", color: "#eab308"}}>{win.prizeName}</td>
-                    <td style={styles.td}>{win.wonAt.toLocaleDateString()}</td>
-                    <td style={styles.td}>{win.expiresAt.toLocaleDateString()}</td>
-                    <td style={styles.td}>
-                      <span style={{...styles.statusBadge, backgroundColor: badgeColor}}>
-                        {statusText}
-                      </span>
-                    </td>
-                    <td style={styles.td}>
-                      {win.status === "active" && !isExpired && (
-                        <button 
-                          onClick={() => handleRedeem(win.id)}
-                          style={styles.actionBtn}
-                        >
-                          Redeem
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+                  <div
+                    className="winning-mobile-card"
+                    key={win.id}
+                  >
+                    <div className="mobile-card-top">
+                      <div className="customer-cell">
+                        <div className="customer-avatar">
+                          {(
+                            win.userName ||
+                            "U"
+                          )
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
 
-      {/* 🔥 ADD TICKET MODAL */}
+                        <div>
+                          <strong>
+                            {win.userName}
+                          </strong>
+
+                          <small>
+                            {win.userMobile}
+                          </small>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`winning-status ${status.type}`}
+                      >
+                        <i>
+                          {status.icon}
+                        </i>
+                        {status.text}
+                      </span>
+                    </div>
+
+                    <div className="mobile-prize">
+                      <div className="mobile-prize-icon">
+                        🎁
+                      </div>
+
+                      <div>
+                        <span>
+                          PRIZE WON
+                        </span>
+
+                        <strong>
+                          {win.prizeName}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="mobile-card-info">
+                      <div>
+                        <span>
+                          Won On
+                        </span>
+
+                        <strong>
+                          {formatDate(
+                            win.wonAt
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Expires
+                        </span>
+
+                        <strong>
+                          {formatDate(
+                            win.expiresAt
+                          )}
+                        </strong>
+                      </div>
+                    </div>
+
+                    {(status.type ===
+                      "active" ||
+                      status.type ===
+                        "expiring") && (
+                      <button
+                        className="mobile-redeem-btn"
+                        onClick={() =>
+                          handleRedeem(
+                            win.id
+                          )
+                        }
+                      >
+                        ✓ Redeem Prize
+                      </button>
+                    )}
+                  </div>
+                );
+              }
+            )}
+          </div>
+        </>
+      )}
+
       {showTicketModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <h3 style={{ margin: "0 0 15px 0", color: "#111827" }}>Send Bonus Spin Tickets</h3>
-            
-            <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", marginBottom: "5px", fontSize: "0.9rem", color: "#4b5563" }}>
+        <div
+          className="ticket-modal-overlay"
+          onClick={() =>
+            !ticketLoading &&
+            setShowTicketModal(false)
+          }
+        >
+          <div
+            className="ticket-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
+            <button
+              className="ticket-modal-close"
+              onClick={() =>
+                setShowTicketModal(false)
+              }
+              disabled={ticketLoading}
+            >
+              ×
+            </button>
+
+            <div className="ticket-modal-icon">
+              🎟️
+            </div>
+
+            <div className="ticket-modal-title">
+              <span>
+                LUCKY DRAW
+              </span>
+
+              <h3>
+                Add Bonus Tickets
+              </h3>
+
+              <p>
+                Give extra spin tickets to
+                any registered customer.
+              </p>
+            </div>
+
+            <div className="ticket-field">
+              <label>
                 Customer Mobile Number
               </label>
-              <input 
-                type="tel" 
-                placeholder="e.g. 9876543210" 
-                value={ticketMobile}
-                onChange={(e) => setTicketMobile(e.target.value)}
-                style={styles.modalInput}
-              />
+
+              <div className="ticket-input">
+                <span>
+                  📱
+                </span>
+
+                <input
+                  type="tel"
+                  placeholder="9876543210"
+                  value={ticketMobile}
+                  onChange={(e) =>
+                    setTicketMobile(
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
             </div>
 
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "5px", fontSize: "0.9rem", color: "#4b5563" }}>
+            <div className="ticket-field">
+              <label>
                 Number of Tickets
               </label>
-              <input 
-                type="number" 
+
+              <div className="ticket-amount-row">
+                {[1, 2, 5, 10].map(
+                  (amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      className={
+                        Number(
+                          ticketAmount
+                        ) === amount
+                          ? "selected"
+                          : ""
+                      }
+                      onClick={() =>
+                        setTicketAmount(
+                          amount
+                        )
+                      }
+                    >
+                      +{amount}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <input
+                className="ticket-number-input"
+                type="number"
                 min="1"
-                max="10"
+                max="100"
                 value={ticketAmount}
-                onChange={(e) => setTicketAmount(Number(e.target.value))}
-                style={styles.modalInput}
+                onChange={(e) =>
+                  setTicketAmount(
+                    Number(
+                      e.target.value
+                    )
+                  )
+                }
               />
             </div>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-              <button 
-                onClick={() => setShowTicketModal(false)}
-                style={styles.modalCancelBtn}
+            <div className="ticket-modal-actions">
+              <button
+                className="ticket-cancel"
+                onClick={() =>
+                  setShowTicketModal(false)
+                }
                 disabled={ticketLoading}
               >
                 Cancel
               </button>
-              <button 
-                onClick={handleAddTicket}
-                style={styles.modalSendBtn}
+
+              <button
+                className="ticket-send"
+                onClick={
+                  handleAddTicket
+                }
                 disabled={ticketLoading}
               >
-                {ticketLoading ? "Sending..." : "Send Tickets"}
+                {ticketLoading ? (
+                  <>
+                    <span className="mini-spinner"></span>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    🎟️ Send Tickets
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }
-
-// Inline Styles
-const styles = {
-  container: { padding: "20px", color: "#090a0a", fontFamily: "'Inter', sans-serif" },
-  
-  // Header Row with Button
-  headerRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #334155", paddingBottom: "10px" },
-  header: { margin: 0, color: "#131111" },
-  addTicketBtn: { background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)", color: "white", padding: "10px 20px", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" },
-
-  controlsBar: { display: "flex", gap: "15px", marginBottom: "20px", flexWrap: "wrap" },
-  input: { flex: 1, minWidth: "200px", padding: "10px 15px", borderRadius: "8px", border: "1px solid #334155", background: "#0f172a", color: "white" },
-  select: { padding: "10px 15px", borderRadius: "8px", border: "1px solid #334155", background: "#0f172a", color: "white", cursor: "pointer" },
-  refreshBtn: { padding: "10px 20px", borderRadius: "8px", border: "none", background: "#334155", color: "white", cursor: "pointer", fontWeight: "bold" },
-  tableWrapper: { overflowX: "auto", background: "#1e293b", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0,0,0,0.3)" },
-  table: { width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.95rem" },
-  tableHead: { background: "#0f172a" },
-  th: { padding: "15px", color: "#94a3b8", fontWeight: "600", textTransform: "uppercase", fontSize: "0.8rem", letterSpacing: "0.5px" },
-  tr: { borderBottom: "1px solid #334155", transition: "background 0.2s" },
-  td: { padding: "15px", color: "#cbd5e1" },
-  statusBadge: { padding: "5px 10px", borderRadius: "20px", fontSize: "0.8rem", fontWeight: "bold", color: "#fff" },
-  actionBtn: { padding: "8px 15px", background: "#10b981", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" },
-
-  // 🔥 Modal Styles
-  modalOverlay: { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0, 0, 0, 0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 },
-  modalContent: { background: "white", padding: "25px", borderRadius: "12px", width: "90%", maxWidth: "400px", boxShadow: "0 10px 25px rgba(0,0,0,0.2)" },
-  modalInput: { width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", boxSizing: "border-box", fontSize: "1rem" },
-  modalCancelBtn: { padding: "10px 15px", background: "#e5e7eb", color: "#4b5563", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" },
-  modalSendBtn: { padding: "10px 15px", background: "#3b82f6", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }
-};

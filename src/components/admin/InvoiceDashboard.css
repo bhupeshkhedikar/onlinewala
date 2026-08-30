@@ -1,303 +1,474 @@
-/* Core Theme Colors from your Logo */
 :root {
-    --primary-blue: #1a73e8;   /* The Exact Bright Blue for "ऑनलाइन" */
-    --accent-orange: #f59e0b;  /* The Exact Amber/Orange for "वाला" */
-    --text-gray: #64748b;      /* Slate Gray for taglines */
+    --primary-blue: #1a73e8 !important;
+    --accent-orange: #f59e0b !important;
+    --text-gray: #64748b !important;
 }
 
 /* =========================================================
    1. DASHBOARD STYLES (SCREEN VIEW)
    ========================================================= */
-.invoice-dashboard-wrapper { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
-.apps-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.apps-table th { background: var(--primary-blue); color: white; padding: 12px; text-align: left; }
-.apps-table td { padding: 12px; border-bottom: 1px solid #eee; }
-.print-btn { background: var(--accent-orange); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-.pill { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; }
-.pill.paid { background: #dcfce7; color: #15803d; }
-.pill.pending { background: #fee2e2; color: #b91c1c; }
+.invoice-dashboard-wrapper { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important; 
+    padding: 20px !important; 
+}
+
+.apps-table { 
+    width: 100% !important; 
+    border-collapse: collapse !important; 
+    margin-top: 20px !important; 
+    background: #ffffff !important; 
+    border-radius: 8px !important; 
+    overflow: hidden !important; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; 
+}
+
+.apps-table th { 
+    background: var(--primary-blue) !important; 
+    color: #ffffff !important; 
+    padding: 12px !important; 
+    text-align: left !important; 
+}
+
+.apps-table td { 
+    padding: 12px !important; 
+    border-bottom: 1px solid #eeeeee !important; 
+}
+
+.print-btn { 
+    background: var(--accent-orange) !important; 
+    color: #ffffff !important; 
+    border: none !important; 
+    padding: 6px 12px !important; 
+    border-radius: 4px !important; 
+    cursor: pointer !important; 
+}
+
+.pill { 
+    padding: 4px 8px !important; 
+    border-radius: 20px !important; 
+    font-size: 11px !important; 
+    font-weight: bold !important; 
+}
+
+.pill.paid { 
+    background: #dcfce7 !important; 
+    color: #15803d !important; 
+}
+
+.pill.pending { 
+    background: #fee2e2 !important; 
+    color: #b91c1c !important; 
+}
 
 @media screen {
-    .print-view { display: none; }
+    .print-view { 
+        display: none !important; 
+    }
 }
 
 /* =========================================================
-   2. EXACT REPLICA PRINT STYLES
+   2. EXACT 1-PAGE A4 PRINT STYLES
    ========================================================= */
 @media print {
-    body * { visibility: hidden; }
-    .print-view, .print-view * { visibility: visible; }
-    .print-view { position: absolute; left: 0; top: 0; width: 100%; }
+    @page { 
+        margin: 0 !important; 
+        size: A4 portrait !important; 
+    }
     
-    @page { margin: 0; size: A4; }
-    body { background: #ffffff; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
-    
-    .exact-invoice-container { 
-        width: 100%; 
-        min-height: 297mm;
-        background: #ffffff;
-        position: relative;
-        overflow: hidden;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+    html, body {
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        font-family: 'Segoe UI', Arial, sans-serif !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
-    /* --- TOP WAVES --- */
-    .top-wave-container {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 450px;
-        height: 200px;
-        z-index: 10;
+    body * { 
+        visibility: hidden !important; 
     }
     
-    .top-svg { width: 100%; height: 100%; }
+    .print-view, .print-view * { 
+        visibility: visible !important; 
+    }
+    
+    .print-view { 
+        position: absolute !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100% !important;
+        height: 10% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+    }
+
+    .exact-invoice-container { 
+        width: 100% !important; 
+        height: 296mm !important; 
+        max-height: 296mm !important;
+        background: #ffffff !important;
+        position: relative !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* TOP WAVES */
+    .top-wave-container {
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        width: 380px !important;
+        height: 160px !important;
+        z-index: 10 !important;
+    }
+    
+    .top-svg { 
+        width: 100% !important; 
+        height: 100% !important; 
+    }
 
     .title-inside-wave {
-        position: absolute;
-        top: 40px;
-        right: 50px;
-        text-align: right;
-        color: white;
+        position: absolute !important;
+        top: 25px !important;
+        right: 40px !important;
+        text-align: right !important;
+        color: #ffffff !important;
     }
 
-    .title-inside-wave h1 { margin-bottom: 130px; font-size: 32px; font-weight: 800; letter-spacing: 2px;}
-    .title-inside-wave p { margin-bottom: 130px; font-size: 14px; opacity: 0.9; letter-spacing: 1px;}
+    .title-inside-wave h1 { 
+        margin: 0 !important; 
+        font-size: 28px !important; 
+        font-weight: 800 !important; 
+        letter-spacing: 2px !important;
+    }
 
-    /* --- HEADER & EXACT LOGO --- */
+    /* HEADER & LOGO */
     .invoice-header-exact {
-        display: flex;
-        justify-content: space-between;
-        padding: 40px 50px 30px;
-        position: relative;
-        z-index: 5;
+        display: flex !important;
+        justify-content: space-between !important;
+        padding: 30px 45px 15px !important;
+        position: relative !important;
+        z-index: 5 !important;
     }
 
     .exact-logo-design {
-        display: inline-block;
-        text-align: center;
-        margin-bottom: 40px;
+        display: inline-block !important;
+        text-align: left !important;
+        margin-bottom: 15px !important;
     }
 
     .exact-logo-design h2 {
-        font-size: 38px;
-        color: var(--primary-blue);
-        margin: 0;
-        font-weight: 800;
-        line-height: 1.1;
+        font-size: 32px !important;
+        color: var(--primary-blue) !important;
+        margin: 0 !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
     }
 
     .exact-logo-design h2 span {
-        color: var(--accent-orange);
+        color: var(--accent-orange) !important;
     }
 
     .exact-logo-design .tag-gray {
-        color: var(--text-gray);
-        font-size: 14px;
-        font-weight: 700;
-        margin: 4px 0 0 0;
+        color: var(--text-gray) !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        margin: 2px 0 0 0 !important;
     }
 
     .exact-logo-design .tag-orange {
-        color: var(--accent-orange);
-        font-size: 13px;
-        font-weight: 700;
-        margin: 2px 0 0 0;
+        color: var(--accent-orange) !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        margin: 1px 0 0 0 !important;
     }
 
-    .bill-to-box { margin-top: 10px; }
-    .sub-label { font-size: 12px; color: #666; margin: 0 0 5px 0; font-weight: 600;}
-    .client-name { margin: 0 0 5px 0; font-size: 18px; color: var(--primary-blue); font-weight: 800;}
-
-    .right-head { padding-top: 120px; } 
-
-    .meta-table { border-collapse: collapse; font-size: 12px; }
-    .meta-table td { padding: 4px 10px; }
-    .meta-label { font-weight: 700; color: var(--primary-blue); text-align: right; }
-    .meta-value { color: #555; text-align: left; font-weight: 600;}
-
-    /* --- EXACT TABLE (PILL DESIGN) --- */
-    .exact-table-wrapper { padding: 0 50px; margin-bottom: 30px; }
+    .site-url {
+        color: #2563eb !important;
+        font-weight: bold !important;
+        font-size: 12px !important;
+        margin: 2px 0 0 0 !important;
+    }
     
-    .exact-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .site-url span {
+        color: #f59e0b !important;
+    }
+
+    .bill-to-box { 
+        margin-top: 5px !important; 
+    }
+    
+    .sub-label { 
+        font-size: 11px !important; 
+        color: #666666 !important; 
+        margin: 0 0 3px 0 !important; 
+        font-weight: 600 !important;
+    }
+    
+    .client-name { 
+        margin: 0 !important; 
+        font-size: 16px !important; 
+        color: var(--primary-blue) !important; 
+        font-weight: 800 !important;
+    }
+
+    .right-head { 
+        padding-top: 75px !important; 
+    } 
+
+    .meta-table { 
+        border-collapse: collapse !important; 
+        font-size: 11px !important; 
+    }
+    
+    .meta-table td { 
+        padding: 3px 8px !important; 
+    }
+    
+    .meta-label { 
+        font-weight: 700 !important; 
+        color: var(--primary-blue) !important; 
+        text-align: right !important; 
+    }
+    
+    .meta-value { 
+        color: #555555 !important; 
+        text-align: left !important; 
+        font-weight: 600 !important;
+    }
+
+    /* TABLE DESIGN */
+    .exact-table-wrapper { 
+        padding: 0 45px !important; 
+        margin-bottom: 15px !important; 
+    }
+    
+    .exact-table { 
+        width: 100% !important; 
+        border-collapse: collapse !important; 
+        font-size: 12px !important; 
+    }
 
     .exact-table thead tr {
-        background: var(--primary-blue);
-        color: white;
+        background: var(--primary-blue) !important;
+        color: #ffffff !important;
     }
 
-    .exact-table th { padding: 12px; font-weight: 600; }
-    .th-left { border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
-    .th-right { border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
+    .exact-table th { 
+        padding: 9px 10px !important; 
+        font-weight: 600 !important; 
+    }
+    
+    .th-left { 
+        border-top-left-radius: 15px !important; 
+        border-bottom-left-radius: 15px !important; 
+    }
+    
+    .th-right { 
+        border-top-right-radius: 15px !important; 
+        border-bottom-right-radius: 15px !important; 
+    }
 
     .exact-table td {
-        padding: 15px 10px;
-        border-bottom: 1px solid #e2e8f0; 
-        color: #1e293b;
+        padding: 9px 10px !important;
+        border-bottom: 1px solid #e2e8f0 !important; 
+        color: #1e293b !important;
     }
 
-    .text-center { text-align: center; }
-    .text-left { text-align: left; }
+    .text-center { 
+        text-align: center !important; 
+    }
+    
+    .text-left { 
+        text-align: left !important; 
+    }
 
-    /* --- BOTTOM GRID (Totals & Notes) --- */
+    /* BOTTOM GRID */
     .exact-bottom-grid {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 50px;
+        display: flex !important;
+        justify-content: space-between !important;
+        padding: 5px 45px !important;
     }
 
-    .notes-col { width: 45%; }
-    .col-title { font-size: 12px; color: var(--primary-blue); font-weight: 700; margin: 0 0 5px 0;}
-    .col-desc { font-size: 12px; color: #64748b; margin: 0; line-height: 1.5; font-weight: 500;}
+    .notes-col { 
+        width: 45% !important; 
+    }
+    
+    .col-title { 
+        font-size: 11px !important; 
+        color: var(--primary-blue) !important; 
+        font-weight: 700 !important; 
+        margin: 0 0 3px 0 !important;
+    }
+    
+    .col-desc { 
+        font-size: 11px !important; 
+        color: #64748b !important; 
+        margin: 0 !important; 
+        line-height: 1.4 !important; 
+        font-weight: 500 !important;
+    }
 
-    .status-indicator { margin-top: 15px; font-size: 13px; font-weight: 600; color: var(--primary-blue);}
+    .status-indicator { 
+        margin-top: 8px !important; 
+        font-size: 12px !important; 
+        font-weight: 600 !important; 
+        color: var(--primary-blue) !important;
+    }
 
-    .totals-col { width: 38%; padding-right: 10px; }
+    .totals-col { 
+        width: 38% !important; 
+    }
 
     .tot-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        color: var(--primary-blue);
-        font-weight: 600;
-        padding: 6px 10px;
+        display: flex !important;
+        justify-content: space-between !important;
+        font-size: 12px !important;
+        color: var(--primary-blue) !important;
+        font-weight: 600 !important;
+        padding: 4px 8px !important;
     }
 
-    /* Grand Total Pill */
+    /* GRAND TOTAL PILL */
     .grand-tot-pill {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--primary-blue);
-        border-radius: 20px;
-        padding: 6px 15px 6px 6px;
-        margin-top: 10px;
-        color: white;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        background: var(--primary-blue) !important;
+        border-radius: 20px !important;
+        padding: 4px 12px 4px 4px !important;
+        margin-top: 6px !important;
+        color: #ffffff !important;
     }
 
     .pill-badge {
-        background: var(--accent-orange);
-        color: white;
-        padding: 4px 15px;
-        border-radius: 15px;
-        font-size: 12px;
-        font-weight: 700;
+        background: var(--accent-orange) !important;
+        color: #ffffff !important;
+        padding: 3px 12px !important;
+        border-radius: 12px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
     }
 
     .pill-amount {
-        font-size: 16px;
-        font-weight: 700;
+        font-size: 15px !important;
+        font-weight: 700 !important;
     }
 
-    /* --- FOOTER (QUERIES & NEW SPIN BANNER) --- */
-    .exact-footer-sig {
-        display: flex;
-        justify-content: space-between;
-        align-items: center; /* Changed from flex-end to center for better alignment */
-        padding: 40px 50px;
-        position: absolute;
-        bottom: 140px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .query-box { width: 45%; }
-    
-    .no-sig-text {
-        font-size: 10px;
-        color: #94a3b8;
-        margin-top: 10px;
-        font-style: italic;
-    }
-
-    /* SPIN & WIN BANNER */
- /* --- NEW HORIZONTAL SPIN & WIN BANNER --- */
-    .spin-win-banner-horizontal {
-        width: 48%; /* Fits perfectly next to the queries box */
-        background: linear-gradient(90deg, #ea580c 0%, #f97316 100%); /* Vibrant Orange gradient like your image */
-        padding: 10px 15px;
-        border-radius: 12px;
-        color: white;
-        display: flex; /* Flex layout to keep text left, wheel right */
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0px 4px 10px rgba(234, 88, 12, 0.2);
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .banner-text-content {
-        flex: 1;
-        text-align: left;
-    }
-
-    .banner-title {
-        display: block;
-        font-size: 15px;
-        font-weight: 800;
-        margin-bottom: 4px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
-    }
-
-    .banner-desc {
-        font-size: 11px;
-        margin: 0 0 8px 0;
-        line-height: 1.3;
-        color: #fff7ed; /* Soft white for readability */
-    }
-
-    .banner-link {
-        display: inline-block;
-        background: white;
-        color: #ea580c; /* Orange text inside white button */
-        padding: 4px 10px;
-        border-radius: 15px;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.5px;
-    }
-
-    /* Stand SVG Styling */
-    .banner-illustration-wheel {
-        width: 75px;
-        height: 80px;
-        flex-shrink: 0;
-        margin-left: 15px;
-        filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.3)); /* Adds a realistic 3D shadow */
-    }
-
-    /* --- BOTTOM WAVES --- */
-    .bottom-wave-container {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 120px;
-        z-index: 10;
-    }
-    
-    .bottom-svg { width: 100%; height: 100%; }
-}
-/* --- NEW THANK YOU SECTION --- */
+    /* THANK YOU SECTION */
     .thank-you-section {
-        text-align: center;
-        margin-top: 20px;
-        padding: 15px 0;
+        text-align: center !important;
+        margin-top: 10px !important;
+        padding: 8px 0 !important;
     }
 
     .thank-you-title {
-        color: var(--primary-blue);
-        font-size: 20px;
-        font-weight: 800;
-        margin: 0 0 5px 0;
-        letter-spacing: 1px;
+        color: var(--primary-blue) !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
+        margin: 0 0 3px 0 !important;
+        letter-spacing: 0.5px !important;
     }
 
     .visit-again-text {
-        color: var(--text-gray);
-        font-size: 13px;
-        margin: 0;
-        font-weight: 600;
-        line-height: 1.4;
+        color: var(--text-gray) !important;
+        font-size: 11px !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
     }
+
+    /* FOOTER & SPIN BANNER */
+    .exact-footer-sig {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-top: -50% !important;
+        padding: 10px 45px 0 45px !important;
+        position: absolute !important;
+        bottom: 300px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .query-box { 
+        width: 45% !important; 
+    }
+    
+    .no-sig-text {
+        font-size: 9px !important;
+        color: #94a3b8 !important;
+        margin-top: 6px !important;
+        font-style: italic !important;
+    }
+
+    .spin-win-banner-horizontal {
+        width: 48% !important;
+        background: linear-gradient(90deg, #ea580c 0%, #f97316 100%) !important;
+        padding: 8px 12px !important;
+        border-radius: 10px !important;
+        color: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        box-shadow: 0px 4px 10px rgba(234, 88, 12, 0.2) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .banner-text-content {
+        flex: 1 !important;
+        text-align: left !important;
+    }
+
+    .banner-title {
+        display: block !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .banner-desc {
+        font-size: 10px !important;
+        margin: 0 0 5px 0 !important;
+        line-height: 1.2 !important;
+        color: #fff7ed !important;
+    }
+
+    .banner-link {
+        display: inline-block !important;
+        background: #ffffff !important;
+        color: #ea580c !important;
+        padding: 2px 8px !important;
+        border-radius: 10px !important;
+        font-size: 10px !important;
+        font-weight: 800 !important;
+    }
+
+    .banner-illustration-wheel {
+        width: 60px !important;
+        height: 65px !important;
+        flex-shrink: 0 !important;
+        margin-left: 10px !important;
+    }
+
+    /* BOTTOM WAVES */
+    .bottom-wave-container {
+        position: absolute !important;
+        top: 92% !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 80px !important;
+        z-index: 10 !important;
+    }
+    
+    .bottom-svg { 
+        width: 100% !important; 
+        height: 100% !important; 
+    }
+}

@@ -1,0 +1,986 @@
+.winnings-admin {
+  width: 100%;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #0f172a;
+}
+
+.winnings-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 14px;
+  box-shadow: 0 5px 20px rgba(15, 23, 42, 0.04);
+}
+
+.winnings-title-area {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.winnings-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border: 1px solid #fed7aa;
+  font-size: 22px;
+}
+
+.winnings-eyebrow {
+  display: block;
+  color: #005ce6;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.1px;
+  margin-bottom: 3px;
+}
+
+.winnings-title-area h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.winnings-title-area p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.bonus-ticket-btn {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  padding: 10px 14px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 7px 18px rgba(249, 115, 22, 0.2);
+  transition: 0.2s ease;
+}
+
+.bonus-ticket-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(249, 115, 22, 0.28);
+}
+
+.winnings-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+  margin-bottom: 13px;
+}
+
+.winning-stat {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  padding: 11px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035);
+}
+
+.winning-stat .stat-icon {
+  width: 31px;
+  height: 31px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.winning-stat strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.winning-stat span {
+  display: block;
+  margin-top: 4px;
+  font-size: 8px;
+  color: #64748b;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.winning-stat.total .stat-icon {
+  background: #eef2ff;
+  color: #6366f1;
+}
+
+.winning-stat.total strong {
+  color: #6366f1;
+}
+
+.winning-stat.active .stat-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.winning-stat.active strong {
+  color: #16a34a;
+}
+
+.winning-stat.expiring .stat-icon {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.winning-stat.expiring strong {
+  color: #ea580c;
+}
+
+.winning-stat.redeemed .stat-icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.winning-stat.redeemed strong {
+  color: #2563eb;
+}
+
+.winning-stat.expired .stat-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.winning-stat.expired strong {
+  color: #dc2626;
+}
+
+.winnings-controls {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  padding: 9px;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.winning-search {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 0 10px;
+  background: #f8fafc;
+}
+
+.winning-search > span {
+  color: #64748b;
+  font-size: 18px;
+}
+
+.winning-search input {
+  width: 100%;
+  height: 35px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 10px;
+}
+
+.winning-search input::placeholder {
+  color: #94a3b8;
+}
+
+.winning-search button {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.winning-filter {
+  min-width: 145px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 9px;
+  padding: 0 10px;
+  font-size: 9px;
+  font-weight: 700;
+  outline: none;
+}
+
+.winning-refresh {
+  border: 0;
+  border-radius: 9px;
+  background: #005ce6;
+  color: #fff;
+  padding: 0 13px;
+  min-height: 35px;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.winning-refresh:hover {
+  background: #0047b3;
+}
+
+.results-row {
+  padding: 5px 3px 9px;
+  color: #94a3b8;
+  font-size: 8px;
+}
+
+.results-row strong {
+  color: #475569;
+}
+
+.winnings-table-wrapper {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow-x: auto;
+  box-shadow: 0 5px 20px rgba(15, 23, 42, 0.035);
+}
+
+.winnings-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+  font-size: 9px;
+}
+
+.winnings-table thead {
+  background: #f8fafc;
+}
+
+.winnings-table th {
+  padding: 11px 12px;
+  text-align: left;
+  color: #64748b;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.winnings-table td {
+  padding: 10px 12px;
+  color: #475569;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.winnings-table tbody tr {
+  transition: 0.15s ease;
+}
+
+.winnings-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.winnings-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.customer-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.customer-cell strong {
+  display: block;
+  color: #0f172a;
+  font-size: 9px;
+}
+
+.customer-cell small {
+  display: block;
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 7px;
+}
+
+.mobile-number {
+  color: #475569;
+  font-size: 9px;
+}
+
+.prize-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prize-cell > span {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: #fff7ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.prize-cell strong {
+  color: #ea580c;
+  font-size: 9px;
+}
+
+.winning-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 7px;
+  border-radius: 20px;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.winning-status i {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-size: 7px;
+}
+
+.winning-status.active {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.winning-status.active i {
+  background: #22c55e;
+  color: white;
+}
+
+.winning-status.expiring {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.winning-status.expiring i {
+  background: #f97316;
+  color: white;
+}
+
+.winning-status.redeemed {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.winning-status.redeemed i {
+  background: #3b82f6;
+  color: white;
+}
+
+.winning-status.expired {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.winning-status.expired i {
+  background: #ef4444;
+  color: white;
+}
+
+.redeem-btn {
+  border: 0;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.redeem-btn:hover {
+  background: #15803d;
+}
+
+.no-action {
+  color: #cbd5e1;
+}
+
+.winnings-mobile-list {
+  display: none;
+}
+
+.winnings-empty {
+  background: #fff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  text-align: center;
+  padding: 45px 20px;
+}
+
+.winnings-empty > div {
+  width: 55px;
+  height: 55px;
+  margin: auto;
+  border-radius: 16px;
+  background: #fff7ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.winnings-empty h3 {
+  margin: 12px 0 4px;
+  font-size: 14px;
+}
+
+.winnings-empty p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 9px;
+}
+
+.winnings-admin-loading {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+}
+
+.winnings-admin-loading strong {
+  font-size: 11px;
+}
+
+.winnings-admin-loading span {
+  color: #94a3b8;
+  font-size: 8px;
+}
+
+.winnings-spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid #dbeafe;
+  border-top-color: #005ce6;
+  animation: winnings-spin 0.8s linear infinite;
+}
+
+@keyframes winnings-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ticket-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  backdrop-filter: blur(5px);
+}
+
+.ticket-modal {
+  position: relative;
+  width: 100%;
+  max-width: 410px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.25);
+  animation: ticket-modal-in 0.2s ease;
+}
+
+@keyframes ticket-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.ticket-modal-close {
+  position: absolute;
+  right: 13px;
+  top: 13px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ticket-modal-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.ticket-modal-title span {
+  color: #f97316;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.ticket-modal-title h3 {
+  margin: 3px 0;
+  font-size: 18px;
+}
+
+.ticket-modal-title p {
+  margin: 0 0 18px;
+  color: #64748b;
+  font-size: 9px;
+}
+
+.ticket-field {
+  margin-bottom: 15px;
+}
+
+.ticket-field label {
+  display: block;
+  color: #334155;
+  font-size: 9px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.ticket-input {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 9px;
+  padding: 0 10px;
+}
+
+.ticket-input span {
+  font-size: 13px;
+}
+
+.ticket-input input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 10px;
+  color: #0f172a;
+}
+
+.ticket-amount-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.ticket-amount-row button {
+  height: 34px;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ticket-amount-row button.selected {
+  background: #005ce6;
+  color: white;
+  border-color: #005ce6;
+}
+
+.ticket-number-input {
+  width: 100%;
+  height: 38px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 10px;
+  outline: 0;
+  font-size: 10px;
+}
+
+.ticket-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.ticket-modal-actions button {
+  flex: 1;
+  height: 39px;
+  border: 0;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ticket-cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.ticket-send {
+  background: linear-gradient(135deg, #005ce6, #2563eb);
+  color: #fff;
+}
+
+.ticket-send:disabled,
+.ticket-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mini-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  vertical-align: middle;
+  animation: winnings-spin 0.7s linear infinite;
+}
+
+@media (max-width: 1100px) {
+  .winnings-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .winnings-hero {
+    padding: 13px;
+    border-radius: 14px;
+    align-items: flex-start;
+  }
+
+  .winnings-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    font-size: 18px;
+  }
+
+  .winnings-title-area {
+    gap: 9px;
+  }
+
+  .winnings-title-area h2 {
+    font-size: 16px;
+  }
+
+  .winnings-title-area p {
+    font-size: 8px;
+  }
+
+  .winnings-eyebrow {
+    font-size: 7px;
+  }
+
+  .bonus-ticket-btn {
+    padding: 8px 9px;
+    font-size: 8px;
+    white-space: nowrap;
+  }
+
+  .winnings-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+  }
+
+  .winning-stat {
+    padding: 9px;
+    border-radius: 10px;
+  }
+
+  .winning-stat .stat-icon {
+    width: 27px;
+    height: 27px;
+  }
+
+  .winning-stat strong {
+    font-size: 14px;
+  }
+
+  .winning-stat span {
+    font-size: 7px;
+  }
+
+  .winnings-controls {
+    flex-wrap: wrap;
+    padding: 7px;
+  }
+
+  .winning-search {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .winning-filter {
+    flex: 1;
+    min-width: 0;
+    height: 35px;
+  }
+
+  .winning-refresh {
+    height: 35px;
+    padding: 0 12px;
+  }
+
+  .winnings-table-wrapper {
+    display: none;
+  }
+
+  .winnings-mobile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .winning-mobile-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+    padding: 11px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035);
+  }
+
+  .mobile-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .mobile-card-top .customer-cell {
+    min-width: 0;
+  }
+
+  .mobile-card-top .customer-cell strong {
+    font-size: 9px;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-card-top .customer-cell small {
+    font-size: 7px;
+  }
+
+  .mobile-card-top .winning-status {
+    flex-shrink: 0;
+    font-size: 6px;
+  }
+
+  .mobile-prize {
+    margin: 10px 0;
+    padding: 9px;
+    border-radius: 10px;
+    background: linear-gradient(
+      135deg,
+      #fff7ed,
+      #fffbeb
+    );
+    border: 1px solid #fed7aa;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .mobile-prize-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+  }
+
+  .mobile-prize span {
+    display: block;
+    color: #ea580c;
+    font-size: 6px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+  }
+
+  .mobile-prize strong {
+    display: block;
+    margin-top: 2px;
+    color: #9a3412;
+    font-size: 10px;
+  }
+
+  .mobile-card-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+
+  .mobile-card-info > div {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 7px;
+  }
+
+  .mobile-card-info span {
+    display: block;
+    color: #94a3b8;
+    font-size: 6px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .mobile-card-info strong {
+    display: block;
+    color: #334155;
+    font-size: 8px;
+    margin-top: 3px;
+  }
+
+  .mobile-redeem-btn {
+    width: 100%;
+    height: 35px;
+    margin-top: 8px;
+    border: 0;
+    border-radius: 8px;
+    background: #16a34a;
+    color: white;
+    font-size: 8px;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: 480px) {
+  .winnings-hero {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .winnings-title-area {
+    width: 100%;
+  }
+
+  .bonus-ticket-btn {
+    width: 100%;
+    justify-content: center;
+    height: 34px;
+  }
+
+  .winnings-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .winning-stat:last-child {
+    grid-column: span 2;
+  }
+
+  .winning-stat {
+    min-height: 55px;
+  }
+
+  .winning-search input {
+    font-size: 9px;
+  }
+
+  .winning-filter {
+    font-size: 8px;
+  }
+
+  .winning-refresh span {
+    display: none;
+  }
+
+  .winning-refresh {
+    width: 38px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .ticket-modal-overlay {
+    padding: 10px;
+  }
+
+  .ticket-modal {
+    padding: 17px;
+    border-radius: 16px;
+  }
+
+  .ticket-modal-title h3 {
+    font-size: 16px;
+  }
+}

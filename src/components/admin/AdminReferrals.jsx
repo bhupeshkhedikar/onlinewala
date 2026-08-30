@@ -1210,7 +1210,7 @@ export default function AdminReferrals() {
 
 
           <button
-            className="admin-refresh-btn"
+            className="admin-refresh-btnn"
             onClick={
               loadReferrals
             }

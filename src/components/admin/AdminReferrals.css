@@ -48,7 +48,7 @@
   font-size: 12px;
 }
 
-.admin-refresh-btn {
+.admin-refresh-btnn {
   height: 40px;
   padding: 0 16px;
   border: 1px solid #ddd6fe;
@@ -61,7 +61,7 @@
   transition: 0.2s ease;
 }
 
-.admin-refresh-btn:hover {
+.admin-refresh-btnn:hover {
   background: #f5f3ff;
   transform: translateY(-1px);
 }
@@ -690,7 +690,7 @@
     font-size: 9px;
   }
 
-  .admin-refresh-btn {
+  .admin-refresh-btnn {
     width: 100%;
   }
 

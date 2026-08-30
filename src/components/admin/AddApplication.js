@@ -22,6 +22,7 @@ export default function AddApplication({ userId, user }) {
 
     // 🔥 INVOICE STATE
     const [invoiceData, setInvoiceData] = useState(null);
+    const [activeTab, setActiveTab] = useState("create");
 
     // Cleanup object URLs for memory management
     useEffect(() => {
@@ -199,11 +200,36 @@ export default function AddApplication({ userId, user }) {
 
     return (
         <div className="aa-wrapper">
+            <div className="aa-tabs-header">
+                <div className="aa-tabs-title-wrap">
+                    <span className="aa-tabs-eyebrow">SERVICE MANAGEMENT</span>
+                    <h1 className="aa-tabs-title">Manage User Services</h1>
+                    <p className="aa-tabs-subtitle">Create applications, upload documents and manage saved files.</p>
+                </div>
+                <div className="aa-tabs-count">
+                    <strong>{user?.applications?.length || 0}</strong>
+                    <span>Applications</span>
+                </div>
+            </div>
 
-            {/* --- NORMAL UI --- */}
-            <div className="aa-layout">
+            <div className="aa-tabs-nav" role="tablist" aria-label="Service management tabs">
+                <button type="button" className={`aa-tab ${activeTab === "create" ? "active" : ""}`} onClick={() => setActiveTab("create")} role="tab" aria-selected={activeTab === "create"}>
+                    <span className="aa-tab-icon">✦</span>
+                    <span className="aa-tab-copy"><strong>Create Application</strong><small>New service entry</small></span>
+                </button>
+                <button type="button" className={`aa-tab ${activeTab === "upload" ? "active" : ""}`} onClick={() => setActiveTab("upload")} role="tab" aria-selected={activeTab === "upload"}>
+                    <span className="aa-tab-icon">↑</span>
+                    <span className="aa-tab-copy"><strong>Upload Documents</strong><small>Add files</small></span>
+                </button>
+                <button type="button" className={`aa-tab ${activeTab === "saved" ? "active" : ""}`} onClick={() => setActiveTab("saved")} role="tab" aria-selected={activeTab === "saved"}>
+                    <span className="aa-tab-icon">▣</span>
+                    <span className="aa-tab-copy"><strong>Saved Documents</strong><small>{user?.documents?.length || 0} saved</small></span>
+                </button>
+            </div>
 
-                {/* LEFT COLUMN: Data Entry Forms */}
+            {activeTab === "create" && (
+                <div className="aa-tab-panel">
+                    <div className="aa-layout">
                 <div className="aa-col-left">
                     {/* Add App Card */}
                     <div className="aa-card">
@@ -286,45 +312,7 @@ export default function AddApplication({ userId, user }) {
                         </button>
                     </div>
                 </div>
-
-                {/* RIGHT COLUMN: Upload, Display Apps, Display Docs */}
-                <div className="aa-col-right">
-
-                    {/* Upload Documents Card */}
-                    <div className="aa-card">
-                        <h2 className="aa-heading">Upload Documents</h2>
-                        <div className="aa-upload-trigger">
-                            <input type="file" id="aa-doc-upload" multiple onChange={handleFileSelect} hidden />
-                            <label htmlFor="aa-doc-upload" className="aa-btn-secondary">Browse Files to Upload</label>
-                        </div>
-
-                        {docFiles.length > 0 && (
-                            <div className="aa-upload-queue">
-                                {docFiles.map((f, i) => (
-                                    <div key={i} className="aa-queue-item">
-                                        {f.preview ? <img src={f.preview} className="aa-thumb" alt="preview" /> : <div className="aa-thumb-placeholder">DOC</div>}
-                                        <div className="aa-queue-info">
-                                            <p className="aa-truncate">{f.file.name}</p>
-                                            <div className="aa-queue-inputs">
-                                                <input className="aa-input aa-input-sm" placeholder="Title" value={docMeta[i]?.title || ""} onChange={e => {
-                                                    const newMeta = [...docMeta]; newMeta[i].title = e.target.value; setDocMeta(newMeta);
-                                                }} />
-                                                <input className="aa-input aa-input-sm" placeholder="Subtitle" value={docMeta[i]?.subtitle || ""} onChange={e => {
-                                                    const newMeta = [...docMeta]; newMeta[i].subtitle = e.target.value; setDocMeta(newMeta);
-                                                }} />
-                                            </div>
-                                            <div className="aa-progress-bar"><div className="aa-progress-fill" style={{ width: `${docMeta[i]?.progress || 0}%` }} /></div>
-                                            <span className="aa-status-text">{docMeta[i]?.status}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                                <button className="aa-btn-primary" onClick={handleUploadDocs} disabled={isUploadingDocs}>
-                                    {isUploadingDocs ? "Uploading Data..." : "Confirm Uploads"}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
+                        <div className="aa-col-right">
                     {/* Applications List */}
                     <div className="aa-card">
                         <h2 className="aa-heading">Current Applications</h2>
@@ -377,6 +365,74 @@ export default function AddApplication({ userId, user }) {
                         </div>
                     </div>
 
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === "upload" && (
+                <div className="aa-tab-panel aa-single-panel">
+                    <div className="aa-card aa-single-card">
+                        <div className="aa-panel-heading">
+                            <div>
+                                <span className="aa-tabs-eyebrow">DOCUMENT CENTER</span>
+                                <h2>Upload Documents</h2>
+                                <p>Select files, add details and upload them securely.</p>
+                            </div>
+                            <span className="aa-panel-icon">↑</span>
+                        </div>
+                    {/* Upload Documents Card */}
+                    <div className="aa-card">
+                        <h2 className="aa-heading">Upload Documents</h2>
+                        <div className="aa-upload-trigger">
+                            <input type="file" id="aa-doc-upload" multiple onChange={handleFileSelect} hidden />
+                            <label htmlFor="aa-doc-upload" className="aa-btn-secondary">Browse Files to Upload</label>
+                        </div>
+
+                        {docFiles.length > 0 && (
+                            <div className="aa-upload-queue">
+                                {docFiles.map((f, i) => (
+                                    <div key={i} className="aa-queue-item">
+                                        {f.preview ? <img src={f.preview} className="aa-thumb" alt="preview" /> : <div className="aa-thumb-placeholder">DOC</div>}
+                                        <div className="aa-queue-info">
+                                            <p className="aa-truncate">{f.file.name}</p>
+                                            <div className="aa-queue-inputs">
+                                                <input className="aa-input aa-input-sm" placeholder="Title" value={docMeta[i]?.title || ""} onChange={e => {
+                                                    const newMeta = [...docMeta]; newMeta[i].title = e.target.value; setDocMeta(newMeta);
+                                                }} />
+                                                <input className="aa-input aa-input-sm" placeholder="Subtitle" value={docMeta[i]?.subtitle || ""} onChange={e => {
+                                                    const newMeta = [...docMeta]; newMeta[i].subtitle = e.target.value; setDocMeta(newMeta);
+                                                }} />
+                                            </div>
+                                            <div className="aa-progress-bar"><div className="aa-progress-fill" style={{ width: `${docMeta[i]?.progress || 0}%` }} /></div>
+                                            <span className="aa-status-text">{docMeta[i]?.status}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                                <button className="aa-btn-primary" onClick={handleUploadDocs} disabled={isUploadingDocs}>
+                                    {isUploadingDocs ? "Uploading Data..." : "Confirm Uploads"}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+
+                    </div>
+                </div>
+            )}
+
+            {activeTab === "saved" && (
+                <div className="aa-tab-panel aa-single-panel">
+                    <div className="aa-card aa-single-card">
+                        <div className="aa-panel-heading">
+                            <div>
+                                <span className="aa-tabs-eyebrow">DOCUMENT VAULT</span>
+                                <h2>Saved Documents</h2>
+                                <p>View, download or delete uploaded documents.</p>
+                            </div>
+                            <span className="aa-panel-icon saved">▣</span>
+                        </div>
                     {/* User Documents Grid */}
                     <div className="aa-card">
                         <h2 className="aa-heading">Saved Documents</h2>
@@ -408,9 +464,10 @@ export default function AddApplication({ userId, user }) {
                             ))}
                         </div>
                     </div>
-                </div>
 
-            </div>
+                    </div>
+                </div>
+            )}
 
             {/* --- MEDIA VIEWER MODAL --- */}
             {previewIndex !== null && (

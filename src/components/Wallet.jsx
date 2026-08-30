@@ -1,184 +1,141 @@
-
 import { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
-
 import {
   doc,
   getDoc,
   collection,
   query,
   where,
-  getDocs,
-  orderBy,
-  limit,
+  getDocs
 } from "firebase/firestore";
-
 import "./Wallet.css";
 import AddMoney from "./AddMoney";
+import Withdraw from "./Withdraw";
 
 export default function Wallet() {
-  /* =========================================================
-     STATES
-  ========================================================= */
-
   const [wallet, setWallet] = useState({
     walletBalance: 0,
     availableBalance: 0,
-    pendingReferralAmount: 0,
+    pendingReferralAmount: 0
   });
 
-  const [transactions, setTransactions] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  // =========================================================
-  // ADD MONEY POPUP
-  // =========================================================
-
-  const [showAddMoney, setShowAddMoney] =
-    useState(false);
-
-  /* =========================================================
-     LOAD WALLET
-  ========================================================= */
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showAddMoney, setShowAddMoney] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
 
   useEffect(() => {
     loadWallet();
   }, []);
 
-  /* =========================================================
-     FETCH WALLET DATA
-  ========================================================= */
+  const getTime = (value) => {
+    if (!value) return 0;
+
+    if (typeof value.toMillis === "function") {
+      return value.toMillis();
+    }
+
+    if (typeof value.toDate === "function") {
+      return value.toDate().getTime();
+    }
+
+    const time = new Date(value).getTime();
+    return Number.isNaN(time) ? 0 : time;
+  };
 
   const loadWallet = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const currentUser =
-        auth.currentUser;
+      const currentUser = auth.currentUser;
 
       if (!currentUser) {
-        setError(
-          "कृपया आधी लॉगिन करा."
-        );
-
-        setLoading(false);
-
+        setError("कृपया आधी लॉगिन करा.");
         return;
       }
 
-      /* =====================================================
-         GET USER WALLET
-      ===================================================== */
-
-      const userRef = doc(
-        db,
-        "users",
-        currentUser.uid
-      );
-
-      const userSnap =
-        await getDoc(userRef);
+      const userRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
-        setError(
-          "Wallet profile सापडला नाही."
-        );
-
-        setLoading(false);
-
+        setError("Wallet profile सापडला नाही.");
         return;
       }
 
-      const userData =
-        userSnap.data();
-
-      /* =====================================================
-         WALLET VALUES
-      ===================================================== */
+      const userData = userSnap.data();
 
       setWallet({
-        walletBalance:
-          Number(
-            userData.walletBalance || 0
-          ),
-
-        availableBalance:
-          Number(
-            userData.availableBalance || 0
-          ),
-
-        pendingReferralAmount:
-          Number(
-            userData.pendingReferralAmount ||
-              0
-          ),
+        walletBalance: Number(userData.walletBalance || 0),
+        availableBalance: Number(userData.availableBalance || 0),
+        pendingReferralAmount: Number(
+          userData.pendingReferralAmount || 0
+        )
       });
 
-      /* =====================================================
-         GET TRANSACTIONS
-
-         Collection:
-
-         walletTransactions/{transactionId}
-      ===================================================== */
+      const allTransactions = [];
 
       try {
-        const transactionQuery =
-          query(
-            collection(
-              db,
-              "walletTransactions"
-            ),
-            where(
-              "userId",
-              "==",
-              currentUser.uid
-            ),
-            orderBy(
-              "createdAt",
-              "desc"
-            ),
-            limit(50)
-          );
-
-        const transactionSnapshot =
-          await getDocs(
-            transactionQuery
-          );
-
-        const transactionList =
-          transactionSnapshot.docs.map(
-            (transaction) => ({
-              id: transaction.id,
-              ...transaction.data(),
-            })
-          );
-
-        setTransactions(
-          transactionList
-        );
-      } catch (
-        transactionError
-      ) {
-        /*
-         * If Firestore index is not created yet,
-         * wallet should still load.
-         */
-
-        console.warn(
-          "Transaction loading error:",
-          transactionError
+        const walletQuery = query(
+          collection(db, "walletTransactions"),
+          where("userId", "==", currentUser.uid)
         );
 
-        setTransactions([]);
+        const walletSnapshot = await getDocs(walletQuery);
+
+        walletSnapshot.forEach((item) => {
+          allTransactions.push({
+            id: item.id,
+            source: "wallet",
+            ...item.data()
+          });
+        });
+      } catch (err) {
+        console.error(
+          "walletTransactions error:",
+          err
+        );
       }
+
+      try {
+        const withdrawalQuery = query(
+          collection(db, "withdrawals"),
+          where("userId", "==", currentUser.uid)
+        );
+
+        const withdrawalSnapshot =
+          await getDocs(withdrawalQuery);
+
+        withdrawalSnapshot.forEach((item) => {
+          const data = item.data();
+
+          allTransactions.push({
+            id: `withdrawal_${item.id}`,
+            withdrawalId: item.id,
+            source: "withdrawal",
+            type: "WITHDRAWAL",
+            amount: Number(data.amount || 0),
+            status: data.status || "pending",
+            description: "Withdrawal",
+            isCredit: false,
+            ...data
+          });
+        });
+      } catch (err) {
+        console.error(
+          "withdrawals error:",
+          err
+        );
+      }
+
+      allTransactions.sort(
+        (a, b) =>
+          getTime(b.createdAt) -
+          getTime(a.createdAt)
+      );
+
+      setTransactions(allTransactions);
     } catch (err) {
       console.error(
         "Wallet loading error:",
@@ -193,137 +150,73 @@ export default function Wallet() {
     }
   };
 
-  /* =========================================================
-     FORMAT DATE
-  ========================================================= */
-
   const formatDate = (timestamp) => {
-    if (
-      !timestamp ||
-      !timestamp.toDate
-    ) {
-      return "—";
-    }
+    if (!timestamp) return "—";
 
-    return timestamp
-      .toDate()
-      .toLocaleDateString(
+    try {
+      const date =
+        typeof timestamp.toDate === "function"
+          ? timestamp.toDate()
+          : new Date(timestamp);
+
+      if (Number.isNaN(date.getTime())) {
+        return "—";
+      }
+
+      return date.toLocaleDateString(
         "en-IN",
         {
           day: "2-digit",
           month: "short",
-          year: "numeric",
+          year: "numeric"
         }
       );
+    } catch {
+      return "—";
+    }
   };
 
-  /* =========================================================
-     FORMAT TIME
-  ========================================================= */
-
   const formatTime = (timestamp) => {
-    if (
-      !timestamp ||
-      !timestamp.toDate
-    ) {
-      return "";
-    }
+    if (!timestamp) return "";
 
-    return timestamp
-      .toDate()
-      .toLocaleTimeString(
+    try {
+      const date =
+        typeof timestamp.toDate === "function"
+          ? timestamp.toDate()
+          : new Date(timestamp);
+
+      if (Number.isNaN(date.getTime())) {
+        return "";
+      }
+
+      return date.toLocaleTimeString(
         "en-IN",
         {
           hour: "2-digit",
-          minute: "2-digit",
+          minute: "2-digit"
         }
       );
-  };
-
-  /* =========================================================
-     GET TRANSACTION ICON
-  ========================================================= */
-
-  const getTransactionIcon = (
-    transaction
-  ) => {
-    const type =
-      String(
-        transaction.type || ""
-      ).toUpperCase();
-
-    if (
-      type === "CREDIT" ||
-      type === "REFERRAL" ||
-      type === "RECHARGE" ||
-      type === "CASHBACK" ||
-      type === "REFUND"
-    ) {
-      return "↗";
-    }
-
-    if (
-      type === "DEBIT" ||
-      type === "PAYMENT" ||
-      type === "SERVICE_PAYMENT"
-    ) {
-      return "↘";
-    }
-
-    return "₹";
-  };
-
-  /* =========================================================
-     GET TRANSACTION TITLE
-  ========================================================= */
-
-  const getTransactionTitle = (
-    transaction
-  ) => {
-    if (
-      transaction.description
-    ) {
-      return transaction.description;
-    }
-
-    const type =
-      String(
-        transaction.type || ""
-      ).toUpperCase();
-
-    switch (type) {
-      case "REFERRAL":
-        return "Referral Reward";
-
-      case "RECHARGE":
-        return "Wallet Recharge";
-
-      case "CASHBACK":
-        return "Cashback";
-
-      case "REFUND":
-        return "Refund";
-
-      case "PAYMENT":
-      case "SERVICE_PAYMENT":
-        return "Service Payment";
-
-      default:
-        return "Wallet Transaction";
+    } catch {
+      return "";
     }
   };
 
-  /* =========================================================
-     CHECK CREDIT / DEBIT
-  ========================================================= */
+  const isWithdrawal = (transaction) => {
+    return (
+      transaction.source === "withdrawal" ||
+      String(transaction.type || "").toUpperCase() ===
+        "WITHDRAWAL"
+    );
+  };
 
-  const isCredit = (
-    transaction
-  ) => {
-    const type =
-      String(
-        transaction.type || ""
-      ).toUpperCase();
+  const isCredit = (transaction) => {
+    if (isWithdrawal(transaction)) {
+      return false;
+    }
+
+    const type = String(
+      transaction.type || ""
+    ).toUpperCase();
 
     return (
       transaction.isCredit === true ||
@@ -335,86 +228,132 @@ export default function Wallet() {
     );
   };
 
-  /* =========================================================
-     GET STATUS
-  ========================================================= */
+  const getIcon = (transaction) => {
+    if (isWithdrawal(transaction)) {
+      return "↘";
+    }
 
-  const getTransactionStatus = (
-    transaction
-  ) => {
-    const status =
-      String(
+    return isCredit(transaction) ? "↗" : "↘";
+  };
+
+  const getTitle = (transaction) => {
+    if (isWithdrawal(transaction)) {
+      const status = String(
         transaction.status || ""
       ).toLowerCase();
 
-    if (
-      status === "pending"
-    ) {
+      if (status === "pending") {
+        return "Withdrawal Request";
+      }
+
+      if (status === "approved") {
+        return "Withdrawal Approved";
+      }
+
+      if (status === "paid") {
+        return "Withdrawal Paid";
+      }
+
+      if (status === "rejected") {
+        return "Withdrawal Rejected";
+      }
+
+      return "Withdrawal";
+    }
+
+    if (transaction.description) {
+      return transaction.description;
+    }
+
+    const type = String(
+      transaction.type || ""
+    ).toUpperCase();
+
+    switch (type) {
+      case "REFERRAL":
+        return "Referral Reward";
+      case "RECHARGE":
+        return "Wallet Recharge";
+      case "CASHBACK":
+        return "Cashback";
+      case "REFUND":
+        return "Refund";
+      case "PAYMENT":
+      case "SERVICE_PAYMENT":
+        return "Service Payment";
+      case "DEBIT":
+        return "Wallet Debit";
+      case "CREDIT":
+        return "Wallet Credit";
+      default:
+        return "Wallet Transaction";
+    }
+  };
+
+  const getStatus = (transaction) => {
+    const status = String(
+      transaction.status || ""
+    ).toLowerCase();
+
+    if (status === "pending") {
       return {
         text: "Pending",
-        className: "pending",
+        className: "pending"
       };
     }
 
     if (
-      status === "failed" ||
-      status === "rejected"
+      status === "rejected" ||
+      status === "failed"
     ) {
       return {
-        text: "Failed",
-        className: "failed",
+        text: "Rejected",
+        className: "failed"
+      };
+    }
+
+    if (status === "approved") {
+      return {
+        text: "Approved",
+        className: "success"
+      };
+    }
+
+    if (status === "paid") {
+      return {
+        text: "Paid",
+        className: "success"
       };
     }
 
     return {
       text: "Success",
-      className: "success",
+      className: "success"
     };
   };
-
-  /* =========================================================
-     LOADING
-  ========================================================= */
 
   if (loading) {
     return (
       <div className="wallet-page">
-
         <div className="wallet-loading">
-
           <div className="wallet-spinner"></div>
-
-          <p>
-            Wallet load होत आहे...
-          </p>
-
+          <p>Wallet load होत आहे...</p>
         </div>
-
       </div>
     );
   }
 
-  /* =========================================================
-     ERROR
-  ========================================================= */
-
   if (error) {
     return (
       <div className="wallet-page">
-
         <div className="wallet-error-box">
-
           <div className="wallet-error-icon">
             ⚠️
           </div>
 
-          <h3>
-            Wallet load झाला नाही
-          </h3>
+          <h3>Wallet load झाला नाही</h3>
 
-          <p>
-            {error}
-          </p>
+          <p>{error}</p>
 
           <button
             onClick={loadWallet}
@@ -422,65 +361,37 @@ export default function Wallet() {
           >
             पुन्हा प्रयत्न करा
           </button>
-
         </div>
-
       </div>
     );
   }
 
-  /* =========================================================
-     MAIN UI
-  ========================================================= */
-
   return (
     <div className="wallet-page">
-
       <div className="wallet-container">
 
-        {/* =================================================
-            PAGE HEADER
-        ================================================= */}
-
         <div className="wallet-page-header">
-
           <div>
-
             <span className="wallet-label">
               ONLINEWALAA
             </span>
 
-            <h1>
-              My Wallet
-            </h1>
+            <h1>My Wallet</h1>
 
             <p>
-              तुमचा OnlineWalaa balance
-              manage करा.
+              तुमचा OnlineWalaa balance manage करा.
             </p>
-
           </div>
 
           <div className="wallet-header-icon">
             💰
           </div>
-
         </div>
 
-
-        {/* =================================================
-            MAIN BALANCE
-        ================================================= */}
-
         <section className="main-wallet-card">
-
           <div className="wallet-card-top">
-
             <div>
-
-              <span>
-                Total Wallet Balance
-              </span>
+              <span>Total Wallet Balance</span>
 
               <h2>
                 ₹
@@ -488,22 +399,16 @@ export default function Wallet() {
                   "en-IN"
                 )}
               </h2>
-
             </div>
 
             <div className="wallet-big-icon">
               💰
             </div>
-
           </div>
 
           <div className="wallet-balance-info">
-
             <div className="balance-info-item">
-
-              <span>
-                Available Balance
-              </span>
+              <span>Available Balance</span>
 
               <strong>
                 ₹
@@ -513,21 +418,14 @@ export default function Wallet() {
               </strong>
 
               <small>
-                Services / payments के लिए
-                available
+                Services / payments के लिए available
               </small>
-
             </div>
-
 
             <div className="balance-divider"></div>
 
-
             <div className="balance-info-item pending-balance">
-
-              <span>
-                Pending Referral
-              </span>
+              <span>Pending Referral</span>
 
               <strong>
                 ₹
@@ -539,29 +437,17 @@ export default function Wallet() {
               <small>
                 Admin approval pending
               </small>
-
             </div>
-
           </div>
-
         </section>
 
-
-        {/* =================================================
-            PENDING WARNING
-        ================================================= */}
-
-        {wallet.pendingReferralAmount >
-          0 && (
-
+        {wallet.pendingReferralAmount > 0 && (
           <section className="pending-wallet-notice">
-
             <div className="pending-notice-icon">
               ⏳
             </div>
 
             <div className="pending-notice-content">
-
               <h3>
                 Referral Reward Pending
               </h3>
@@ -571,42 +457,25 @@ export default function Wallet() {
                 {wallet.pendingReferralAmount.toLocaleString(
                   "en-IN"
                 )}{" "}
-                referral reward आपके wallet
-                में दिखाई दे रहा है, लेकिन
-                अभी available नहीं है।
+                referral reward अभी available नहीं है।
               </p>
 
               <small>
-                Referred user के service book
-                करने के बाद admin manually
-                verify करेगा। Approval के बाद
-                यह amount available balance
-                में चला जाएगा।
+                Admin approval के बाद यह amount
+                available balance में चला जाएगा।
               </small>
-
             </div>
-
           </section>
         )}
 
-
-        {/* =================================================
-            BALANCE BREAKDOWN
-        ================================================= */}
-
         <section className="wallet-breakdown">
-
           <div className="wallet-breakdown-card">
-
             <div className="breakdown-icon available">
               ✓
             </div>
 
             <div>
-
-              <span>
-                Available
-              </span>
+              <span>Available</span>
 
               <strong>
                 ₹
@@ -614,23 +483,16 @@ export default function Wallet() {
                   "en-IN"
                 )}
               </strong>
-
             </div>
-
           </div>
 
-
           <div className="wallet-breakdown-card">
-
             <div className="breakdown-icon pending">
               ⏳
             </div>
 
             <div>
-
-              <span>
-                Pending
-              </span>
+              <span>Pending</span>
 
               <strong>
                 ₹
@@ -638,23 +500,16 @@ export default function Wallet() {
                   "en-IN"
                 )}
               </strong>
-
             </div>
-
           </div>
 
-
           <div className="wallet-breakdown-card">
-
             <div className="breakdown-icon total">
               ₹
             </div>
 
             <div>
-
-              <span>
-                Total
-              </span>
+              <span>Total</span>
 
               <strong>
                 ₹
@@ -662,96 +517,94 @@ export default function Wallet() {
                   "en-IN"
                 )}
               </strong>
-
             </div>
-
           </div>
-
         </section>
 
-
-        {/* =================================================
-            ADD MONEY / PAYMENT
-        ================================================= */}
-
         <section className="wallet-action-card">
-
           <div className="action-icon">
             ➕
           </div>
 
           <div className="action-content">
-
-            <h3>
-              Add Money
-            </h3>
+            <h3>Add Money</h3>
 
             <p>
-              UPI / Card / Net Banking से
-              wallet में पैसे add करें.
+              UPI / Card / Net Banking से wallet
+              में पैसे add करें.
             </p>
-
           </div>
 
           <button
             type="button"
             className="add-money-btn"
-            onClick={() => {
-              setShowAddMoney(true);
-            }}
+            onClick={() =>
+              setShowAddMoney(true)
+            }
           >
             + Add Money
           </button>
-
         </section>
 
-        {/* =================================================
-            ADD MONEY POPUP
+        <section className="wallet-action-card">
+          <div className="action-icon">
+            💸
+          </div>
 
-            Opens when user clicks Add Money.
-            The actual Razorpay payment logic remains
-            inside AddMoney.jsx.
-        ================================================= */}
+          <div className="action-content">
+            <h3>Withdraw Money</h3>
+
+            <p>
+              Available balance अपने UPI account
+              में withdraw करें.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="withdraw-btn"
+            onClick={() =>
+              setShowWithdraw(true)
+            }
+            disabled={
+              wallet.availableBalance < 100
+            }
+          >
+            Withdraw
+          </button>
+        </section>
 
         {showAddMoney && (
           <AddMoney
-            onClose={() => {
+            onClose={() =>
+              setShowAddMoney(false)
+            }
+            onSuccess={async () => {
               setShowAddMoney(false);
-            }}
-
-            onSuccess={async (paymentData) => {
-
-              console.log(
-                "Wallet recharge successful:",
-                paymentData
-              );
-
-              /*
-               * Close popup after successful payment.
-               */
-              setShowAddMoney(false);
-
-              /*
-               * Reload wallet balance and transactions
-               * so the newly added amount appears.
-               */
               await loadWallet();
-
             }}
           />
         )}
 
-
-        {/* =================================================
-            TRANSACTION HISTORY
-        ================================================= */}
+        {showWithdraw && (
+          <Withdraw
+            user={auth.currentUser}
+            availableBalance={
+              wallet.availableBalance
+            }
+            onClose={() =>
+              setShowWithdraw(false)
+            }
+            onSuccess={async () => {
+              setShowWithdraw(false);
+              await loadWallet();
+            }}
+          />
+        )}
 
         <section className="wallet-transactions">
-
           <div className="wallet-section-header">
-
             <div>
-
               <span>
                 TRANSACTION HISTORY
               </span>
@@ -759,7 +612,6 @@ export default function Wallet() {
               <h2>
                 Recent Transactions
               </h2>
-
             </div>
 
             <button
@@ -770,15 +622,10 @@ export default function Wallet() {
             >
               ↻
             </button>
-
           </div>
 
-
-          {transactions.length ===
-          0 ? (
-
+          {transactions.length === 0 ? (
             <div className="empty-transactions">
-
               <div className="empty-transaction-icon">
                 💳
               </div>
@@ -788,184 +635,152 @@ export default function Wallet() {
               </h3>
 
               <p>
-                तुमच्या wallet मध्ये
-                transactions झाल्यावर
-                त्या इथे दिसतील.
+                तुमच्या wallet मध्ये transactions
+                झाल्यावर त्या इथे दिसतील.
               </p>
-
             </div>
-
           ) : (
-
             <div className="transaction-list">
+              {transactions.map((transaction) => {
+                const credit =
+                  isCredit(transaction);
 
-              {transactions.map(
-                (transaction) => {
+                const status =
+                  getStatus(transaction);
 
-                  const credit =
-                    isCredit(
-                      transaction
-                    );
-
-                  const status =
-                    getTransactionStatus(
-                      transaction
-                    );
-
-                  return (
+                return (
+                  <div
+                    className="transaction-item"
+                    key={transaction.id}
+                  >
                     <div
-                      className="transaction-item"
-                      key={
-                        transaction.id
-                      }
+                      className={`transaction-icon ${
+                        credit
+                          ? "credit"
+                          : "debit"
+                      }`}
                     >
+                      {getIcon(transaction)}
+                    </div>
 
-                      {/* ICON */}
+                    <div className="transaction-details">
+                      <strong>
+                        {getTitle(transaction)}
+                      </strong>
 
-                      <div
+                      <span>
+                        {formatDate(
+                          transaction.createdAt
+                        )}
+
+                        {formatTime(
+                          transaction.createdAt
+                        ) && (
+                          <>
+                            {" • "}
+                            {formatTime(
+                              transaction.createdAt
+                            )}
+                          </>
+                        )}
+                      </span>
+
+                      {transaction.referenceId && (
+                        <small>
+                          ID:{" "}
+                          {transaction.referenceId}
+                        </small>
+                      )}
+
+                      {transaction.upiId && (
+                        <small>
+                          UPI:{" "}
+                          {transaction.upiId}
+                        </small>
+                      )}
+
+                      {transaction.withdrawalId && (
+                        <small>
+                          Request:{" "}
+                          {transaction.withdrawalId}
+                        </small>
+                      )}
+
+                      {transaction.rejectionReason && (
+                        <small>
+                          Reason:{" "}
+                          {
+                            transaction.rejectionReason
+                          }
+                        </small>
+                      )}
+                    </div>
+
+                    <div className="transaction-amount">
+                      <strong
                         className={
-                          `transaction-icon ${
-                            credit
-                              ? "credit"
-                              : "debit"
-                          }`
+                          credit
+                            ? "credit-text"
+                            : "debit-text"
                         }
                       >
-                        {getTransactionIcon(
-                          transaction
+                        {credit ? "+" : "-"}₹
+                        {Number(
+                          transaction.amount || 0
+                        ).toLocaleString(
+                          "en-IN"
                         )}
-                      </div>
+                      </strong>
 
-
-                      {/* DETAILS */}
-
-                      <div className="transaction-details">
-
-                        <strong>
-                          {getTransactionTitle(
-                            transaction
-                          )}
-                        </strong>
-
-                        <span>
-                          {formatDate(
-                            transaction.createdAt
-                          )}
-
-                          {" • "}
-
-                          {formatTime(
-                            transaction.createdAt
-                          )}
-                        </span>
-
-                        {transaction.referenceId && (
-                          <small>
-                            ID:{" "}
-                            {
-                              transaction.referenceId
-                            }
-                          </small>
-                        )}
-
-                      </div>
-
-
-                      {/* AMOUNT */}
-
-                      <div className="transaction-amount">
-
-                        <strong
-                          className={
-                            credit
-                              ? "credit-text"
-                              : "debit-text"
-                          }
-                        >
-                          {credit
-                            ? "+"
-                            : "-"}
-                          ₹
-                          {Number(
-                            transaction.amount ||
-                              0
-                          ).toLocaleString(
-                            "en-IN"
-                          )}
-                        </strong>
-
-                        <span
-                          className={
-                            `transaction-status ${status.className}`
-                          }
-                        >
-                          {status.text}
-                        </span>
-
-                      </div>
-
+                      <span
+                        className={`transaction-status ${status.className}`}
+                      >
+                        {status.text}
+                      </span>
                     </div>
-                  );
-                }
-              )}
-
+                  </div>
+                );
+              })}
             </div>
-
           )}
-
         </section>
 
-
-        {/* =================================================
-            WALLET RULES
-        ================================================= */}
-
         <section className="wallet-rules">
-
           <div className="wallet-rules-icon">
             🔐
           </div>
 
           <div>
-
             <h3>
               Wallet Information
             </h3>
 
             <ul>
-
               <li>
-                Available Balance ही
-                services/payment साठी
-                वापरता येईल.
+                Available Balance services/payment
+                साठी वापरता येईल.
               </li>
 
               <li>
-                Pending Referral amount
-                सध्या वापरता किंवा withdraw
-                करता येणार नाही.
+                Pending Referral amount सध्या
+                withdraw करता येणार नाही.
               </li>
 
               <li>
-                Referral reward admin
-                verification नंतर available
-                होईल.
+                Referral reward admin verification
+                नंतर available होईल.
               </li>
 
               <li>
-                सर्व wallet transactions
-                history मध्ये record केले जातील.
+                Add Money, Referral, Cashback,
+                Refund, Payment आणि Withdrawal
+                transactions history मध्ये दिसतील.
               </li>
-
             </ul>
-
           </div>
-
         </section>
 
       </div>
-
     </div>
   );
 }
-

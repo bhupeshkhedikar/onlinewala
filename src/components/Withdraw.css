@@ -1,0 +1,467 @@
+.withdraw-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: withdrawFadeIn 0.2s ease;
+}
+
+.withdraw-modal {
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.25);
+  animation: withdrawSlideUp 0.25s ease;
+}
+
+.withdraw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.withdraw-header-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.withdraw-icon {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #ffffff;
+  font-size: 22px;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
+.withdraw-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.withdraw-header p {
+  margin: 3px 0 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.withdraw-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.withdraw-close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.withdraw-body {
+  padding: 24px;
+}
+
+.withdraw-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 22px;
+  padding: 17px 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+}
+
+.withdraw-balance-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.withdraw-balance-amount {
+  margin-top: 3px;
+  color: #1d4ed8;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.withdraw-max-btn {
+  padding: 8px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.withdraw-max-btn:hover {
+  background: #eff6ff;
+}
+
+.withdraw-form-group {
+  margin-bottom: 18px;
+}
+
+.withdraw-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.withdraw-input-wrapper {
+  position: relative;
+}
+
+.withdraw-input-prefix {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 17px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.withdraw-input {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px 0 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.withdraw-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.withdraw-input::placeholder {
+  color: #9ca3af;
+}
+
+.withdraw-upi-input {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.withdraw-upi-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.withdraw-upi-input::placeholder {
+  color: #9ca3af;
+}
+
+.withdraw-help {
+  margin-top: 7px;
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.withdraw-quick-amounts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.withdraw-quick-btn {
+  min-height: 38px;
+  border: 1px solid #dbeafe;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.withdraw-quick-btn:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.withdraw-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 17px;
+  padding: 11px 13px;
+  border: 1px solid #fecaca;
+  border-radius: 11px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.withdraw-info {
+  margin-top: 18px;
+  padding: 13px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.withdraw-info-title {
+  margin-bottom: 7px;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.withdraw-info ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.withdraw-submit {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.22);
+  transition: 0.2s ease;
+}
+
+.withdraw-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 13px 30px rgba(37, 99, 235, 0.28);
+}
+
+.withdraw-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.withdraw-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.withdraw-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: withdrawSpin 0.7s linear infinite;
+}
+
+.withdraw-success {
+  padding: 35px 24px;
+  text-align: center;
+}
+
+.withdraw-success-icon {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 32px;
+}
+
+.withdraw-success h3 {
+  margin: 0 0 7px;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.withdraw-success p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.withdraw-success-amount {
+  margin: 17px 0;
+  color: #16a34a;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.withdraw-success-close {
+  width: 100%;
+  height: 46px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 11px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@keyframes withdrawFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes withdrawSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes withdrawSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .withdraw-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .withdraw-modal {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 22px 22px 0 0;
+    animation: withdrawMobileSlide 0.25s ease;
+  }
+
+  .withdraw-header {
+    padding: 18px 17px;
+  }
+
+  .withdraw-body {
+    padding: 18px 17px 24px;
+  }
+
+  .withdraw-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 19px;
+  }
+
+  .withdraw-header h2 {
+    font-size: 18px;
+  }
+
+  .withdraw-balance {
+    padding: 14px;
+  }
+
+  .withdraw-balance-amount {
+    font-size: 20px;
+  }
+
+  .withdraw-quick-amounts {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .withdraw-submit {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 380px) {
+  .withdraw-quick-amounts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .withdraw-balance {
+    align-items: flex-start;
+  }
+
+  .withdraw-balance-amount {
+    font-size: 18px;
+  }
+}
+
+@keyframes withdrawMobileSlide {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

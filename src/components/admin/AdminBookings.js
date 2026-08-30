@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import "./AdminBookings.css";
 
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // State for the View Details Modal
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  // Status Options
-  const statusOptions = ["Pending", "Accepted", "In Progress", "Completed", "Rejected"];
-  const paymentOptions = ["Pending", "Paid", "Failed", "Refunded"];
+  const statusOptions = [
+    "Pending",
+    "Accepted",
+    "In Progress",
+    "Completed",
+    "Rejected"
+  ];
+
+  const paymentOptions = [
+    "Pending",
+    "Paid",
+    "Failed",
+    "Refunded"
+  ];
 
   useEffect(() => {
     fetchBookings();
@@ -19,14 +29,29 @@ export default function AdminBookings() {
 
   const fetchBookings = async () => {
     setLoading(true);
+
     try {
-      const snapshot = await getDocs(collection(db, "bookings"));
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort by newest first
-      data.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds);
+      const snapshot = await getDocs(
+        collection(db, "bookings")
+      );
+
+      const data = snapshot.docs.map((bookingDoc) => ({
+        id: bookingDoc.id,
+        ...bookingDoc.data()
+      }));
+
+      data.sort(
+        (a, b) =>
+          (b.createdAt?.seconds || 0) -
+          (a.createdAt?.seconds || 0)
+      );
+
       setBookings(data);
     } catch (error) {
-      console.error("Error fetching bookings:", error);
+      console.error(
+        "Error fetching bookings:",
+        error
+      );
     } finally {
       setLoading(false);
     }
@@ -34,256 +59,968 @@ export default function AdminBookings() {
 
   const formatAppliedOn = (timestamp) => {
     if (!timestamp) return "N/A";
-    const d = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    if (isNaN(d.getTime())) return "N/A";
-    return d.toLocaleString("en-IN", { 
-      day: "2-digit", month: "short", year: "numeric", 
-      hour: "2-digit", minute: "2-digit", hour12: true 
+
+    const date = timestamp.seconds
+      ? new Date(timestamp.seconds * 1000)
+      : new Date(timestamp);
+
+    if (isNaN(date.getTime())) {
+      return "N/A";
+    }
+
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
     });
   };
 
-  // Multi-Status Update Handlers
-  const handlePaymentChange = async (id, newStatus) => {
-    await updateDoc(doc(db, "bookings", id), { paymentStatus: newStatus });
-    fetchBookings(); 
-    if (selectedBooking && selectedBooking.id === id) {
-      setSelectedBooking({ ...selectedBooking, paymentStatus: newStatus });
+  const handlePaymentChange = async (
+    id,
+    newStatus
+  ) => {
+    try {
+      await updateDoc(
+        doc(db, "bookings", id),
+        {
+          paymentStatus: newStatus
+        }
+      );
+
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === id
+            ? {
+                ...booking,
+                paymentStatus: newStatus
+              }
+            : booking
+        )
+      );
+
+      if (
+        selectedBooking &&
+        selectedBooking.id === id
+      ) {
+        setSelectedBooking((prev) => ({
+          ...prev,
+          paymentStatus: newStatus
+        }));
+      }
+    } catch (error) {
+      console.error(
+        "Payment update error:",
+        error
+      );
+      alert("Unable to update payment status.");
     }
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    await updateDoc(doc(db, "bookings", id), { status: newStatus });
-    fetchBookings(); 
-    if (selectedBooking && selectedBooking.id === id) {
-      setSelectedBooking({ ...selectedBooking, status: newStatus });
+  const handleStatusChange = async (
+    id,
+    newStatus
+  ) => {
+    try {
+      await updateDoc(
+        doc(db, "bookings", id),
+        {
+          status: newStatus
+        }
+      );
+
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === id
+            ? {
+                ...booking,
+                status: newStatus
+              }
+            : booking
+        )
+      );
+
+      if (
+        selectedBooking &&
+        selectedBooking.id === id
+      ) {
+        setSelectedBooking((prev) => ({
+          ...prev,
+          status: newStatus
+        }));
+      }
+    } catch (error) {
+      console.error(
+        "Status update error:",
+        error
+      );
+      alert("Unable to update booking status.");
     }
   };
 
-  const closeModal = () => {
-    setSelectedBooking(null);
+  const getPaymentClass = (status) => {
+    switch (status) {
+      case "Paid":
+        return "paid";
+
+      case "Failed":
+        return "failed";
+
+      case "Refunded":
+        return "refunded";
+
+      default:
+        return "pending";
+    }
   };
 
-  if (loading) return <div style={{ padding: '20px' }}>Loading Bookings...</div>;
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Accepted":
+        return "accepted";
+
+      case "In Progress":
+        return "progress";
+
+      case "Completed":
+        return "completed";
+
+      case "Rejected":
+        return "rejected";
+
+      default:
+        return "pending";
+    }
+  };
+
+  const stats = {
+    total: bookings.length,
+    pending: bookings.filter(
+      (b) =>
+        (b.status || "Pending") === "Pending"
+    ).length,
+    progress: bookings.filter(
+      (b) =>
+        b.status === "In Progress"
+    ).length,
+    completed: bookings.filter(
+      (b) =>
+        b.status === "Completed"
+    ).length
+  };
+
+  if (loading) {
+    return (
+      <div className="bookings-loading">
+        <div className="booking-spinner"></div>
+        <strong>
+          Loading Bookings
+        </strong>
+        <span>
+          Fetching service bookings...
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ marginTop: '30px', background: '#fff', padding: '20px', borderRadius: '8px', position: 'relative' }}>
-      <h3 style={{ marginBottom: '20px', color: '#1f2937' }}>Recent Service Bookings</h3>
-      
-      {bookings.length === 0 ? <p>No bookings found.</p> : (
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
-            <thead>
-              <tr style={{ background: '#f3f4f6', textAlign: 'left', fontSize: '14px' }}>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Name</th>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Mobile</th>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Service</th>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Appt Slot</th>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Total (₹)</th>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Payment</th>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Status</th>
-                <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb', textAlign: 'center' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b) => (
-                <tr key={b.id} style={{ borderBottom: '1px solid #e5e7eb', fontSize: '13px', background: '#fff' }}>
-                  <td style={{ padding: '12px', fontWeight: 'bold', color: '#111827' }}>{b.userName || "N/A"}</td>
-                  <td style={{ padding: '12px', color: '#4b5563' }}>{b.userMobile || "N/A"}</td>
-                  <td style={{ padding: '12px', color: '#2563eb', fontWeight: '600' }}>{b.service}</td>
-                  <td style={{ padding: '12px', color: '#374151' }}>
-                    {b.date || "N/A"} <br/>
-                    <span style={{ fontSize: '11px', color: '#6b7280' }}>{b.time}</span>
-                  </td>
-                  <td style={{ padding: '12px', fontWeight: 'bold', color: '#111827' }}>₹{b.total || 0}</td>
+    <section className="admin-bookings">
 
-                  {/* Payment Status Dropdown */}
-                  <td style={{ padding: '12px' }}>
-                    <select 
-                      value={b.paymentStatus || "Pending"} 
-                      onChange={(e) => handlePaymentChange(b.id, e.target.value)}
-                      style={{
-                        padding: '4px 8px', borderRadius: '4px', border: '1px solid #d1d5db',
-                        background: b.paymentStatus === 'Paid' ? '#dcfce7' : b.paymentStatus === 'Failed' ? '#fee2e2' : '#fef3c7',
-                        color: b.paymentStatus === 'Paid' ? '#166534' : b.paymentStatus === 'Failed' ? '#991b1b' : '#92400e',
-                        fontWeight: 'bold', fontSize: '12px', cursor: 'pointer'
-                      }}
-                    >
-                      {paymentOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </td>
+      <div className="bookings-header">
+        <div className="bookings-heading">
+          <div className="bookings-heading-icon">
+            📅
+          </div>
 
-                  {/* Work Status Dropdown */}
-                  <td style={{ padding: '12px' }}>
-                    <select 
-                      value={b.status || "Pending"} 
-                      onChange={(e) => handleStatusChange(b.id, e.target.value)}
-                      style={{
-                        padding: '4px 8px', borderRadius: '4px', border: '1px solid #d1d5db',
-                        background: b.status === 'Completed' ? '#dcfce7' : b.status === 'In Progress' ? '#dbeafe' : b.status === 'Rejected' ? '#fee2e2' : '#f3f4f6',
-                        color: '#1f2937', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer'
-                      }}
-                    >
-                      {statusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </td>
+          <div>
+            <span className="section-eyebrow">
+              SERVICE MANAGEMENT
+            </span>
 
-                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => setSelectedBooking(b)}
-                      style={{ background: '#4f46e5', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', transition: '0.2s' }}
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <h2>
+              Service Bookings
+            </h2>
+
+            <p>
+              Manage customer appointments,
+              payments and service status.
+            </p>
+          </div>
         </div>
+
+        <button
+          className="bookings-refresh"
+          onClick={fetchBookings}
+        >
+          ↻
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <div className="booking-stats">
+
+        <div className="booking-stat total">
+          <div className="booking-stat-icon">
+            📋
+          </div>
+
+          <div>
+            <strong>
+              {stats.total}
+            </strong>
+            <span>Total</span>
+          </div>
+        </div>
+
+        <div className="booking-stat pending">
+          <div className="booking-stat-icon">
+            ⏳
+          </div>
+
+          <div>
+            <strong>
+              {stats.pending}
+            </strong>
+            <span>Pending</span>
+          </div>
+        </div>
+
+        <div className="booking-stat progress">
+          <div className="booking-stat-icon">
+            ⚙️
+          </div>
+
+          <div>
+            <strong>
+              {stats.progress}
+            </strong>
+            <span>In Progress</span>
+          </div>
+        </div>
+
+        <div className="booking-stat completed">
+          <div className="booking-stat-icon">
+            ✓
+          </div>
+
+          <div>
+            <strong>
+              {stats.completed}
+            </strong>
+            <span>Completed</span>
+          </div>
+        </div>
+
+      </div>
+
+      {bookings.length === 0 ? (
+        <div className="bookings-empty">
+          <div className="empty-icon">
+            📅
+          </div>
+
+          <h3>
+            No bookings found
+          </h3>
+
+          <p>
+            Customer service bookings will
+            appear here.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="bookings-table-wrapper">
+            <table className="bookings-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Appointment</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {bookings.map((booking) => (
+                  <tr key={booking.id}>
+
+                    <td>
+                      <div className="booking-customer">
+                        <div className="booking-avatar">
+                          {(
+                            booking.userName ||
+                            "U"
+                          )
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+
+                        <div>
+                          <strong>
+                            {booking.userName ||
+                              "N/A"}
+                          </strong>
+
+                          <small>
+                            {booking.userMobile ||
+                              "N/A"}
+                          </small>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div className="booking-service">
+                        <span className="service-icon">
+                          ⚙️
+                        </span>
+
+                        <strong>
+                          {booking.service ||
+                            "N/A"}
+                        </strong>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div className="appointment-cell">
+                        <strong>
+                          {booking.date ||
+                            "N/A"}
+                        </strong>
+
+                        <span>
+                          🕐{" "}
+                          {booking.time ||
+                            "N/A"}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td>
+                      <strong className="booking-total">
+                        ₹
+                        {booking.total ||
+                          0}
+                      </strong>
+                    </td>
+
+                    <td>
+                      <select
+                        className={`status-select payment ${getPaymentClass(
+                          booking.paymentStatus
+                        )}`}
+                        value={
+                          booking.paymentStatus ||
+                          "Pending"
+                        }
+                        onChange={(e) =>
+                          handlePaymentChange(
+                            booking.id,
+                            e.target.value
+                          )
+                        }
+                      >
+                        {paymentOptions.map(
+                          (option) => (
+                            <option
+                              key={option}
+                              value={option}
+                            >
+                              {option}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </td>
+
+                    <td>
+                      <select
+                        className={`status-select work ${getStatusClass(
+                          booking.status
+                        )}`}
+                        value={
+                          booking.status ||
+                          "Pending"
+                        }
+                        onChange={(e) =>
+                          handleStatusChange(
+                            booking.id,
+                            e.target.value
+                          )
+                        }
+                      >
+                        {statusOptions.map(
+                          (option) => (
+                            <option
+                              key={option}
+                              value={option}
+                            >
+                              {option}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </td>
+
+                    <td>
+                      <button
+                        className="view-booking-btn"
+                        onClick={() =>
+                          setSelectedBooking(
+                            booking
+                          )
+                        }
+                      >
+                        View
+                      </button>
+                    </td>
+
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mobile-bookings">
+
+            {bookings.map((booking) => (
+              <div
+                className="mobile-booking-card"
+                key={booking.id}
+              >
+
+                <div className="mobile-booking-top">
+                  <div className="booking-customer">
+                    <div className="booking-avatar">
+                      {(
+                        booking.userName ||
+                        "U"
+                      )
+                        .charAt(0)
+                        .toUpperCase()}
+                    </div>
+
+                    <div>
+                      <strong>
+                        {booking.userName ||
+                          "N/A"}
+                      </strong>
+
+                      <small>
+                        {booking.userMobile ||
+                          "N/A"}
+                      </small>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`mobile-status ${getStatusClass(
+                      booking.status
+                    )}`}
+                  >
+                    {booking.status ||
+                      "Pending"}
+                  </span>
+                </div>
+
+                <div className="mobile-booking-service">
+                  <span>
+                    ⚙️
+                  </span>
+
+                  <div>
+                    <small>
+                      SERVICE
+                    </small>
+
+                    <strong>
+                      {booking.service ||
+                        "N/A"}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="mobile-booking-info">
+
+                  <div>
+                    <span>
+                      Appointment
+                    </span>
+
+                    <strong>
+                      {booking.date ||
+                        "N/A"}
+                    </strong>
+
+                    <small>
+                      🕐{" "}
+                      {booking.time ||
+                        "N/A"}
+                    </small>
+                  </div>
+
+                  <div>
+                    <span>
+                      Total
+                    </span>
+
+                    <strong className="mobile-total">
+                      ₹
+                      {booking.total ||
+                        0}
+                    </strong>
+
+                    <small>
+                      {booking.paymentStatus ||
+                        "Pending"}
+                    </small>
+                  </div>
+
+                </div>
+
+                <div className="mobile-booking-actions">
+
+                  <select
+                    className={`status-select payment ${getPaymentClass(
+                      booking.paymentStatus
+                    )}`}
+                    value={
+                      booking.paymentStatus ||
+                      "Pending"
+                    }
+                    onChange={(e) =>
+                      handlePaymentChange(
+                        booking.id,
+                        e.target.value
+                      )
+                    }
+                  >
+                    {paymentOptions.map(
+                      (option) => (
+                        <option
+                          key={option}
+                          value={option}
+                        >
+                          {option}
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                  <button
+                    className="view-booking-btn"
+                    onClick={() =>
+                      setSelectedBooking(
+                        booking
+                      )
+                    }
+                  >
+                    View Details
+                  </button>
+
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+        </>
       )}
 
-      {/* 🔥 DETAILED POPUP MODAL (100% RESPONSIVE) */}
       {selectedBooking && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '10px' }}>
-          
-          <div style={{ background: '#fff', width: '100%', maxWidth: '800px', display: 'flex', flexDirection: 'column', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxHeight: '95vh' }}>
-            
-            {/* Modal Header */}
-            <div style={{ padding: '15px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: '#f8fafc', flexShrink: 0 }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: '18px', color: '#1e293b' }}>Booking Details</h2>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>Applied on: {formatAppliedOn(selectedBooking.createdAt)}</p>
+        <div
+          className="booking-modal-overlay"
+          onClick={() =>
+            setSelectedBooking(null)
+          }
+        >
+          <div
+            className="booking-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
+
+            <div className="booking-modal-header">
+
+              <div className="modal-title-area">
+                <div className="modal-booking-icon">
+                  📅
+                </div>
+
+                <div>
+                  <span>
+                    BOOKING DETAILS
+                  </span>
+
+                  <h2>
+                    {selectedBooking.service ||
+                      "Service Booking"}
+                  </h2>
+
+                  <p>
+                    Applied on{" "}
+                    {formatAppliedOn(
+                      selectedBooking.createdAt
+                    )}
+                  </p>
+                </div>
               </div>
-              <button onClick={closeModal} style={{ background: '#e2e8f0', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', color: '#475569', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>✕</button>
+
+              <button
+                className="modal-close"
+                onClick={() =>
+                  setSelectedBooking(null)
+                }
+              >
+                ×
+              </button>
+
             </div>
 
-            {/* Modal Body (Smooth Scrollable inside) */}
-            <div style={{ padding: '15px 20px', overflowY: 'auto', flexGrow: 1, WebkitOverflowScrolling: 'touch', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
-              {/* Top Row: Customer & Service Info (Fluid Flexbox) */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                
-                {/* Customer Box */}
-                <div style={{ flex: '1 1 250px', background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 10px 0', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px' }}>👤 Customer Info</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '5px' }}><span style={{ color: '#64748b', fontSize: '13px' }}>Name:</span> <strong style={{ fontSize: '13px', color: '#0f172a', textAlign: 'right' }}>{selectedBooking.userName || "N/A"}</strong></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '5px' }}><span style={{ color: '#64748b', fontSize: '13px' }}>Mobile:</span> <strong style={{ fontSize: '13px', color: '#0f172a', textAlign: 'right' }}>{selectedBooking.userMobile || "N/A"}</strong></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '5px' }}><span style={{ color: '#64748b', fontSize: '13px' }}>Email:</span> <strong style={{ fontSize: '13px', color: '#0f172a', wordBreak: 'break-all', textAlign: 'right' }}>{selectedBooking.userEmail || "N/A"}</strong></div>
+            <div className="booking-modal-body">
+
+              <div className="modal-info-grid">
+
+                <div className="modal-info-card customer">
+                  <div className="modal-card-title">
+                    <span>
+                      👤
+                    </span>
+
+                    <strong>
+                      Customer Information
+                    </strong>
+                  </div>
+
+                  <div className="detail-row">
+                    <span>
+                      Name
+                    </span>
+
+                    <strong>
+                      {selectedBooking.userName ||
+                        "N/A"}
+                    </strong>
+                  </div>
+
+                  <div className="detail-row">
+                    <span>
+                      Mobile
+                    </span>
+
+                    <strong>
+                      {selectedBooking.userMobile ||
+                        "N/A"}
+                    </strong>
+                  </div>
+
+                  <div className="detail-row">
+                    <span>
+                      Email
+                    </span>
+
+                    <strong className="break-text">
+                      {selectedBooking.userEmail ||
+                        "N/A"}
+                    </strong>
                   </div>
                 </div>
 
-                {/* Service Box */}
-                <div style={{ flex: '1 1 250px', background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 10px 0', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px' }}>⚙️ Service Info</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '5px' }}><span style={{ color: '#64748b', fontSize: '13px' }}>Service:</span> <strong style={{ fontSize: '13px', color: '#2563eb', textAlign: 'right' }}>{selectedBooking.service}</strong></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '5px' }}><span style={{ color: '#64748b', fontSize: '13px' }}>Date:</span> <strong style={{ fontSize: '13px', color: '#0f172a', textAlign: 'right' }}>{selectedBooking.date}</strong></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '5px' }}><span style={{ color: '#64748b', fontSize: '13px' }}>Time:</span> <strong style={{ fontSize: '13px', color: '#0f172a', textAlign: 'right' }}>{selectedBooking.time}</strong></div>
+                <div className="modal-info-card service">
+                  <div className="modal-card-title">
+                    <span>
+                      ⚙️
+                    </span>
+
+                    <strong>
+                      Service Information
+                    </strong>
+                  </div>
+
+                  <div className="detail-row">
+                    <span>
+                      Service
+                    </span>
+
+                    <strong className="blue-text">
+                      {selectedBooking.service ||
+                        "N/A"}
+                    </strong>
+                  </div>
+
+                  <div className="detail-row">
+                    <span>
+                      Date
+                    </span>
+
+                    <strong>
+                      {selectedBooking.date ||
+                        "N/A"}
+                    </strong>
+                  </div>
+
+                  <div className="detail-row">
+                    <span>
+                      Time
+                    </span>
+
+                    <strong>
+                      {selectedBooking.time ||
+                        "N/A"}
+                    </strong>
                   </div>
                 </div>
 
               </div>
 
-              {/* 🔥 FIXED: Form Details (Bulletproof CSS for long text/arrays) */}
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: '' }}>
-                <div style={{ background: '#f1f5f9', padding: '10px 15px', borderBottom: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: 0, color: '#334155', fontSize: '14px' }}>📝 Form Details (Entered by User)</h4>
+              <div className="form-details-card">
+
+                <div className="modal-section-title">
+                  <span>
+                    📝
+                  </span>
+
+                  <div>
+                    <strong>
+                      Form Details
+                    </strong>
+
+                    <small>
+                      Information entered by customer
+                    </small>
+                  </div>
                 </div>
-                <div style={{ padding: '15px', background: '#fff'}}>
-                  {selectedBooking.customDetails && Object.keys(selectedBooking.customDetails).length > 0 ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                      {Object.entries(selectedBooking.customDetails).map(([key, value]) => {
-                        // Handle cases where user data might be an object/array
-                        const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
-                        
+
+                {selectedBooking.customDetails &&
+                Object.keys(
+                  selectedBooking.customDetails
+                ).length > 0 ? (
+                  <div className="custom-details-grid">
+
+                    {Object.entries(
+                      selectedBooking.customDetails
+                    ).map(
+                      ([key, value]) => {
+                        const displayValue =
+                          typeof value ===
+                          "object"
+                            ? JSON.stringify(
+                                value
+                              )
+                            : String(value);
+
                         return (
-                          <div key={key} style={{ flex: '1 1 200px', background: '#f8fafc', padding: '10px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>{key}</span>
-                            {/* Inner Scroll for extremely long texts */}
-                            <div style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a', wordBreak: 'break-word', whiteSpace: 'pre-wrap', maxHeight: '100px', overflowY: 'auto' }}>
-                              {displayValue || "Not Provided"}
-                            </div>
+                          <div
+                            className="custom-detail"
+                            key={key}
+                          >
+                            <span>
+                              {key}
+                            </span>
+
+                            <strong>
+                              {displayValue ||
+                                "Not Provided"}
+                            </strong>
                           </div>
                         );
-                      })}
-                    </div>
-                  ) : (
-                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', textAlign: 'center', padding: '10px 0' }}>
-                      No additional form details provided for this booking.
-                    </p>
-                  )}
-                </div>
-              </div>
+                      }
+                    )}
 
-              {/* Uploaded Documents */}
-              <div>
-                <h4 style={{ margin: '0 0 10px 0', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '6px', fontSize: '14px' }}>📂 Uploaded Documents</h4>
-                {selectedBooking.documents?.length > 0 ? (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {selectedBooking.documents.map((doc, i) => (
-                      <a 
-                        key={i} 
-                        href={doc.url} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#e0e7ff', color: '#3730a3', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: '600', border: '1px solid #c7d2fe', transition: '0.2s', maxWidth: '100%', wordBreak: 'break-word' }}
-                      >
-                        <span style={{ fontSize: '16px' }}>{doc.type?.includes("pdf") ? "📄" : "🖼️"}</span>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                          {doc.name}
-                        </span>
-                      </a>
-                    ))}
                   </div>
                 ) : (
-                  <div style={{ padding: '15px', background: '#f8fafc', borderRadius: '6px', textAlign: 'center', color: '#64748b', border: '1px dashed #cbd5e1', fontSize: '13px' }}>
-                    No documents were uploaded.
+                  <div className="no-details">
+                    No additional form details
+                    provided.
                   </div>
                 )}
+
+              </div>
+
+              <div className="documents-card">
+
+                <div className="modal-section-title">
+                  <span>
+                    📂
+                  </span>
+
+                  <div>
+                    <strong>
+                      Uploaded Documents
+                    </strong>
+
+                    <small>
+                      Customer uploaded files
+                    </small>
+                  </div>
+                </div>
+
+                {selectedBooking.documents?.length >
+                0 ? (
+                  <div className="documents-list">
+
+                    {selectedBooking.documents.map(
+                      (document, index) => (
+                        <a
+                          key={index}
+                          href={document.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="document-item"
+                        >
+                          <div className="document-icon">
+                            {document.type?.includes(
+                              "pdf"
+                            )
+                              ? "📄"
+                              : "🖼️"}
+                          </div>
+
+                          <div>
+                            <strong>
+                              {document.name ||
+                                `Document ${
+                                  index + 1
+                                }`}
+                            </strong>
+
+                            <span>
+                              Open document →
+                            </span>
+                          </div>
+                        </a>
+                      )
+                    )}
+
+                  </div>
+                ) : (
+                  <div className="no-documents">
+                    📂 No documents uploaded
+                  </div>
+                )}
+
               </div>
 
             </div>
 
-            {/* Modal Footer: Financials & Status Updates (Fluid for Mobile) */}
-            <div style={{ padding: '15px 20px', borderTop: '1px solid #e5e7eb', background: '#fefce8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', flexShrink: 0 }}>
-              
-              {/* Pricing */}
-              <div style={{ flex: '1 1 100%' }}>
-                <p style={{ margin: '0 0 2px 0', fontSize: '12px', color: '#854d0e', fontWeight: '500' }}>
-                  Govt: ₹{selectedBooking.govtFee || 0} &nbsp;|&nbsp; Service: ₹{selectedBooking.serviceCharge || 0}
-                </p>
-                <h3 style={{ margin: 0, color: '#713f12', fontSize: '18px' }}>Total: ₹{selectedBooking.total || 0}</h3>
+            <div className="booking-modal-footer">
+
+              <div className="price-summary">
+
+                <span>
+                  PAYMENT SUMMARY
+                </span>
+
+                <div>
+                  Govt Fee{" "}
+                  <strong>
+                    ₹
+                    {selectedBooking.govtFee ||
+                      0}
+                  </strong>
+                </div>
+
+                <div>
+                  Service Fee{" "}
+                  <strong>
+                    ₹
+                    {selectedBooking.serviceCharge ||
+                      0}
+                  </strong>
+                </div>
+
+                <h3>
+                  ₹
+                  {selectedBooking.total ||
+                    0}
+                </h3>
+
               </div>
-              
-              {/* Update Controls (Full width on small phones) */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', width: '100%' }}>
-                <div style={{ flex: '1 1 120px' }}>
-                  <label style={{ display: 'block', fontSize: '10px', marginBottom: '4px', color: '#a16207', fontWeight: 'bold', textTransform: 'uppercase' }}>Payment</label>
-                  <select 
-                    value={selectedBooking.paymentStatus || "Pending"} 
-                    onChange={(e) => handlePaymentChange(selectedBooking.id, e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #fde047', background: '#fff', fontWeight: 'bold', color: '#3f6212', cursor: 'pointer', outline: 'none' }}
+
+              <div className="modal-controls">
+
+                <div>
+                  <label>
+                    Payment
+                  </label>
+
+                  <select
+                    className={`status-select payment ${getPaymentClass(
+                      selectedBooking.paymentStatus
+                    )}`}
+                    value={
+                      selectedBooking.paymentStatus ||
+                      "Pending"
+                    }
+                    onChange={(e) =>
+                      handlePaymentChange(
+                        selectedBooking.id,
+                        e.target.value
+                      )
+                    }
                   >
-                    {paymentOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    {paymentOptions.map(
+                      (option) => (
+                        <option
+                          key={option}
+                          value={option}
+                        >
+                          {option}
+                        </option>
+                      )
+                    )}
                   </select>
                 </div>
-                <div style={{ flex: '1 1 120px' }}>
-                  <label style={{ display: 'block', fontSize: '10px', marginBottom: '4px', color: '#a16207', fontWeight: 'bold', textTransform: 'uppercase' }}>Status</label>
-                  <select 
-                    value={selectedBooking.status || "Pending"} 
-                    onChange={(e) => handleStatusChange(selectedBooking.id, e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #fde047', background: '#fff', fontWeight: 'bold', color: '#3f6212', cursor: 'pointer', outline: 'none' }}
+
+                <div>
+                  <label>
+                    Booking Status
+                  </label>
+
+                  <select
+                    className={`status-select work ${getStatusClass(
+                      selectedBooking.status
+                    )}`}
+                    value={
+                      selectedBooking.status ||
+                      "Pending"
+                    }
+                    onChange={(e) =>
+                      handleStatusChange(
+                        selectedBooking.id,
+                        e.target.value
+                      )
+                    }
                   >
-                    {statusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    {statusOptions.map(
+                      (option) => (
+                        <option
+                          key={option}
+                          value={option}
+                        >
+                          {option}
+                        </option>
+                      )
+                    )}
                   </select>
                 </div>
+
               </div>
 
             </div>
+
           </div>
         </div>
       )}
-    </div>
+
+    </section>
   );
 }
