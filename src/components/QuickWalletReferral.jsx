@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./QuickWalletReferral.css";
+
 export default function QuickWalletReferral({ user }) {
   const navigate = useNavigate();
 
@@ -14,7 +15,7 @@ export default function QuickWalletReferral({ user }) {
 
   const showLoginWarning = () => {
     alert(
-      "कृपया प्रथम साइन इन करा किंवा नवीन खाते तयार करा.\n\nRefer & Earn आणि My Wallet पाहण्यासाठी लॉगिन आवश्यक आहे."
+      "कृपया प्रथम साइन इन करा किंवा नवीन खाते तयार करा.\n\nरेफर आणि कमवा व माझे वॉलेट पाहण्यासाठी लॉगिन आवश्यक आहे."
     );
   };
 
@@ -38,58 +39,99 @@ export default function QuickWalletReferral({ user }) {
 
   return (
     <div className="quick-wallet-referral">
+
+      {/* =====================================================
+          REFER & EARN
+      ===================================================== */}
+
       <button
         type="button"
         className="quick-referral-card"
         onClick={handleReferral}
       >
+
         <div className="quick-action-icon">
           🎁
         </div>
 
         <div className="quick-action-content">
-          <span>ONLINEWALAA</span>
-          <strong>Refer & Earn</strong>
+
+          <span>
+            ऑनलाइनवाला
+          </span>
+
+          <strong>
+            रेफर करा आणि ₹100 पर्यंत कमवा
+          </strong>
+
           <small>
-            मित्रांना OnlineWalaa वर invite करा आणि₹10 ते ₹100 पर्यंत reward मिळवा व फ्री स्पिन
+            मित्रांना ऑनलाइनवाला वर आमंत्रित करा आणि
+            ₹10 ते ₹100 पर्यंतचे रिवॉर्ड मिळवा तसेच
+            मोफत स्पिन मिळवा.
           </small>
+
         </div>
 
         <div className="quick-action-arrow">
           ›
         </div>
+
       </button>
+
+
+      {/* =====================================================
+          MY WALLET
+      ===================================================== */}
 
       <button
         type="button"
         className="quick-wallet-card"
         onClick={handleWallet}
       >
+
         <div className="quick-action-icon">
           💰
         </div>
 
         <div className="quick-action-content">
-          <span>MY WALLET</span>
-          <strong>My Wallet</strong>
+
+          <span>
+            माझे वॉलेट
+          </span>
+
+          <strong>
+            वॉलेट
+          </strong>
+
           <small>
-            Available balance
+            उपलब्ध शिल्लक
           </small>
+
         </div>
 
+
         <div className="quick-wallet-balance">
-          <span>Balance</span>
+
+          <span>
+            शिल्लक
+          </span>
+
           <strong>
-            ₹{isLoggedIn
+            ₹
+            {isLoggedIn
               ? walletBalance.toLocaleString("en-IN")
               : "0"}
           </strong>
+
         </div>
+
 
         <div className="quick-action-arrow">
           ›
         </div>
+
       </button>
+
     </div>
   );
 }
