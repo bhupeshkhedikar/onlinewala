@@ -582,213 +582,170 @@ export default function Signup({
 
         {/* FORM */}
 
-        <form
-          onSubmit={
-            handleSignup
-          }
-          className="auth-form"
-        >
+      <form
+  onSubmit={handleSignup}
+  className="auth-form signup-form"
+>
+
+  {/* NAME + MOBILE */}
+  <div className="signup-small-fields">
+
+    <div className="auth-input-group signup-small-field">
+      <label htmlFor="name">
+        पूर्ण नाव
+      </label>
+
+      <input
+        type="text"
+        id="name"
+        placeholder="राहुल पाटील"
+        value={name}
+        onChange={(e) =>
+          setName(e.target.value)
+        }
+        required
+      />
+    </div>
 
 
-          {/* NAME */}
+    <div className="auth-input-group signup-small-field">
+      <label htmlFor="mobile">
+        मोबाईल नंबर
+      </label>
 
-          <div className="auth-input-group">
+      <input
+        type="tel"
+        id="mobile"
+        placeholder="9876543210"
+        value={mobile}
+        onChange={(e) =>
+          setMobile(
+            e.target.value.replace(/\D/g, "")
+          )
+        }
+        maxLength="10"
+        required
+      />
+    </div>
 
-            <label htmlFor="name">
-              पूर्ण नाव
-            </label>
-
-            <input
-              type="text"
-              id="name"
-              placeholder="उदा. राहुल पाटील"
-              value={name}
-              onChange={(e) =>
-                setName(
-                  e.target.value
-                )
-              }
-              required
-            />
-
-          </div>
-
-
-          {/* EMAIL */}
-
-          <div className="auth-input-group">
-
-            <label htmlFor="email">
-              ईमेल आयडी
-            </label>
-
-            <input
-              type="email"
-              id="email"
-              placeholder="rahul@example.com"
-              value={email}
-              onChange={(e) =>
-                setEmail(
-                  e.target.value
-                )
-              }
-              required
-            />
-
-          </div>
+  </div>
 
 
-          {/* MOBILE */}
+  {/* EMAIL */}
 
-          <div className="auth-input-group">
+  <div className="auth-input-group signup-important-field">
 
-            <label htmlFor="mobile">
-              मोबाईल नंबर
-            </label>
+    <label htmlFor="email">
+      ईमेल आयडी
+    </label>
 
-            <input
-              type="tel"
-              id="mobile"
-              placeholder="9876543210"
-              value={mobile}
-              onChange={(e) =>
-                setMobile(
-                  e.target.value.replace(
-                    /\D/g,
-                    ""
-                  )
-                )
-              }
-              maxLength="10"
-              required
-            />
+    <input
+      type="email"
+      id="email"
+      placeholder="rahul@example.com"
+      value={email}
+      onChange={(e) =>
+        setEmail(e.target.value)
+      }
+      required
+    />
 
-          </div>
+  </div>
 
 
-          {/* PASSWORD */}
+  {/* PASSWORD */}
 
-          <div className="auth-input-group">
+  <div className="auth-input-group signup-important-field">
 
-            <label htmlFor="password">
-              सुरक्षित पासवर्ड
-            </label>
+    <label htmlFor="password">
+      सुरक्षित पासवर्ड
+    </label>
 
-            <div className="password-wrapper">
+    <div className="password-wrapper">
 
-              <input
-                type={
-                  showPassword
-                    ? "text"
-                    : "password"
-                }
-                id="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) =>
-                  setPassword(
-                    e.target.value
-                  )
-                }
-                required
-                minLength="6"
-              />
+      <input
+        type={
+          showPassword
+            ? "text"
+            : "password"
+        }
+        id="password"
+        placeholder="••••••••"
+        value={password}
+        onChange={(e) =>
+          setPassword(e.target.value)
+        }
+        required
+        minLength="6"
+      />
 
-              <span
-                className="toggle-password"
-                onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
-                }
-              >
-                {showPassword
-                  ? "🙈"
-                  : "👁️"}
-              </span>
+      <span
+        className="toggle-password"
+        onClick={() =>
+          setShowPassword(!showPassword)
+        }
+        role="button"
+        tabIndex={0}
+      >
+        {showPassword ? "🙈" : "👁️"}
+      </span>
 
-            </div>
+    </div>
 
-          </div>
+  </div>
 
 
-          {/* REFERRAL CODE */}
+  {/* REFERRAL */}
 
-          <div className="auth-input-group">
+  <div className="auth-input-group signup-referral-field">
 
-            <label htmlFor="referralCode">
+    <label htmlFor="referralCode">
+      Referral Code
+      <span
+        style={{
+          color: "#94a3b8",
+          fontSize: "9px",
+          marginLeft: "4px",
+          fontWeight: "400"
+        }}
+      >
+        (Optional)
+      </span>
+    </label>
 
-              Referral Code
+    <input
+      type="text"
+      id="referralCode"
+      placeholder="OW7K4P2X"
+      value={referralCode}
+      onChange={(e) =>
+        setReferralCode(
+          e.target.value.toUpperCase()
+        )
+      }
+      maxLength="10"
+    />
 
-              <span
-                style={{
-                  color:
-                    "#94a3b8",
-                  fontSize:
-                    "10px",
-                  marginLeft:
-                    "5px",
-                  fontWeight:
-                    "400",
-                }}
-              >
-                (Optional)
-              </span>
+    <small>
+      Refer केले असल्यास code टाका.
+    </small>
 
-            </label>
-
-            <input
-              type="text"
-              id="referralCode"
-              placeholder="उदा. OW7K4P2X"
-              value={
-                referralCode
-              }
-              onChange={(e) =>
-                setReferralCode(
-                  e.target.value
-                    .toUpperCase()
-                )
-              }
-              maxLength="10"
-            />
-
-            <small
-              style={{
-                display:
-                  "block",
-                marginTop:
-                  "5px",
-                color:
-                  "#64748b",
-                fontSize:
-                  "10px",
-              }}
-            >
-              अगर किसी मित्र ने refer किया है
-              तो उनका referral code डालें।
-            </small>
-
-          </div>
+  </div>
 
 
-          {/* SUBMIT */}
+  {/* BUTTON */}
 
-          <button
-            type="submit"
-            className="auth-btn"
-            disabled={
-              loading
-            }
-          >
+  <button
+    type="submit"
+    className="auth-btn signup-submit-btn"
+    disabled={loading}
+  >
+    {loading
+      ? "प्रोफाईल तयार होत आहे..."
+      : "साइन अप करा आणि स्पिन मिळवा"}
+  </button>
 
-            {loading
-              ? "प्रोफाईल तयार होत आहे..."
-              : "साइन अप करा आणि स्पिन मिळवा"}
-
-          </button>
-
-        </form>
+</form>
 
 
         {/* FOOTER */}

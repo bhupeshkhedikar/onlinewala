@@ -337,7 +337,7 @@
   backdrop-filter: blur(12px);
 }
 
-.wallet-icon {
+.wallet-iconn {
   width: 35px;
   height: 35px;
 
@@ -2398,4 +2398,52 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* =========================================================
+   REMOVE ALL UNDERLINES
+========================================================= */
+
+.profile-container,
+.profile-container * {
+  text-decoration: none !important;
+}
+
+.profile-container a,
+.profile-container button,
+.profile-container h1,
+.profile-container h2,
+.profile-container h3,
+.profile-container h4,
+.profile-container p,
+.profile-container span,
+.profile-container strong,
+.profile-container small {
+  text-decoration: none !important;
+}
+
+.profile-container button:hover,
+.profile-container button:focus,
+.profile-container button:active {
+  text-decoration: none !important;
+}
+
+.profile-container a:hover,
+.profile-container a:focus,
+.profile-container a:active {
+  text-decoration: none !important;
+}
+
+
+/* =========================================================
+   MARATHI FONT
+========================================================= */
+
+.profile-container {
+  font-family:
+    "Noto Sans Devanagari",
+    "Nirmala UI",
+    "Mangal",
+    "Segoe UI",
+    sans-serif;
 }

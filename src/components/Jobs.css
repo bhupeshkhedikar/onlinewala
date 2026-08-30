@@ -2946,4 +2946,377 @@ input:focus-visible {
   }
 
 }
+/* =========================================================
+   AUTH FORM - ALWAYS CENTERED / NO PAGE SCROLL
+========================================================= */
 
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+
+/* Main auth wrapper */
+.auth-wrapper {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+
+  min-height: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+
+/* Card stays centered */
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+
+  max-height: calc(100dvh - 24px);
+
+  box-sizing: border-box;
+
+  margin: 0 auto;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .auth-wrapper {
+    height: 100dvh;
+    min-height: 100dvh;
+
+    padding: 8px;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+  }
+
+
+  .auth-card {
+    width: 100%;
+
+    max-width: 380px;
+
+    max-height: calc(100dvh - 16px);
+
+    padding: 18px 15px;
+
+    margin: 0;
+
+    border-radius: 17px;
+
+    overflow: hidden;
+  }
+
+
+  .auth-header {
+    margin-bottom: 12px;
+  }
+
+
+  .auth-logo {
+    margin-bottom: 5px;
+  }
+
+
+  .auth-header h2 {
+    font-size: 1.05rem;
+
+    margin-bottom: 3px;
+  }
+
+
+  .auth-header p {
+    font-size: 0.60rem;
+
+    line-height: 1.25;
+  }
+
+
+  .signup-form {
+    gap: 8px;
+  }
+
+
+  /* NAME + MOBILE */
+
+  .signup-small-fields {
+    gap: 7px;
+  }
+
+
+  .signup-small-field label {
+    font-size: 0.55rem;
+  }
+
+
+  .signup-small-field input {
+    height: 34px;
+
+    padding: 5px 7px;
+
+    font-size: 0.60rem;
+  }
+
+
+  /* EMAIL */
+
+  .signup-important-field label {
+    font-size: 0.59rem;
+  }
+
+
+  .signup-important-field input {
+    height: 38px;
+
+    padding: 7px 9px;
+
+    font-size: 0.67rem;
+  }
+
+
+  /* PASSWORD */
+
+  .signup-important-field .password-wrapper input {
+    height: 38px;
+
+    padding: 7px 38px 7px 9px;
+
+    font-size: 0.67rem;
+  }
+
+
+  /* REFERRAL */
+
+  .signup-referral-field {
+    margin-top: -2px;
+  }
+
+
+  .signup-referral-field input {
+    height: 25px;
+
+    padding: 4px 7px;
+
+    font-size: 0.55rem;
+  }
+
+
+  .signup-referral-field small {
+    font-size: 6px;
+
+    line-height: 1;
+  }
+
+
+  /* BUTTON */
+
+  .signup-submit-btn {
+    height: 37px;
+
+    min-height: 37px;
+
+    margin-top: 0;
+
+    padding: 6px 8px;
+
+    font-size: 0.62rem;
+  }
+
+
+  /* FOOTER */
+
+  .auth-footer {
+    margin-top: 9px;
+
+    padding-top: 8px;
+
+    font-size: 0.58rem;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 360px) {
+
+  .auth-wrapper {
+    padding: 5px;
+  }
+
+
+  .auth-card {
+    max-height: calc(100dvh - 10px);
+
+    padding: 15px 11px;
+
+    border-radius: 14px;
+  }
+
+
+  .auth-header {
+    margin-bottom: 9px;
+  }
+
+
+  .auth-header h2 {
+    font-size: 0.95rem;
+  }
+
+
+  .auth-header p {
+    font-size: 0.54rem;
+  }
+
+
+  .signup-form {
+    gap: 6px;
+  }
+
+
+  .signup-small-field label {
+    font-size: 0.51rem;
+  }
+
+
+  .signup-small-field input {
+    height: 31px;
+
+    padding: 4px 6px;
+
+    font-size: 0.56rem;
+  }
+
+
+  .signup-important-field label {
+    font-size: 0.55rem;
+  }
+
+
+  .signup-important-field input,
+  .signup-important-field .password-wrapper input {
+    height: 35px;
+
+    padding: 6px 8px;
+
+    font-size: 0.62rem;
+  }
+
+
+  .signup-referral-field input {
+    height: 23px;
+
+    font-size: 0.52rem;
+  }
+
+
+  .signup-referral-field small {
+    display: none;
+  }
+
+
+  .signup-submit-btn {
+    height: 34px;
+
+    min-height: 34px;
+
+    font-size: 0.57rem;
+  }
+
+
+  .auth-footer {
+    margin-top: 7px;
+
+    padding-top: 6px;
+
+    font-size: 0.54rem;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL SCREEN - 320px
+========================================================= */
+
+@media (max-width: 320px) {
+
+  .auth-card {
+    padding: 13px 10px;
+  }
+
+
+  .auth-header {
+    margin-bottom: 7px;
+  }
+
+
+  .auth-header h2 {
+    font-size: 0.88rem;
+  }
+
+
+  .auth-header p {
+    font-size: 0.50rem;
+  }
+
+
+  .signup-form {
+    gap: 5px;
+  }
+
+
+  .signup-small-field input {
+    height: 29px;
+
+    font-size: 0.53rem;
+  }
+
+
+  .signup-important-field input,
+  .signup-important-field .password-wrapper input {
+    height: 33px;
+
+    font-size: 0.59rem;
+  }
+
+
+  .signup-referral-field input {
+    height: 21px;
+  }
+
+
+  .signup-submit-btn {
+    height: 32px;
+
+    min-height: 32px;
+
+    font-size: 0.54rem;
+  }
+
+
+  .auth-footer {
+    font-size: 0.51rem;
+  }
+}

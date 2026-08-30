@@ -1,23 +1,33 @@
 import "./Header.css";
-import Navbar from "./Navbar";
+import MobileMenu from "./MobileMenu";
 
 export default function Header({ authUser, onLogout }) {
   return (
-    <>
-      <header className="header-top">
-        {/* 🔥 PREMIUM LOGO SECTION */}
-        <div className="logo" onClick={() => window.location.href = "/"}>
+    <header className="site-header">
+      <div className="header-top">
+        <div
+          className="logo" style={{textAlign:'center'}}
+          onClick={() => (window.location.href = "/")}
+        >
           <h2>
             ऑनलाइन<span>वाला</span>
           </h2>
-          <p>सर्व ऑनलाइन कामे,एकाच ठिकाणी <center style={{color:'#f59e0b'}}>फास्ट,अचूक,विश्वासार्ह</center></p>
+
+          <p className="logo-subtitle" style={{textAlign:'center'}}>
+            सर्व ऑनलाइन कामे,एकाच ठिकाणी
+          </p>
+
+          <span className="logo-tagline" style={{fontSize:'10px',fontWeight:'bold',textAlign:'center'}}>
+            फास्ट,अचूक,विश्वासार्ह
+          </span>
         </div>
 
-        {/* 🔥 RIGHT ACTIONS */}
         <div className="header-right">
           <div className="phone-pill">
-            <span className="phone-icon">📞</span> 
-            <span className="phone-text">+91 98765 43210</span>
+            <span className="phone-icon">📞</span>
+            <span className="phone-text">
+              +91 98765 43210
+            </span>
           </div>
 
           <div className="auth-actions">
@@ -25,31 +35,40 @@ export default function Header({ authUser, onLogout }) {
               <>
                 <button
                   className="cta-btn primary"
-                  onClick={() => window.location.href = "/dashboard"}
+                  onClick={() =>
+                    (window.location.href = "/dashboard")
+                  }
                 >
-                  Dashboard ➔
+                  <span>▣</span>
+                  डॅशबोर्ड
+                  <b>→</b>
                 </button>
+
                 <button
                   className="cta-btn secondary"
                   onClick={onLogout}
                 >
-                  Logout
+                  <span>↪</span>
+                  लॉगआउट
                 </button>
               </>
             ) : (
               <button
                 className="cta-btn primary"
-                onClick={() => window.location.href = "/login"}
+                onClick={() =>
+                  (window.location.href = "/login")
+                }
               >
-                <span className="user-icon">👤</span> Login / Sign Up
+                <span>👤</span>
+                साइन इन / साइन अप
+                <b>→</b>
               </button>
             )}
           </div>
         </div>
-      </header>
-      
-      {/* Navbar below header */}
-      <Navbar />
-    </>
+      </div>
+
+      {/* <MobileMenu /> */}
+    </header>
   );
 }

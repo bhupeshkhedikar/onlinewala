@@ -35,6 +35,7 @@ export default function UserProfile() {
             "Error fetching user data from database:",
             error
           );
+
           setUser(currentUser);
         }
       } else {
@@ -47,29 +48,57 @@ export default function UserProfile() {
     return () => unsubscribe();
   }, []);
 
+  /* =========================================================
+     LOADING
+  ========================================================= */
+
   if (loading) {
     return (
       <div className="profile-page-state">
         <div className="loading-card">
           <div className="loading-spinner"></div>
-          <h3>Loading dashboard</h3>
-          <p>Please wait while we prepare your account.</p>
+
+          <h3>
+            डॅशबोर्ड लोड होत आहे
+          </h3>
+
+          <p>
+            तुमचे खाते तयार केले जात आहे, कृपया प्रतीक्षा करा.
+          </p>
         </div>
       </div>
     );
   }
 
+  /* =========================================================
+     LOGIN REQUIRED
+  ========================================================= */
+
   if (!user) {
     return (
       <div className="profile-page-state">
         <div className="empty-login-card">
-          <div className="state-icon">🔐</div>
-          <h3>Login Required</h3>
-          <p>Please log in to view your dashboard.</p>
+
+          <div className="state-icon">
+            🔐
+          </div>
+
+          <h3>
+            लॉगिन आवश्यक आहे
+          </h3>
+
+          <p>
+            तुमचा डॅशबोर्ड पाहण्यासाठी कृपया लॉगिन करा.
+          </p>
+
         </div>
       </div>
     );
   }
+
+  /* =========================================================
+     DATA
+  ========================================================= */
 
   const applications = [...(user?.applications || [])].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
@@ -79,17 +108,28 @@ export default function UserProfile() {
 
   const filteredDocuments = documents.filter((doc) => {
     const searchTerm = docSearchQuery.toLowerCase().trim();
-    const title = (doc.title || doc.name || "").toLowerCase();
+
+    const title = (
+      doc.title ||
+      doc.name ||
+      ""
+    ).toLowerCase();
 
     return title.includes(searchTerm);
   });
 
+  /* =========================================================
+     DATE FORMAT
+  ========================================================= */
+
   const formatDate = (dateVal) => {
-    if (!dateVal) return "N/A";
+    if (!dateVal) return "उपलब्ध नाही";
 
     if (dateVal.seconds) {
-      return new Date(dateVal.seconds * 1000).toLocaleDateString(
-        "en-IN",
+      return new Date(
+        dateVal.seconds * 1000
+      ).toLocaleDateString(
+        "mr-IN",
         {
           day: "2-digit",
           month: "short",
@@ -101,24 +141,37 @@ export default function UserProfile() {
     const d = new Date(dateVal);
 
     return isNaN(d.getTime())
-      ? "N/A"
-      : d.toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        });
+      ? "उपलब्ध नाही"
+      : d.toLocaleDateString(
+          "mr-IN",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }
+        );
   };
 
-  const formatFileSize = (size) => {
-    if (!size && size !== 0) return "Unknown size";
+  /* =========================================================
+     FILE SIZE
+  ========================================================= */
 
-    const sizeStr = String(size).toUpperCase().trim();
+  const formatFileSize = (size) => {
+    if (!size && size !== 0) {
+      return "आकार उपलब्ध नाही";
+    }
+
+    const sizeStr = String(size)
+      .toUpperCase()
+      .trim();
 
     const numericValue = parseFloat(
       sizeStr.replace(/[^0-9.]/g, "")
     );
 
-    if (isNaN(numericValue)) return "Unknown size";
+    if (isNaN(numericValue)) {
+      return "आकार उपलब्ध नाही";
+    }
 
     let bytes = numericValue;
 
@@ -130,7 +183,9 @@ export default function UserProfile() {
       bytes = numericValue * 1024 * 1024 * 1024;
     }
 
-    if (bytes === 0) return "0 B";
+    if (bytes === 0) {
+      return "0 B";
+    }
 
     if (bytes < 1024) {
       return `${bytes.toFixed(0)} B`;
@@ -143,6 +198,10 @@ export default function UserProfile() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  /* =========================================================
+     PAYMENT STATS
+  ========================================================= */
+
   const totalPaid = applications
     .filter(
       (app) =>
@@ -150,29 +209,40 @@ export default function UserProfile() {
         app.paid === "true"
     )
     .reduce(
-      (sum, app) => sum + Number(app.total || 0),
+      (sum, app) =>
+        sum + Number(app.total || 0),
       0
     );
 
-  const pendingApplications = applications.filter(
-    (app) =>
-      app.paid !== true &&
-      app.paid !== "true"
-  ).length;
+  const pendingApplications =
+    applications.filter(
+      (app) =>
+        app.paid !== true &&
+        app.paid !== "true"
+    ).length;
+
+  /* =========================================================
+     INITIALS
+  ========================================================= */
 
   const userInitials = user?.name
     ? user.name
         .split(" ")
-        .map((word) => word.charAt(0))
+        .map((word) =>
+          word.charAt(0)
+        )
         .join("")
         .substring(0, 2)
         .toUpperCase()
     : "U";
 
+  /* =========================================================
+     TAB CHANGE
+  ========================================================= */
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
 
-    // Smoothly move viewport to content on smaller devices
     if (window.innerWidth <= 768) {
       setTimeout(() => {
         document
@@ -188,9 +258,10 @@ export default function UserProfile() {
   return (
     <div className="profile-container">
 
-      {/* ========================================
+      {/* =====================================================
           HERO HEADER
-      ======================================== */}
+      ===================================================== */}
+
       <header className="profile-header">
 
         <div className="profile-header-bg">
@@ -204,45 +275,62 @@ export default function UserProfile() {
           <div className="profile-user-card">
 
             <div className="profile-avatar-wrapper">
+
               <div className="profile-avatar">
                 {userInitials}
               </div>
 
               <span
                 className="profile-online-dot"
-                title="Online"
+                title="ऑनलाईन"
               ></span>
+
             </div>
 
             <div className="profile-user-details">
+
               <span className="profile-welcome">
-                Welcome back 👋
+                पुन्हा स्वागत आहे 👋
               </span>
 
               <h1>
-                {user?.name || "Customer"}
+                {user?.name || "ग्राहक"}
               </h1>
 
               <p>
-                <span className="phone-icon">📞</span>
-                {user?.mobile || "No Mobile Added"}
+                <span className="phone-icon">
+                  📞
+                </span>
+
+                {user?.mobile ||
+                  "मोबाईल नंबर जोडलेला नाही"}
               </p>
+
             </div>
 
           </div>
 
+
           <div className="profile-header-right">
 
             <div className="wallet-card">
-              <div className="wallet-icon">
+
+              <div className="wallet-iconn">
                 ₹
               </div>
 
               <div>
-                <span>Total Paid</span>
-                <strong>₹{totalPaid}</strong>
+                <span>
+                  एकूण भरलेली रक्कम
+                </span>
+
+                <strong>
+                  ₹{totalPaid}
+                </strong>
               </div>
+
             </div>
+
 
             <button
               className="btn-primary main-action"
@@ -250,95 +338,147 @@ export default function UserProfile() {
                 setIsBookingModalOpen(true)
               }
             >
+
               <span className="plus-icon">
                 +
               </span>
 
               <span>
-                Book New Service
+                नवीन सेवा बुक करा
               </span>
+
             </button>
 
           </div>
 
         </div>
+
       </header>
 
-      {/* ========================================
+
+      {/* =====================================================
           QUICK STATISTICS
-      ======================================== */}
+      ===================================================== */}
+
       <section className="profile-stats">
 
         <button
           className="stat-card stat-blue"
-          onClick={() => handleTabChange("online")}
+          onClick={() =>
+            handleTabChange("online")
+          }
         >
+
           <div className="stat-icon">
             🌐
           </div>
 
           <div className="stat-content">
-            <span>Online Services</span>
-            <strong>View Bookings</strong>
+
+            <span>
+              ऑनलाईन सेवा
+            </span>
+
+            <strong>
+              बुकिंग पहा
+            </strong>
+
           </div>
 
           <span className="stat-arrow">
             →
           </span>
+
         </button>
+
 
         <button
           className="stat-card stat-purple"
-          onClick={() => handleTabChange("offline")}
+          onClick={() =>
+            handleTabChange("offline")
+          }
         >
+
           <div className="stat-icon">
             📁
           </div>
 
           <div className="stat-content">
-            <span>Applications</span>
-            <strong>{applications.length}</strong>
+
+            <span>
+              अर्ज
+            </span>
+
+            <strong>
+              {applications.length}
+            </strong>
+
           </div>
 
           <span className="stat-arrow">
             →
           </span>
+
         </button>
+
 
         <button
           className="stat-card stat-green"
-          onClick={() => handleTabChange("docs")}
+          onClick={() =>
+            handleTabChange("docs")
+          }
         >
+
           <div className="stat-icon">
             📄
           </div>
 
           <div className="stat-content">
-            <span>Documents</span>
-            <strong>{documents.length}</strong>
+
+            <span>
+              कागदपत्रे
+            </span>
+
+            <strong>
+              {documents.length}
+            </strong>
+
           </div>
 
           <span className="stat-arrow">
             →
           </span>
+
         </button>
 
+
         <div className="stat-card stat-orange">
+
           <div className="stat-icon">
             ⏳
           </div>
 
           <div className="stat-content">
-            <span>Pending Payments</span>
-            <strong>{pendingApplications}</strong>
+
+            <span>
+              प्रलंबित पेमेंट
+            </span>
+
+            <strong>
+              {pendingApplications}
+            </strong>
+
           </div>
+
         </div>
 
       </section>
 
-      {/* ========================================
+
+      {/* =====================================================
           NAVIGATION
-      ======================================== */}
+      ===================================================== */}
+
       <nav className="icon-nav-grid">
 
         <button
@@ -351,24 +491,29 @@ export default function UserProfile() {
             handleTabChange("online")
           }
         >
+
           <div className="nav-box nav-blue">
             🌐
           </div>
 
           <div className="nav-text">
+
             <strong>
-              Online Bookings
+              ऑनलाईन बुकिंग
             </strong>
 
             <span>
-              Manage your bookings
+              तुमची बुकिंग व्यवस्थापित करा
             </span>
+
           </div>
 
           <span className="nav-arrow">
             →
           </span>
+
         </button>
+
 
         <button
           className={`nav-item ${
@@ -380,24 +525,29 @@ export default function UserProfile() {
             handleTabChange("offline")
           }
         >
+
           <div className="nav-box nav-purple">
             📁
           </div>
 
           <div className="nav-text">
+
             <strong>
-              Cyber Cafe Apps
+              सायबर कॅफे अर्ज
             </strong>
 
             <span>
-              Track applications
+              अर्जांची माहिती पहा
             </span>
+
           </div>
 
           <span className="nav-arrow">
             →
           </span>
+
         </button>
+
 
         <button
           className={`nav-item ${
@@ -409,52 +559,64 @@ export default function UserProfile() {
             handleTabChange("docs")
           }
         >
+
           <div className="nav-box nav-green">
             📄
           </div>
 
           <div className="nav-text">
+
             <strong>
-              My Documents
+              माझी कागदपत्रे
             </strong>
 
             <span>
-              Access your files
+              तुमच्या फाईल्स पहा
             </span>
+
           </div>
 
           <span className="nav-arrow">
             →
           </span>
+
         </button>
 
       </nav>
 
-      {/* ========================================
+
+      {/* =====================================================
           CONTENT
-      ======================================== */}
+      ===================================================== */}
+
       <main className="tab-content-wrapper">
 
-        {/* ONLINE BOOKINGS */}
+        {/* ===================================================
+            ONLINE BOOKINGS
+        =================================================== */}
+
         {activeTab === "online" && (
+
           <section className="tab-content fade-in">
 
             <div className="section-heading">
 
               <div>
+
                 <span className="section-eyebrow">
-                  SERVICES
+                  सेवा
                 </span>
 
                 <h2 className="section-title">
-                  My Online Bookings
+                  माझी ऑनलाईन बुकिंग
                 </h2>
 
                 <p className="section-description">
-                  View and manage your online
-                  service bookings.
+                  तुमची ऑनलाईन सेवा बुकिंग पहा आणि व्यवस्थापित करा.
                 </p>
+
               </div>
+
 
               <button
                 className="section-action"
@@ -462,45 +624,62 @@ export default function UserProfile() {
                   setIsBookingModalOpen(true)
                 }
               >
-                + New Booking
+                + नवीन बुकिंग
               </button>
 
             </div>
 
+
             <UserBookings user={user} />
 
           </section>
+
         )}
 
-        {/* OFFLINE APPLICATIONS */}
+
+        {/* ===================================================
+            OFFLINE APPLICATIONS
+        =================================================== */}
+
         {activeTab === "offline" && (
+
           <section className="tab-content fade-in">
 
             <div className="section-header-flex">
 
               <div>
+
                 <span className="section-eyebrow">
-                  CYBER CAFE
+                  सायबर कॅफे
                 </span>
 
                 <h2
                   className="section-title"
-                  style={{ marginBottom: 0 }}
+                  style={{
+                    marginBottom: 0,
+                  }}
                 >
-                  Cyber Cafe Applications
+                  सायबर कॅफे अर्ज
                 </h2>
+
               </div>
 
+
               <span className="count-pill">
-                {applications.length}{" "}
-                {applications.length === 1
-                  ? "Application"
-                  : "Applications"}
+
+                {applications.length}
+
+                {" "}
+
+                अर्ज
+
               </span>
 
             </div>
 
+
             {applications.length === 0 ? (
+
               <div className="empty-state">
 
                 <div className="empty-icon">
@@ -508,16 +687,17 @@ export default function UserProfile() {
                 </div>
 
                 <h3>
-                  No applications yet
+                  अजून कोणतेही अर्ज नाहीत
                 </h3>
 
                 <p>
-                  Your cyber cafe applications
-                  will appear here.
+                  तुमचे सायबर कॅफे अर्ज येथे दिसतील.
                 </p>
 
               </div>
+
             ) : (
+
               <div className="saas-cards-list">
 
                 {applications.map(
@@ -528,6 +708,7 @@ export default function UserProfile() {
                       app.paid === "true";
 
                     return (
+
                       <article
                         key={i}
                         className={`saas-form-card ${
@@ -548,9 +729,10 @@ export default function UserProfile() {
                               </div>
 
                               <div>
+
                                 <h3 className="saas-app-name">
                                   {app.name ||
-                                    "Application"}
+                                    "अर्ज"}
                                 </h3>
 
                                 <span className="saas-app-date">
@@ -559,11 +741,13 @@ export default function UserProfile() {
                                     app.date
                                   )}
                                 </span>
+
                               </div>
 
                             </div>
 
                           </div>
+
 
                           <span
                             className={`saas-badge ${
@@ -572,21 +756,26 @@ export default function UserProfile() {
                                 : "pending"
                             }`}
                           >
+
                             <span className="status-dot"></span>
+
                             {isPaid
-                              ? "Paid"
-                              : "Pending"}
+                              ? "पैसे भरले"
+                              : "प्रलंबित"}
+
                           </span>
 
                         </div>
+
 
                         <div className="saas-card-mid">
 
                           <div className="saas-fee-box">
 
                             <div className="fee-item">
+
                               <span className="fee-label">
-                                Govt Fee
+                                शासकीय शुल्क
                               </span>
 
                               <span className="fee-val">
@@ -594,13 +783,17 @@ export default function UserProfile() {
                                 {app.govtFee ||
                                   0}
                               </span>
+
                             </div>
+
 
                             <div className="fee-divider"></div>
 
+
                             <div className="fee-item">
+
                               <span className="fee-label">
-                                Service
+                                सेवा शुल्क
                               </span>
 
                               <span className="fee-val">
@@ -608,19 +801,25 @@ export default function UserProfile() {
                                 {app.serviceCharge ||
                                   0}
                               </span>
+
                             </div>
+
 
                             {app.discountValue >
                               0 && (
+
                               <>
+
                                 <div className="fee-divider"></div>
 
                                 <div className="fee-item discount-row">
+
                                   <span className="fee-label">
-                                    Discount
+                                    सवलत
                                   </span>
 
                                   <span className="fee-val">
+
                                     -
                                     {app.discountType ===
                                     "percent"
@@ -629,15 +828,22 @@ export default function UserProfile() {
                                           app.discountAmount ||
                                           0
                                         }`}
+
                                   </span>
+
                                 </div>
+
                               </>
+
                             )}
 
                           </div>
 
+
                           {app.note && (
+
                             <div className="saas-note-box">
+
                               <span className="saas-note-icon">
                                 ℹ
                               </span>
@@ -645,10 +851,13 @@ export default function UserProfile() {
                               <span>
                                 {app.note}
                               </span>
+
                             </div>
+
                           )}
 
                         </div>
+
 
                         <div className="saas-card-bottom">
 
@@ -656,21 +865,26 @@ export default function UserProfile() {
 
                             {app.discountValue >
                               0 && (
+
                               <small>
-                                Subtotal: ₹
+                                उपएकूण: ₹
                                 {app.subTotal}
                               </small>
+
                             )}
 
                             <span>
-                              Total
+
+                              एकूण
 
                               <strong>
                                 ₹{app.total || 0}
                               </strong>
+
                             </span>
 
                           </div>
+
 
                           <div className="saas-action-btns">
 
@@ -691,11 +905,15 @@ export default function UserProfile() {
                                 !app.formUrl
                               }
                             >
+
                               📄
+
                               <span>
-                                Form
+                                अर्ज
                               </span>
+
                             </button>
+
 
                             <button
                               className={`saas-btn-outline ${
@@ -714,10 +932,13 @@ export default function UserProfile() {
                                 !app.docsUrl
                               }
                             >
+
                               📎
+
                               <span>
-                                Docs
+                                कागदपत्रे
                               </span>
+
                             </button>
 
                           </div>
@@ -725,46 +946,59 @@ export default function UserProfile() {
                         </div>
 
                       </article>
+
                     );
                   }
                 )}
 
               </div>
+
             )}
 
           </section>
+
         )}
 
-        {/* DOCUMENTS */}
+
+        {/* ===================================================
+            DOCUMENTS
+        =================================================== */}
+
         {activeTab === "docs" && (
+
           <section className="tab-content fade-in">
 
             <div className="docs-header-row">
 
               <div>
+
                 <span className="section-eyebrow">
-                  FILE MANAGER
+                  फाईल व्यवस्थापन
                 </span>
+
 
                 <div className="docs-title-row">
 
                   <h2 className="section-title">
-                    My Documents
+                    माझी कागदपत्रे
                   </h2>
 
                   <span className="count-pill">
-                    {documents.length} Files
+                    {documents.length} फाईल्स
                   </span>
 
                 </div>
 
+
                 <p className="section-description">
-                  Securely access your uploaded
-                  documents.
+                  तुमची अपलोड केलेली कागदपत्रे सुरक्षितपणे पहा.
                 </p>
+
               </div>
 
+
               {documents.length > 0 && (
+
                 <div className="saas-search-wrapper">
 
                   <span className="search-icon">
@@ -773,7 +1007,7 @@ export default function UserProfile() {
 
                   <input
                     type="text"
-                    placeholder="Search files..."
+                    placeholder="फाईल शोधा..."
                     value={docSearchQuery}
                     onChange={(e) =>
                       setDocSearchQuery(
@@ -783,7 +1017,9 @@ export default function UserProfile() {
                     className="saas-search-input"
                   />
 
+
                   {docSearchQuery && (
+
                     <button
                       className="search-clear"
                       onClick={() =>
@@ -792,14 +1028,18 @@ export default function UserProfile() {
                     >
                       ×
                     </button>
+
                   )}
 
                 </div>
+
               )}
 
             </div>
 
+
             {documents.length === 0 ? (
+
               <div className="empty-state">
 
                 <div className="empty-icon">
@@ -807,17 +1047,17 @@ export default function UserProfile() {
                 </div>
 
                 <h3>
-                  No documents uploaded
+                  कोणतीही कागदपत्रे अपलोड केलेली नाहीत
                 </h3>
 
                 <p>
-                  Your uploaded files will
-                  appear here.
+                  तुमच्या अपलोड केलेल्या फाईल्स येथे दिसतील.
                 </p>
 
               </div>
-            ) : filteredDocuments.length ===
-              0 ? (
+
+            ) : filteredDocuments.length === 0 ? (
+
               <div className="empty-state-search">
 
                 <div className="empty-search-icon">
@@ -825,12 +1065,11 @@ export default function UserProfile() {
                 </div>
 
                 <h3>
-                  No documents found
+                  कागदपत्रे सापडली नाहीत
                 </h3>
 
                 <p>
-                  No files match "
-                  {docSearchQuery}"
+                  "{docSearchQuery}" या नावाची कोणतीही फाईल सापडली नाही.
                 </p>
 
                 <button
@@ -839,23 +1078,26 @@ export default function UserProfile() {
                   }
                   className="clear-search-btn"
                 >
-                  Clear Search
+                  शोध साफ करा
                 </button>
 
               </div>
+
             ) : (
+
               <div className="saas-docs-grid">
 
                 {filteredDocuments.map(
                   (document, i) => {
 
-                    const fileExt = document.url
-                      ? document.url
-                          .split("?")[0]
-                          .split(".")
-                          .pop()
-                          .toUpperCase()
-                      : "FILE";
+                    const fileExt =
+                      document.url
+                        ? document.url
+                            .split("?")[0]
+                            .split(".")
+                            .pop()
+                            .toUpperCase()
+                        : "FILE";
 
                     const displayType =
                       document.type
@@ -881,6 +1123,7 @@ export default function UserProfile() {
                           );
 
                     return (
+
                       <article
                         key={i}
                         className="saas-doc-card"
@@ -898,34 +1141,44 @@ export default function UserProfile() {
                         <div className="saas-doc-preview">
 
                           {isImage ? (
+
                             <img
                               src={document.url}
                               alt={
                                 document.title ||
                                 document.name ||
-                                "Document"
+                                "कागदपत्र"
                               }
                               className="saas-doc-thumb"
                               loading="lazy"
                             />
+
                           ) : (
+
                             <div className="saas-doc-generic">
+
                               <span>
                                 {displayType.substring(
                                   0,
                                   4
                                 )}
                               </span>
+
                             </div>
+
                           )}
 
+
                           <div className="doc-view-overlay">
+
                             <span>
-                              👁 View
+                              👁 पहा
                             </span>
+
                           </div>
 
                         </div>
+
 
                         <div className="saas-doc-info">
 
@@ -938,8 +1191,9 @@ export default function UserProfile() {
                           >
                             {document.title ||
                               document.name ||
-                              "Untitled File"}
+                              "नाव नसलेली फाईल"}
                           </p>
+
 
                           <div className="saas-doc-meta">
 
@@ -961,33 +1215,49 @@ export default function UserProfile() {
                         </div>
 
                       </article>
+
                     );
                   }
                 )}
 
               </div>
+
             )}
 
           </section>
+
         )}
 
       </main>
 
-      {/* BOOKING MODAL */}
+
+      {/* =====================================================
+          BOOKING MODAL
+      ===================================================== */}
+
       {isBookingModalOpen && user && (
+
         <BookingModal
           user={user}
           onClose={() =>
             setIsBookingModalOpen(false)
           }
         />
+
       )}
 
-      {/* DOCUMENT PREVIEW */}
+
+      {/* =====================================================
+          DOCUMENT PREVIEW
+      ===================================================== */}
+
       {preview && (
+
         <div
           className="preview-modal-overlay"
-          onClick={() => setPreview(null)}
+          onClick={() =>
+            setPreview(null)
+          }
         >
 
           <div
@@ -1000,35 +1270,43 @@ export default function UserProfile() {
             <div className="preview-modal-header">
 
               <div>
+
                 <span>
-                  DOCUMENT PREVIEW
+                  कागदपत्र पूर्वावलोकन
                 </span>
+
               </div>
+
 
               <button
                 className="close-btn"
                 onClick={() =>
                   setPreview(null)
                 }
-                aria-label="Close preview"
+                aria-label="पूर्वावलोकन बंद करा"
               >
                 ✕
               </button>
 
             </div>
 
+
             <div className="preview-modal-body">
 
               {preview.type === "pdf" ? (
+
                 <iframe
                   src={preview.url}
-                  title="Document Preview"
+                  title="कागदपत्र पूर्वावलोकन"
                 />
+
               ) : (
+
                 <img
                   src={preview.url}
-                  alt="Document Preview"
+                  alt="कागदपत्र पूर्वावलोकन"
                 />
+
               )}
 
             </div>
@@ -1036,6 +1314,7 @@ export default function UserProfile() {
           </div>
 
         </div>
+
       )}
 
     </div>

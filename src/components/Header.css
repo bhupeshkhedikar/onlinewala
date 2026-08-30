@@ -1,8 +1,7 @@
-/* 🎨 BRAND CONFIGURATION */
 :root {
-  --h-blue: #2563eb;       /* Premium SaaS Blue */
-  --h-blue-dark: #1e3a8a;  /* Deep Navy */
-  --h-yellow: #f59e0b;     /* Premium Amber Yellow */
+  --h-blue: #2563eb;
+  --h-blue-dark: #1e3a8a;
+  --h-yellow: #f59e0b;
   --h-yellow-hover: #d97706;
   --h-dark: #0f172a;
   --h-muted: #64748b;
@@ -10,22 +9,20 @@
   --h-bg-soft: #f8fafc;
 }
 
-/* 🌟 HEADER TOP WIDGET */
 .header-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px 24px;
-  background: rgba(255, 255, 255, 0.98); /* Slight Glass effect */
+  background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid var(--h-border);
   font-family: 'Inter', -apple-system, sans-serif;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
-/* 🏆 LOGO STYLES */
 .logo {
   cursor: pointer;
   display: flex;
@@ -59,14 +56,12 @@
   margin: 0;
 }
 
-/* ⚙️ RIGHT ACTIONS */
 .header-right {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-/* 📞 PHONE PILL (Premium Look) */
 .phone-pill {
   display: flex;
   align-items: center;
@@ -88,7 +83,6 @@
   letter-spacing: 0.5px;
 }
 
-/* 🔘 BUTTONS */
 .auth-actions {
   display: flex;
   align-items: center;
@@ -101,7 +95,7 @@
   gap: 6px;
   border: none;
   padding: 8px 18px;
-  border-radius: 8px; /* Sharp modern curve */
+  border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
@@ -120,7 +114,6 @@
   transform: translateY(-1px);
 }
 
-/* Logout button looks subtle instead of screaming red */
 .cta-btn.secondary {
   background: white;
   color: #ef4444;
@@ -131,10 +124,26 @@
   background: #fef2f2;
 }
 
-/* 📱 MOBILE RESPONSIVE MAGIC */
+/* Mobile Menu - normal flow below sticky header */
+.mobile-top-menu {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .header-top {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
     padding: 12px 16px;
+  }
+
+  .mobile-top-menu {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: #fff;
+    border-bottom: 1px solid var(--h-border);
   }
 
   .logo h2 {
@@ -145,24 +154,21 @@
     font-size: 0.55rem;
   }
 
-  /* Right Side Stacking */
   .header-right {
     flex-direction: column;
     align-items: flex-end;
     gap: 8px;
   }
 
-  /* Shrink Phone Pill */
   .phone-pill {
     padding: 4px 10px;
-    background: transparent; /* Remove background on mobile to save space */
+    background: transparent;
     border: none;
     gap: 4px;
   }
 
   .phone-text {
     font-size: 0.7rem;
-    color: var(--h-muted);
   }
 
   .auth-actions {
@@ -176,13 +182,25 @@
   }
 }
 
-/* Ultra Small Phones */
-@media (max-width: 380px) {
-  .phone-text {
-    display: none; /* Hide text, just show icon if screen is too tiny */
+@media (max-width: 480px) {
+  .header-top {
+    padding: 9px 10px;
   }
-  
-  .phone-pill {
-    padding: 0;
+
+  .logo h2 {
+    font-size: 1rem;
+  }
+
+  .logo p {
+    font-size: 0.45rem;
+  }
+
+  .phone-text {
+    font-size: 0.58rem;
+  }
+
+  .cta-btn {
+    padding: 5px 8px;
+    font-size: 0.6rem;
   }
 }

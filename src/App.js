@@ -31,12 +31,13 @@ import InvoiceDashboard from "./components/admin/InvoiceDashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminReferrals from "./components/admin/AdminReferrals";
 import AdminWithdrawals from "./components/admin/AdminWithdrawals";
+import MobileMenu from "./components/MobileMenu";
 
 const Home = ({ authUser, userData }) => (
   <>
     <div className="hero-wrapper">
+     
       <Hero />
-
       <QuickWalletReferral
         user={authUser ? (userData || authUser) : null}
       />
@@ -200,203 +201,189 @@ export default function App() {
   }
 
   return (
-    <Router>
-      <div className="app">
-        <Header
-          authUser={authUser}
-          userData={userData}
-          onLogout={handleLogout}
-        />
-
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Home
-                authUser={authUser}
-                userData={userData}
-              />
-            }
+  <Router>
+  <div className="app">
+    <Header
+      authUser={authUser}
+      userData={userData}
+      onLogout={handleLogout}
+    />
+   <MobileMenu authUser={authUser} />
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Home
+            authUser={authUser}
+            userData={userData}
           />
+        }
+      />
 
-          <Route
-            path="/spin"
-            element={<Lucky user={authUser} />}
-          />
+      <Route
+        path="/spin"
+        element={<Lucky user={authUser} />}
+      />
 
-          <Route
-            path="/invoice"
-            element={
-              <InvoiceDashboard
-                user={authUser}
-              />
-            }
-          />
+      <Route
+        path="/invoice"
+        element={
+          <InvoiceDashboard user={authUser} />
+        }
+      />
 
-          <Route
-            path="/resume-builder"
-            element={<ResumeBuilder />}
-          />
+      <Route
+        path="/resume-builder"
+        element={<ResumeBuilder />}
+      />
 
-          <Route
-            path="/biodata-builder"
-            element={<BiodataBuilder />}
-          />
+      <Route
+        path="/biodata-builder"
+        element={<BiodataBuilder />}
+      />
 
-          <Route
-            path="/age-calculator"
-            element={<AgeCalculator />}
-          />
+      <Route
+        path="/age-calculator"
+        element={<AgeCalculator />}
+      />
 
-          <Route
-            path="/login"
-            element={
-              authUser ? (
-                <Navigate
-                  to="/dashboard"
-                  replace
-                />
-              ) : (
-                <Login
-                  onLoginSuccess={
-                    handleAuthSuccess
-                  }
-                  onSwitchToSignup={() =>
-                    (window.location.href =
-                      "/signup")
-                  }
-                />
-              )
-            }
-          />
+      <Route
+        path="/login"
+        element={
+          authUser ? (
+            <Navigate
+              to="/dashboard"
+              replace
+            />
+          ) : (
+            <Login
+              onLoginSuccess={handleAuthSuccess}
+              onSwitchToSignup={() =>
+                (window.location.href = "/signup")
+              }
+            />
+          )
+        }
+      />
 
-          <Route
-            path="/signup"
-            element={
-              authUser ? (
-                <Navigate
-                  to="/dashboard"
-                  replace
-                />
-              ) : (
-                <Signup
-                  onLoginSuccess={
-                    handleAuthSuccess
-                  }
-                  onSwitchToLogin={() =>
-                    (window.location.href =
-                      "/login")
-                  }
-                />
-              )
-            }
-          />
+      <Route
+        path="/signup"
+        element={
+          authUser ? (
+            <Navigate
+              to="/dashboard"
+              replace
+            />
+          ) : (
+            <Signup
+              onLoginSuccess={handleAuthSuccess}
+              onSwitchToLogin={() =>
+                (window.location.href = "/login")
+              }
+            />
+          )
+        }
+      />
 
-          <Route
-            path="/dashboard"
-            element={
-              authUser ? (
-                <RoleBasedDashboard
-                  userData={userData}
-                />
-              ) : (
-                <Navigate
-                  to="/login"
-                  replace
-                />
-              )
-            }
-          />
+      <Route
+        path="/dashboard"
+        element={
+          authUser ? (
+            <RoleBasedDashboard
+              userData={userData}
+            />
+          ) : (
+            <Navigate
+              to="/login"
+              replace
+            />
+          )
+        }
+      />
 
-          <Route
-            path="/referral"
-            element={
-              authUser ? (
-                <Referral
-                  user={authUser}
-                />
-              ) : (
-                <Navigate
-                  to="/login"
-                  replace
-                />
-              )
-            }
-          />
+      <Route
+        path="/referral"
+        element={
+          authUser ? (
+            <Referral user={authUser} />
+          ) : (
+            <Navigate
+              to="/login"
+              replace
+            />
+          )
+        }
+      />
 
-          <Route
-            path="/wallet"
-            element={
-              authUser ? (
-                <Wallet
-                  user={authUser}
-                />
-              ) : (
-                <Navigate
-                  to="/login"
-                  replace
-                />
-              )
-            }
-          />
+      <Route
+        path="/wallet"
+        element={
+          authUser ? (
+            <Wallet user={authUser} />
+          ) : (
+            <Navigate
+              to="/login"
+              replace
+            />
+          )
+        }
+      />
 
-          <Route
-            path="/wallet/add-money"
-            element={
-              authUser ? (
-                <AddMoney
-                  user={authUser}
-                />
-              ) : (
-                <Navigate
-                  to="/login"
-                  replace
-                />
-              )
-            }
-          />
+      <Route
+        path="/wallet/add-money"
+        element={
+          authUser ? (
+            <AddMoney user={authUser} />
+          ) : (
+            <Navigate
+              to="/login"
+              replace
+            />
+          )
+        }
+      />
 
-          <Route
-            path="/admin/referrals"
-            element={
-              authUser &&
-              userData?.role === "admin" ? (
-                <AdminReferrals />
-              ) : (
-                <Navigate
-                  to="/login"
-                  replace
-                />
-              )
-            }
-          />
+      <Route
+        path="/admin/referrals"
+        element={
+          authUser &&
+          userData?.role === "admin" ? (
+            <AdminReferrals />
+          ) : (
+            <Navigate
+              to="/login"
+              replace
+            />
+          )
+        }
+      />
 
-          <Route
-            path="/admin/withdrawals"
-            element={
-              authUser &&
-              userData?.role === "admin" ? (
-                <AdminWithdrawals />
-              ) : (
-                <Navigate
-                  to="/login"
-                  replace
-                />
-              )
-            }
-          />
+      <Route
+        path="/admin/withdrawals"
+        element={
+          authUser &&
+          userData?.role === "admin" ? (
+            <AdminWithdrawals />
+          ) : (
+            <Navigate
+              to="/login"
+              replace
+            />
+          )
+        }
+      />
 
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to="/"
-                replace
-              />
-            }
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to="/"
+            replace
           />
-        </Routes>
-      </div>
-    </Router>
+        }
+      />
+    </Routes>
+  </div>
+</Router>
   );
 }
