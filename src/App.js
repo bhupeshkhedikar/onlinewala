@@ -37,17 +37,14 @@ const Home = ({ authUser, userData }) => (
     <div className="hero-wrapper">
       <Hero />
 
-      {authUser && (
-        <QuickWalletReferral
-          user={userData || authUser}
-        />
-      )}
+      <QuickWalletReferral
+        user={authUser ? (userData || authUser) : null}
+      />
 
       <BookingBar user={authUser} />
     </div>
 
     <ServicesIcons user={authUser} />
-
     <JobBanner />
 
     <div className="main-grid">
@@ -57,9 +54,7 @@ const Home = ({ authUser, userData }) => (
 
     <PriorityGrid />
     <Priority />
-
     <Analytics />
-
     <Footer />
   </>
 );
