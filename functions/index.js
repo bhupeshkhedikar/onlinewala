@@ -1672,3 +1672,434 @@ exports.adminRejectWithdrawal =
       };
     }
   );
+
+  /* =========================================================
+   USER → ONLINEWALAA WALLET PAYMENT
+   ========================================================= */
+
+exports.payOnlineWalaaFromWallet =
+  onCall(
+    {
+      region: "asia-south1",
+      invoker: "public",
+    },
+    async (request) => {
+
+      /* -----------------------------------------------------
+         1. LOGIN CHECK
+      ----------------------------------------------------- */
+
+      if (!request.auth) {
+        throw new HttpsError(
+          "unauthenticated",
+          "कृपया प्रथम लॉगिन करा."
+        );
+      }
+
+      const userId =
+        request.auth.uid;
+
+
+      /* -----------------------------------------------------
+         2. AMOUNT VALIDATION
+      ----------------------------------------------------- */
+
+      const amount =
+        Number(
+          request.data?.amount
+        );
+
+      if (!Number.isFinite(amount)) {
+        throw new HttpsError(
+          "invalid-argument",
+          "कृपया योग्य रक्कम भरा."
+        );
+      }
+
+      if (amount <= 0) {
+        throw new HttpsError(
+          "invalid-argument",
+          "पेमेंटची रक्कम ₹1 पेक्षा जास्त असावी."
+        );
+      }
+
+      if (!Number.isInteger(amount)) {
+        throw new HttpsError(
+          "invalid-argument",
+          "रक्कम पूर्ण अंकात असावी."
+        );
+      }
+
+      /* -----------------------------------------------------
+         3. OPTIONAL MAX PAYMENT LIMIT
+      ----------------------------------------------------- */
+
+      const MAX_PAYMENT = 50000;
+
+      if (amount > MAX_PAYMENT) {
+        throw new HttpsError(
+          "invalid-argument",
+          `एका पेमेंटची कमाल मर्यादा ₹${MAX_PAYMENT} आहे.`
+        );
+      }
+
+
+      /* -----------------------------------------------------
+         4. REFERENCES
+      ----------------------------------------------------- */
+
+      const userRef =
+        db
+          .collection("users")
+          .doc(userId);
+
+      const adminWalletRef =
+        db
+          .collection("adminWallet")
+          .doc("main");
+
+      const userTransactionRef =
+        db
+          .collection("walletTransactions")
+          .doc();
+
+      const adminTransactionRef =
+        db
+          .collection("adminWalletTransactions")
+          .doc();
+
+
+      /* -----------------------------------------------------
+         5. ATOMIC FIRESTORE TRANSACTION
+      ----------------------------------------------------- */
+
+      let result;
+
+      try {
+
+        result =
+          await db.runTransaction(
+            async (transaction) => {
+
+              /* ---------------------------------------------
+                 READ USER
+              --------------------------------------------- */
+
+              const userSnap =
+                await transaction.get(
+                  userRef
+                );
+
+              if (!userSnap.exists) {
+                throw new HttpsError(
+                  "not-found",
+                  "User profile सापडला नाही."
+                );
+              }
+
+
+              /* ---------------------------------------------
+                 READ ADMIN WALLET
+              --------------------------------------------- */
+
+              const adminWalletSnap =
+                await transaction.get(
+                  adminWalletRef
+                );
+
+
+              const userData =
+                userSnap.data();
+
+
+              /* ---------------------------------------------
+                 CURRENT USER BALANCE
+              --------------------------------------------- */
+
+              const currentWallet =
+                Number(
+                  userData.walletBalance ??
+                  0
+                );
+
+              const currentAvailable =
+                Number(
+                  userData.availableBalance ??
+                  0
+                );
+
+
+              /* ---------------------------------------------
+                 BALANCE CHECK
+              --------------------------------------------- */
+
+              if (
+                currentAvailable <
+                amount
+              ) {
+
+                throw new HttpsError(
+                  "failed-precondition",
+                  `तुमच्या वॉलेटमध्ये पुरेशी शिल्लक नाही. उपलब्ध शिल्लक ₹${currentAvailable} आहे.`
+                );
+
+              }
+
+
+              /* ---------------------------------------------
+                 NEW USER BALANCE
+              --------------------------------------------- */
+
+              const newWallet =
+                currentWallet -
+                amount;
+
+              const newAvailable =
+                currentAvailable -
+                amount;
+
+
+              /* ---------------------------------------------
+                 ADMIN WALLET BALANCE
+              --------------------------------------------- */
+
+              const adminData =
+                adminWalletSnap.exists
+                  ? adminWalletSnap.data()
+                  : {};
+
+              const currentAdminBalance =
+                Number(
+                  adminData.balance ??
+                  0
+                );
+
+              const currentAdminTotalReceived =
+                Number(
+                  adminData.totalReceived ??
+                  0
+                );
+
+
+              const newAdminBalance =
+                currentAdminBalance +
+                amount;
+
+              const newAdminTotalReceived =
+                currentAdminTotalReceived +
+                amount;
+
+
+              /* ---------------------------------------------
+                 PAYMENT REFERENCE
+              --------------------------------------------- */
+
+              const paymentReference =
+                `OWP-${Date.now()}-${userId.slice(
+                  0,
+                  6
+                )}`;
+
+
+              /* ---------------------------------------------
+                 UPDATE USER WALLET
+              --------------------------------------------- */
+
+              transaction.update(
+                userRef,
+                {
+
+                  walletBalance:
+                    newWallet,
+
+                  availableBalance:
+                    newAvailable,
+
+                  updatedAt:
+                    admin.firestore
+                      .FieldValue
+                      .serverTimestamp(),
+
+                }
+              );
+
+
+              /* ---------------------------------------------
+                 CREATE / UPDATE ADMIN WALLET
+              --------------------------------------------- */
+
+              transaction.set(
+                adminWalletRef,
+                {
+
+                  balance:
+                    newAdminBalance,
+
+                  totalReceived:
+                    newAdminTotalReceived,
+
+                  updatedAt:
+                    admin.firestore
+                      .FieldValue
+                      .serverTimestamp(),
+
+                },
+                {
+                  merge: true
+                }
+              );
+
+
+              /* ---------------------------------------------
+                 USER TRANSACTION
+              --------------------------------------------- */
+
+              transaction.set(
+                userTransactionRef,
+                {
+
+                  userId:
+                    userId,
+
+                  amount:
+                    amount,
+
+                  type:
+                    "ONLINEWALAA_PAYMENT",
+
+                  direction:
+                    "DEBIT",
+
+                  status:
+                    "success",
+
+                  referenceId:
+                    paymentReference,
+
+                  description:
+                    "OnlineWalaa ला पेमेंट",
+
+                  createdAt:
+                    admin.firestore
+                      .FieldValue
+                      .serverTimestamp(),
+
+                }
+              );
+
+
+              /* ---------------------------------------------
+                 ADMIN TRANSACTION
+              --------------------------------------------- */
+
+              transaction.set(
+                adminTransactionRef,
+                {
+
+                  userId:
+                    userId,
+
+                  amount:
+                    amount,
+
+                  type:
+                    "ONLINEWALAA_PAYMENT",
+
+                  direction:
+                    "CREDIT",
+
+                  status:
+                    "success",
+
+                  referenceId:
+                    paymentReference,
+
+                  userTransactionId:
+                    userTransactionRef.id,
+
+                  description:
+                    "User wallet payment received",
+
+                  createdAt:
+                    admin.firestore
+                      .FieldValue
+                      .serverTimestamp(),
+
+                }
+              );
+
+
+              /* ---------------------------------------------
+                 RESULT
+              --------------------------------------------- */
+
+              return {
+
+                success:
+                  true,
+
+                amount:
+                  amount,
+
+                referenceId:
+                  paymentReference,
+
+                newWallet:
+                  newWallet,
+
+                newAvailable:
+                  newAvailable,
+
+                adminBalance:
+                  newAdminBalance,
+
+              };
+
+            }
+          );
+
+      } catch (error) {
+
+        console.error(
+          "OnlineWalaa wallet payment error:",
+          error
+        );
+
+
+        if (
+          error instanceof HttpsError
+        ) {
+          throw error;
+        }
+
+
+        throw new HttpsError(
+          "internal",
+          "पेमेंट करताना काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा."
+        );
+
+      }
+
+
+      /* -----------------------------------------------------
+         SUCCESS RESPONSE
+      ----------------------------------------------------- */
+
+      return {
+
+        success:
+          true,
+
+        amount:
+          result.amount,
+
+        referenceId:
+          result.referenceId,
+
+        message:
+          `₹${result.amount} चे पेमेंट OnlineWalaa ला यशस्वी झाले.`,
+
+      };
+
+    }
+  );

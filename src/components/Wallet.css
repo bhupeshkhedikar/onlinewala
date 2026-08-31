@@ -956,3 +956,730 @@
     font-size: 10px;
   }
 }
+
+/* =========================================================
+   ONLINEWALAA PAYMENT CARD
+========================================================= */
+
+.onlinewalaa-payment-card {
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f8fbff 100%
+    );
+}
+
+.onlinewalaa-payment-icon {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+  color: #ffffff;
+}
+
+.onlinewalaa-pay-btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
+  color: #ffffff;
+
+  padding: 12px 22px;
+
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 8px 18px rgba(
+      37,
+      99,
+      235,
+      0.22
+    );
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.onlinewalaa-pay-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(
+      37,
+      99,
+      235,
+      0.3
+    );
+}
+
+.onlinewalaa-pay-btn:active {
+  transform: scale(0.97);
+}
+
+.onlinewalaa-pay-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   PAYMENT OVERLAY
+========================================================= */
+
+.wallet-payment-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(
+      15,
+      23,
+      42,
+      0.65
+    );
+
+  backdrop-filter:
+    blur(8px);
+
+  -webkit-backdrop-filter:
+    blur(8px);
+}
+
+
+/* =========================================================
+   PAYMENT MODAL
+========================================================= */
+
+.wallet-payment-modal {
+  position: relative;
+
+  width: 100%;
+
+  max-width: 430px;
+
+  background: #ffffff;
+
+  border-radius: 24px;
+
+  padding: 32px;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 30px 80px
+    rgba(
+      0,
+      0,
+      0,
+      0.25
+    );
+
+  animation:
+    paymentModalIn
+    0.25s
+    ease-out;
+}
+
+@keyframes paymentModalIn {
+
+  from {
+    opacity: 0;
+    transform:
+      translateY(20px)
+      scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+.wallet-payment-close {
+  position: absolute;
+
+  top: 14px;
+  right: 14px;
+
+  width: 36px;
+  height: 36px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f1f5f9;
+
+  color: #475569;
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.wallet-payment-close:hover {
+  background: #e2e8f0;
+
+  transform:
+    rotate(90deg);
+}
+
+.wallet-payment-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   PAYMENT ICON
+========================================================= */
+
+.wallet-payment-icon {
+  width: 64px;
+  height: 64px;
+
+  margin: 0 auto 16px;
+
+  border-radius: 20px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 30px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #dbeafe
+    );
+
+  box-shadow:
+    0 10px 25px
+    rgba(
+      37,
+      99,
+      235,
+      0.12
+    );
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.wallet-payment-modal h2 {
+  margin: 0;
+
+  text-align: center;
+
+  color: #0f172a;
+
+  font-size: 22px;
+
+  font-weight: 850;
+}
+
+.wallet-payment-subtitle {
+  margin: 7px 0 22px;
+
+  text-align: center;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   AVAILABLE BALANCE
+========================================================= */
+
+.wallet-payment-balance {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 14px 16px;
+
+  margin-bottom: 20px;
+
+  border-radius: 14px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+}
+
+.wallet-payment-balance span {
+  color: #64748b;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.wallet-payment-balance strong {
+  color: #2563eb;
+
+  font-size: 17px;
+
+  font-weight: 850;
+}
+
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.wallet-payment-label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #334155;
+
+  font-size: 13px;
+
+  font-weight: 750;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.wallet-payment-input-wrapper {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border: 1.5px solid #cbd5e1;
+
+  border-radius: 14px;
+
+  padding: 0 16px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.wallet-payment-input-wrapper:focus-within {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(
+      37,
+      99,
+      235,
+      0.1
+    );
+}
+
+.wallet-payment-input-wrapper > span {
+  color: #2563eb;
+
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+.wallet-payment-input-wrapper input {
+  width: 100%;
+
+  height: 52px;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #0f172a;
+
+  font-size: 20px;
+
+  font-weight: 750;
+
+  font-family: inherit;
+}
+
+.wallet-payment-input-wrapper input::placeholder {
+  color: #94a3b8;
+}
+
+
+/* Remove number arrows */
+
+.wallet-payment-input-wrapper
+input::-webkit-outer-spin-button,
+.wallet-payment-input-wrapper
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wallet-payment-input-wrapper
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.wallet-payment-error {
+  margin-top: 12px;
+
+  padding: 11px 13px;
+
+  border-radius: 10px;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  color: #b91c1c;
+
+  font-size: 12px;
+
+  font-weight: 650;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.wallet-payment-message {
+  margin-top: 12px;
+
+  padding: 11px 13px;
+
+  border-radius: 10px;
+
+  background: #ecfdf5;
+
+  border: 1px solid #bbf7d0;
+
+  color: #15803d;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   SECURITY NOTICE
+========================================================= */
+
+.wallet-payment-warning {
+  margin-top: 16px;
+
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  background: #fff7ed;
+
+  border: 1px solid #fed7aa;
+
+  color: #9a3412;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   CONFIRM BUTTON
+========================================================= */
+
+.wallet-confirm-pay-btn {
+  width: 100%;
+
+  margin-top: 18px;
+
+  height: 52px;
+
+  border: none;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #1d4ed8
+    );
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 25px
+    rgba(
+      37,
+      99,
+      235,
+      0.25
+    );
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.wallet-confirm-pay-btn:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 14px 30px
+    rgba(
+      37,
+      99,
+      235,
+      0.32
+    );
+}
+
+.wallet-confirm-pay-btn:active {
+  transform: scale(0.98);
+}
+
+.wallet-confirm-pay-btn:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.wallet-payment-success {
+  text-align: center;
+
+  padding: 20px 5px 10px;
+}
+
+.payment-success-icon {
+  width: 76px;
+  height: 76px;
+
+  margin: 0 auto 18px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #dcfce7;
+
+  color: #16a34a;
+
+  border: 5px solid #bbf7d0;
+
+  font-size: 36px;
+
+  font-weight: 900;
+
+  animation:
+    successPop
+    0.35s
+    ease-out;
+}
+
+@keyframes successPop {
+
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+}
+
+.wallet-payment-success h2 {
+  color: #15803d;
+}
+
+.wallet-payment-success p {
+  margin: 10px auto 0;
+
+  max-width: 330px;
+
+  color: #475569;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .wallet-payment-overlay {
+    padding: 14px;
+  }
+
+  .wallet-payment-modal {
+    max-width: 100%;
+
+    padding: 27px 20px;
+
+    border-radius: 20px;
+  }
+
+  .wallet-payment-icon {
+    width: 56px;
+    height: 56px;
+
+    border-radius: 17px;
+
+    font-size: 26px;
+  }
+
+  .wallet-payment-modal h2 {
+    font-size: 19px;
+  }
+
+  .wallet-payment-subtitle {
+    font-size: 12px;
+
+    margin-bottom: 18px;
+  }
+
+  .wallet-payment-balance {
+    padding: 12px 13px;
+  }
+
+  .wallet-payment-input-wrapper input {
+    height: 48px;
+
+    font-size: 18px;
+  }
+
+  .wallet-confirm-pay-btn {
+    height: 50px;
+  }
+
+  .onlinewalaa-payment-card {
+    align-items: flex-start;
+  }
+
+  .onlinewalaa-pay-btn {
+    width: 100%;
+
+    margin-top: 10px;
+
+    padding: 11px 16px;
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .wallet-payment-modal {
+    padding: 24px 16px;
+  }
+
+  .wallet-payment-modal h2 {
+    font-size: 18px;
+  }
+
+  .wallet-payment-balance strong {
+    font-size: 15px;
+  }
+
+}

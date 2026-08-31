@@ -14,6 +14,7 @@ import AdminWithdrawals from "./AdminWithdrawals";
 import AdminReferrals from "./AdminReferrals";
 import "./Admin.css";
 import AdminInvoiceDashboard from "./InvoiceDashboard";
+import AdminPayments from "./AdminPayments";
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -197,6 +198,11 @@ const menuItems = [
     icon: "📋",
     label: "Bookings"
   },
+  {
+  id: "payments",
+  icon: "💳",
+  label: "Payments"
+},
   {
     id: "withdrawals",
     icon: "💸",
@@ -513,6 +519,27 @@ const menuItems = [
   <AdminInvoiceDashboard />
 </section>
 
+<section
+  id="admin-payments"
+  className="admin-section"
+>
+  <div className="admin-module-header">
+    <div>
+      <span>FINANCE MANAGEMENT</span>
+      <h2>Payments</h2>
+      <p>
+        View and manage customer payment transactions.
+      </p>
+    </div>
+
+    <div className="invoice-header-icon">
+      💳
+    </div>
+  </div>
+
+  <AdminPayments />
+</section>
+
           <section
             id="admin-services"
             className="admin-section"
@@ -705,6 +732,19 @@ const menuItems = [
 >
   <span>🧾</span>
   <small>Invoices</small>
+</button>
+
+
+  <button
+  className={
+    activeSection === "payments"
+      ? "active"
+      : ""
+  }
+  onClick={() => handleMenuClick("invoices")}
+>
+  <span>💳</span>
+  <small>Payments</small>
 </button>
 
   <button

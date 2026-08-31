@@ -32,6 +32,7 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminReferrals from "./components/admin/AdminReferrals";
 import AdminWithdrawals from "./components/admin/AdminWithdrawals";
 import MobileMenu from "./components/MobileMenu";
+import AdminPayments from "./components/admin/AdminPayments";
 
 const Home = ({ authUser, userData }) => (
   <>
