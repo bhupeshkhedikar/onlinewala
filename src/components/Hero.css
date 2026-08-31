@@ -1,140 +1,1015 @@
+/* =========================================================
+   HERO WRAPPER
+========================================================= */
+
 .hero-wrapper {
-  padding: 20px;
+  width: 100%;
+  padding: 18px 20px;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
 }
 
-/* 🔥 HERO CONTAINER (Fixed Height for Full Banner) */
+
+/* =========================================================
+   HERO MAIN CONTAINER
+========================================================= */
+
 .hero {
   position: relative;
+
+  width: 100%;
+
+  height: 300px;
+
   overflow: hidden;
+
   border-radius: 20px;
-  background: #0f172a; /* Fallback color */
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.15);
-  height: 350px; /* 💻 Desktop Banner Height */
+
+  background:
+    radial-gradient(
+      circle at 10% 20%,
+      rgba(37, 99, 235, 0.14),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 90% 80%,
+      rgba(245, 158, 11, 0.16),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      #f5f9ff 0%,
+      #ffffff 45%,
+      #fffaf2 100%
+    );
+
+  border: 1px solid
+    rgba(226, 232, 240, 0.95);
+
+  box-shadow:
+    0 18px 45px
+    rgba(37, 99, 235, 0.08),
+
+    0 8px 22px
+    rgba(15, 23, 42, 0.06),
+
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.95);
+
+  box-sizing: border-box;
 }
+
+
+/* =========================================================
+   DECORATIVE BLUE GLOW
+========================================================= */
+
+.hero::before {
+  content: "";
+
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  top: -140px;
+  left: -80px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(37, 99, 235, 0.14),
+      transparent 70%
+    );
+
+  pointer-events: none;
+
+  z-index: 0;
+}
+
+
+/* =========================================================
+   DECORATIVE ORANGE GLOW
+========================================================= */
+
+.hero::after {
+  content: "";
+
+  position: absolute;
+
+  width: 280px;
+  height: 280px;
+
+  right: -100px;
+  bottom: -160px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(245, 158, 11, 0.15),
+      transparent 70%
+    );
+
+  pointer-events: none;
+
+  z-index: 0;
+}
+
+
+/* =========================================================
+   SLIDER
+========================================================= */
 
 .hero-slider {
+  position: relative;
+
+  z-index: 1;
+
   display: flex;
+
+  width: 100%;
   height: 100%;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+
+  /*
+    Smooth movement
+  */
+
+  transition:
+    transform
+    0.65s
+    cubic-bezier(
+      0.25,
+      1,
+      0.5,
+      1
+    );
 }
+
+
+/* =========================================================
+   SLIDE
+
+   DESKTOP:
+   50% width = 2 banners visible
+
+   MOBILE:
+   100% width
+========================================================= */
 
 .hero-slide {
-  min-width: 100%;
+  min-width: 50%;
+
+  width: 50%;
+
   height: 100%;
+
   display: flex;
+
   justify-content: center;
   align-items: center;
-  padding: 0; /* Text wala padding hata diya */
+
+  padding: 10px;
+
+  box-sizing: border-box;
+
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+
+  position: relative;
 }
 
-/* 🔥 FULL COVER IMAGE */
-.full-slide-img {
+
+/* =========================================================
+   SLIDE INNER
+========================================================= */
+
+.hero-slide-inner {
+  position: relative;
+
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ye image ko stretch hone se bachayega aur full cover karega */
-  display: block;
-}
 
-.hero-loading {
-  background: #f1f5f9;
-  border-radius: 20px;
-  height: 350px;
   display: flex;
+
   justify-content: center;
   align-items: center;
-  color: #64748b;
-  font-weight: 600;
+
+  overflow: hidden;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95),
+      rgba(248, 250, 252, 0.92)
+    );
+
+  box-shadow:
+    0 8px 22px
+    rgba(15, 23, 42, 0.06);
+
+  transition:
+    transform 0.5s ease,
+    box-shadow 0.5s ease;
 }
 
-/* SLEEK NAVIGATION BUTTONS */
-.hero-nav {
+
+/* =========================================================
+   ACTIVE SLIDE
+========================================================= */
+
+.hero-slide-active {
+  opacity: 1;
+
+  z-index: 3;
+}
+
+.hero-slide-active
+.hero-slide-inner {
+  transform: scale(1);
+
+  box-shadow:
+    0 12px 28px
+    rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   SIDE / NEXT SLIDE
+========================================================= */
+
+.hero-slide-side {
+  opacity: 0.72;
+
+  z-index: 2;
+}
+
+.hero-slide-side
+.hero-slide-inner {
+
+  /*
+    Mirror / depth effect
+  */
+
+  transform:
+    scale(0.88);
+
+  box-shadow:
+    0 15px 30px
+    rgba(37, 99, 235, 0.08);
+
+  filter:
+    saturate(0.88)
+    brightness(0.97);
+}
+
+
+/* =========================================================
+   SIDE SLIDE REFLECTION
+========================================================= */
+
+.hero-slide-side
+.hero-slide-inner::after {
+
+  content: "";
+
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  border: none;
-  color: white;
-  font-size: 24px;
-  width: 40px; height: 40px;
+
+  left: 5%;
+  right: 5%;
+
+  bottom: -35px;
+
+  height: 45px;
+
   border-radius: 50%;
-  cursor: pointer;
-  display: flex; justify-content: center; align-items: center;
-  transition: all 0.3s;
-  z-index: 2;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(37, 99, 235, 0.12),
+      transparent 70%
+    );
+
+  filter: blur(10px);
+
+  opacity: 0.65;
+
+  pointer-events: none;
 }
 
-.hero-nav:hover { background: rgba(0,0,0,0.7); }
-.hero-nav.prev { left: 15px; }
-.hero-nav.next { right: 15px; }
 
-/* DOTS */
-.hero-dots {
-  position: absolute;
-  bottom: 15px; 
+/* =========================================================
+   BANNER IMAGE
+========================================================= */
+
+.full-slide-img {
+
   width: 100%;
-  text-align: center;
-  z-index: 2;
+  height: 100%;
+
+  object-fit: contain;
+
+  object-position: center;
+
+  display: block;
+
+  filter:
+    drop-shadow(
+      0 7px 14px
+      rgba(15, 23, 42, 0.05)
+    );
+
+  user-select: none;
+
+  -webkit-user-drag: none;
+
+  transition:
+    transform 0.5s ease;
 }
+
+
+/* =========================================================
+   ACTIVE IMAGE
+========================================================= */
+
+.hero-slide-active
+.full-slide-img {
+  transform: scale(1);
+}
+
+
+/* =========================================================
+   SIDE IMAGE
+========================================================= */
+
+.hero-slide-side
+.full-slide-img {
+  transform: scale(0.97);
+}
+
+
+/* =========================================================
+   NAVIGATION BUTTONS
+========================================================= */
+
+.hero-nav {
+
+  position: absolute;
+
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  z-index: 10;
+
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.35);
+
+  background:
+    rgba(15, 23, 42, 0.45);
+
+  backdrop-filter:
+    blur(6px);
+
+  -webkit-backdrop-filter:
+    blur(6px);
+
+  color: #ffffff;
+
+  font-size: 25px;
+
+  line-height: 1;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  transition:
+    all 0.25s ease;
+
+  box-shadow:
+    0 5px 15px
+    rgba(15, 23, 42, 0.15);
+}
+
+
+.hero-nav:hover {
+
+  background:
+    rgba(15, 23, 42, 0.78);
+
+  transform:
+    translateY(-50%)
+    scale(1.08);
+
+  box-shadow:
+    0 8px 20px
+    rgba(15, 23, 42, 0.22);
+}
+
+
+.hero-nav:active {
+
+  transform:
+    translateY(-50%)
+    scale(0.95);
+}
+
+
+.hero-nav.prev {
+  left: 14px;
+}
+
+
+.hero-nav.next {
+  right: 14px;
+}
+
+
+/* =========================================================
+   DOTS
+========================================================= */
+
+.hero-dots {
+
+  position: absolute;
+
+  bottom: 10px;
+
+  left: 0;
+
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+
+  z-index: 12;
+}
+
 
 .hero-dots span {
-  display: inline-block;
-  width: 8px; height: 8px;
-  background: rgba(255,255,255,0.4);
-  margin: 0 4px;
-  border-radius: 4px;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.25);
+
   cursor: pointer;
-  transition: all 0.3s ease;
+
+  transition:
+    all 0.3s ease;
 }
+
+
+.hero-dots span:hover {
+
+  background:
+    rgba(37, 99, 235, 0.55);
+}
+
 
 .hero-dots .active {
-  background: #ffffff;
-  width: 24px;
+
+  width: 22px;
+
+  background:
+    #2563eb;
+
+  box-shadow:
+    0 2px 7px
+    rgba(37, 99, 235, 0.3);
 }
 
-/* 🔥 CTA BUTTON (Neeche wala) */
-.hero-cta-container {
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.hero-loading {
+
+  width: 100%;
+
+  height: 300px;
+
+  border-radius: 20px;
+
   display: flex;
+
   justify-content: center;
-  margin-top: 25px; 
+  align-items: center;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(37, 99, 235, 0.10),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 80%,
+      rgba(245, 158, 11, 0.10),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      #f7faff,
+      #ffffff,
+      #fffaf3
+    );
+
+  border:
+    1px solid #e2e8f0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CTA
+========================================================= */
+
+.hero-cta-container {
+
+  display: flex;
+
+  justify-content: center;
+
+  margin-top: 20px;
+
   padding-bottom: 10px;
 }
+
+
 .glowing-appointment-btn {
+
   background: #ff7a00;
+
   color: #ffffff;
+
   border: none;
-  padding: 14px 36px;
-  border-radius: 50px; 
+
+  padding: 13px 34px;
+
+  border-radius: 50px;
+
   font-size: 0.85rem;
+
   font-weight: 700;
+
   text-transform: uppercase;
+
   cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
-  box-shadow: 0 0 15px rgba(255, 122, 0, 0.4);
-  animation: pulseGlow 2s infinite cubic-bezier(0.66, 0, 0, 1);
-  transition: transform 0.2s ease, background 0.2s ease;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  box-shadow:
+    0 0 15px
+    rgba(255, 122, 0, 0.4);
+
+  animation:
+    pulseGlow
+    2s infinite
+    cubic-bezier(
+      0.66,
+      0,
+      0,
+      1
+    );
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+
 .glowing-appointment-btn:hover {
-  background: #e66e00; transform: translateY(-2px); animation: none; 
-  box-shadow: 0 8px 25px rgba(255, 122, 0, 0.6);
+
+  background: #e66e00;
+
+  transform:
+    translateY(-2px);
+
+  animation: none;
+
+  box-shadow:
+    0 8px 25px
+    rgba(255, 122, 0, 0.6);
 }
+
+
+/* =========================================================
+   CTA ANIMATION
+========================================================= */
 
 @keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 0 rgba(255, 122, 0, 0.6); }
-  70% { box-shadow: 0 0 0 15px rgba(255, 122, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 122, 0, 0); }
+
+  0% {
+    box-shadow:
+      0 0 0 0
+      rgba(255, 122, 0, 0.6);
+  }
+
+  70% {
+    box-shadow:
+      0 0 0 15px
+      rgba(255, 122, 0, 0);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 0
+      rgba(255, 122, 0, 0);
+  }
+
 }
 
-/* 📱 MOBILE RESPONSIVENESS */
-@media (max-width: 768px) {
-  .hero { height: 220px; } /* Tablet Height */
-  .hero-loading { height: 220px; }
-  .hero-nav { display: none; } /* Swipe only on mobile */
+
+/* =========================================================
+   LARGE DESKTOP
+========================================================= */
+
+@media (min-width: 1200px) {
+
+  .hero-wrapper {
+    padding:
+      18px
+      20px;
+  }
+
+  .hero {
+
+    height: 300px;
+
+    border-radius: 20px;
+  }
+
+  .hero-slide {
+
+    padding:
+      10px 12px;
+  }
+
 }
+
+
+/* =========================================================
+   LAPTOP
+========================================================= */
+
+@media (min-width: 769px)
+and (max-width: 1199px) {
+
+  .hero-wrapper {
+    padding: 16px;
+  }
+
+  .hero {
+
+    height: 270px;
+
+    border-radius: 18px;
+  }
+
+  .hero-slide {
+
+    padding:
+      8px;
+  }
+
+  .hero-nav {
+
+    width: 36px;
+    height: 36px;
+
+    font-size: 22px;
+  }
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .hero-wrapper {
+
+    padding:
+      14px;
+  }
+
+  .hero {
+
+    height: 220px;
+
+    border-radius: 16px;
+
+    box-shadow:
+      0 10px 28px
+      rgba(37, 99, 235, 0.07),
+      0 5px 15px
+      rgba(15, 23, 42, 0.05);
+  }
+
+
+  /*
+    Mobile par ek hi slide
+  */
+
+  .hero-slide {
+
+    min-width: 100%;
+
+    width: 100%;
+
+    padding: 5px;
+  }
+
+
+  .hero-slide-side {
+
+    opacity: 1;
+  }
+
+
+  .hero-slide-side
+  .hero-slide-inner {
+
+    transform: scale(1);
+
+    filter: none;
+
+    box-shadow:
+      0 7px 18px
+      rgba(15, 23, 42, 0.06);
+  }
+
+
+  .hero-slide-side
+  .hero-slide-inner::after {
+
+    display: none;
+  }
+
+
+  .hero-slide-inner {
+
+    border-radius: 13px;
+  }
+
+
+  /*
+    Hide arrows
+  */
+
+  .hero-nav {
+
+    display: none;
+  }
+
+
+  /*
+    Smaller glow
+  */
+
+  .hero::before {
+
+    width: 160px;
+    height: 160px;
+
+    top: -85px;
+    left: -65px;
+  }
+
+
+  .hero::after {
+
+    width: 180px;
+    height: 180px;
+
+    bottom: -100px;
+    right: -65px;
+  }
+
+
+  /*
+    Dots
+  */
+
+  .hero-dots {
+
+    bottom: 7px;
+  }
+
+
+  .hero-dots span {
+
+    width: 6px;
+    height: 6px;
+  }
+
+
+  .hero-dots .active {
+
+    width: 18px;
+  }
+
+
+  .full-slide-img {
+
+    object-fit: contain;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 480px) {
-  .hero-wrapper { padding: 15px; }
-  .hero { height: 180px; border-radius: 16px; } /* 📱 Phone Height */
-  .hero-loading { height: 180px; }
-  .glowing-appointment-btn { width: 90%; justify-content: center; }
+
+  .hero-wrapper {
+
+    padding: 10px;
+  }
+
+
+  .hero {
+
+    height: 180px;
+
+    border-radius: 14px;
+  }
+
+
+  .hero-slide {
+
+    padding: 3px;
+  }
+
+
+  .hero-slide-inner {
+
+    border-radius: 11px;
+  }
+
+
+  .hero-loading {
+
+    height: 180px;
+
+    border-radius: 14px;
+  }
+
+
+  .hero::before {
+
+    width: 130px;
+    height: 130px;
+
+    top: -70px;
+    left: -55px;
+  }
+
+
+  .hero::after {
+
+    width: 145px;
+    height: 145px;
+
+    bottom: -80px;
+    right: -55px;
+  }
+
+
+  .hero-dots {
+
+    bottom: 5px;
+  }
+
+
+  .hero-dots span {
+
+    width: 5px;
+    height: 5px;
+
+    gap: 3px;
+  }
+
+
+  .hero-dots .active {
+
+    width: 15px;
+  }
+
+
+  .glowing-appointment-btn {
+
+    width: 90%;
+
+    justify-content: center;
+
+    padding:
+      12px
+      20px;
+
+    font-size: 0.8rem;
+  }
+
 }
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 360px) {
+
+  .hero-wrapper {
+
+    padding: 8px;
+  }
+
+
+  .hero {
+
+    height: 160px;
+
+    border-radius: 12px;
+  }
+
+
+  .hero-loading {
+
+    height: 160px;
+
+    border-radius: 12px;
+  }
+
+
+  .hero-slide {
+
+    padding: 2px;
+  }
+
+
+  .hero::before {
+
+    width: 110px;
+    height: 110px;
+
+    top: -60px;
+    left: -45px;
+  }
+
+
+  .hero::after {
+
+    width: 120px;
+    height: 120px;
+
+    bottom: -65px;
+    right: -45px;
+  }
+
+} 

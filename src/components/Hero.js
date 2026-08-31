@@ -1,103 +1,303 @@
 import { useState, useEffect, useRef } from "react";
 import { db } from "./firebase";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy
+} from "firebase/firestore";
 import "./Hero.css";
 
 export default function Hero() {
   const [slides, setSlides] = useState([]);
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+
   const touchStart = useRef(0);
 
+  /* =========================================================
+     LOAD HERO SLIDES
+  ========================================================= */
+
   useEffect(() => {
-    const q = query(collection(db, "hero_slides"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const slideData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setSlides(slideData);
-      setLoading(false);
-    });
+    const q = query(
+      collection(db, "hero_slides"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const slideData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setSlides(slideData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Hero slides error:", error);
+        setLoading(false);
+      }
+    );
+
     return () => unsubscribe();
   }, []);
 
+
+  /* =========================================================
+     AUTO SLIDE
+  ========================================================= */
+
   useEffect(() => {
     if (slides.length <= 1) return;
+
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % slides.length);
     }, 4000);
+
     return () => clearInterval(interval);
   }, [slides.length]);
 
-  const handleTouchStart = (e) => {
-    touchStart.current = e.touches[0].clientX;
+
+  /* =========================================================
+     NEXT / PREVIOUS
+  ========================================================= */
+
+  const nextSlide = () => {
+    if (slides.length <= 1) return;
+
+    setIndex((prev) =>
+      (prev + 1) % slides.length
+    );
   };
+
+
+  const prevSlide = () => {
+    if (slides.length <= 1) return;
+
+    setIndex((prev) =>
+      (prev - 1 + slides.length) % slides.length
+    );
+  };
+
+
+  /* =========================================================
+     TOUCH SWIPE
+  ========================================================= */
+
+  const handleTouchStart = (e) => {
+    touchStart.current =
+      e.touches[0].clientX;
+  };
+
 
   const handleTouchEnd = (e) => {
     if (slides.length <= 1) return;
-    const diff = touchStart.current - e.changedTouches[0].clientX;
-    if (diff > 50) nextSlide();
-    if (diff < -50) prevSlide();
+
+    const diff =
+      touchStart.current -
+      e.changedTouches[0].clientX;
+
+    if (diff > 50) {
+      nextSlide();
+    }
+
+    if (diff < -50) {
+      prevSlide();
+    }
   };
 
-  const nextSlide = () => setIndex((index + 1) % slides.length);
-  const prevSlide = () => setIndex((index - 1 + slides.length) % slides.length);
+
+  /* =========================================================
+     LOADING
+  ========================================================= */
 
   if (loading) {
     return (
       <div className="hero-wrapper">
-        <div className="hero-loading">Loading banners...</div>
+        <div className="hero-loading">
+          बॅनर लोड होत आहे...
+        </div>
       </div>
     );
   }
 
-  if (slides.length === 0) return null; 
+
+  /* =========================================================
+     EMPTY
+  ========================================================= */
+
+  if (slides.length === 0) {
+    return null;
+  }
+
+
+  /* =========================================================
+     DESKTOP LOOP
+
+     Last slide ke baad first slide duplicate
+     kiya hai taaki desktop par last slide ke
+     saath first slide bhi dikhe.
+  ========================================================= */
+
+  const desktopSlides =
+    slides.length > 1
+      ? [
+          ...slides,
+          {
+            ...slides[0],
+            id: `${slides[0].id}-duplicate`
+          }
+        ]
+      : slides;
+
 
   return (
     <div className="hero-wrapper">
+
       <div
         className="hero"
+
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* SLIDER TRACK - FULL IMAGE */}
+
+        {/* =====================================================
+            DESKTOP / MOBILE SLIDER
+        ===================================================== */}
+
         <div
           className="hero-slider"
-          style={{ transform: `translateX(-${index * 100}%)` }}
+
+          style={{
+            transform: `translateX(-${
+              index *
+              (window.innerWidth > 768 ? 50 : 100)
+            }%)`
+          }}
         >
-          {slides.map((slide, i) => (
-            <div className="hero-slide" key={slide.id || i}>
-              {slide.imageUrl && (
-                <img src={slide.imageUrl} alt={`Slide ${i}`} className="full-slide-img" />
-              )}
-            </div>
-          ))}
+
+          {desktopSlides.map((slide, i) => {
+
+            /*
+              Original index ko identify karna
+            */
+
+            const originalIndex =
+              i % slides.length;
+
+            const isActive =
+              originalIndex === index;
+
+            return (
+              <div
+                className={`hero-slide ${
+                  isActive
+                    ? "hero-slide-active"
+                    : "hero-slide-side"
+                }`}
+                key={`${slide.id}-${i}`}
+              >
+
+                <div className="hero-slide-inner">
+
+                  {slide.imageUrl && (
+                    <img
+                      src={slide.imageUrl}
+                      alt={`Slide ${
+                        originalIndex + 1
+                      }`}
+                      className="full-slide-img"
+                    />
+                  )}
+
+                </div>
+
+              </div>
+            );
+          })}
+
         </div>
 
-        {/* Buttons */}
+
+        {/* =====================================================
+            NAVIGATION BUTTONS
+        ===================================================== */}
+
         {slides.length > 1 && (
           <>
-            <button className="hero-nav prev" onClick={prevSlide}>‹</button>
-            <button className="hero-nav next" onClick={nextSlide}>›</button>
-            
-            {/* Dots */}
+
+            <button
+              type="button"
+              className="hero-nav prev"
+              onClick={prevSlide}
+              aria-label="Previous banner"
+            >
+              ‹
+            </button>
+
+
+            <button
+              type="button"
+              className="hero-nav next"
+              onClick={nextSlide}
+              aria-label="Next banner"
+            >
+              ›
+            </button>
+
+
+            {/* =================================================
+                DOTS
+            ================================================= */}
+
             <div className="hero-dots">
+
               {slides.map((_, i) => (
                 <span
                   key={i}
-                  className={index === i ? "active" : ""}
-                  onClick={() => setIndex(i)}
+                  className={
+                    index === i
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    setIndex(i)
+                  }
                 />
               ))}
+
             </div>
+
           </>
         )}
+
       </div>
 
-      {/* 🔥 GLOWING APPOINTMENT BUTTON (Kept untouched below slider) */}
-      {/* <div className="hero-cta-container">
+
+      {/* =====================================================
+          CTA
+          Kept untouched / commented
+      ===================================================== */}
+
+      {/*
+      <div className="hero-cta-container">
+
         <button className="glowing-appointment-btn">
-          <span className="btn-icon">📅</span> Book Appointment
+
+          <span className="btn-icon">
+            📅
+          </span>
+
+          Book Appointment
+
         </button>
-      </div> */}
+
+      </div>
+      */}
+
     </div>
   );
-}
+} 
