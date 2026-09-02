@@ -8,6 +8,10 @@ import "./Jobs.css";
 const API_BASE =
   "https://majhinaukri.in/wp-json/wp/v2/posts";
 
+/* ONLY FOR प्रवेशपत्र */
+const PAGES_API =
+  "https://majhinaukri.in/wp-json/wp/v2/pages";
+
 const FETCH_LIMIT = 100;
 const POSTS_PER_PAGE = 10;
 
@@ -625,6 +629,46 @@ export default function Jobs() {
     setJobsList,
   ] = useState([]);
 
+  /* =======================================================
+     HALL TICKET DATA
+     ONLY USED WHEN प्रवेशपत्र IS SELECTED
+  ======================================================= */
+
+  const [
+    hallTicketList,
+    setHallTicketList,
+  ] = useState([]);
+
+  const [
+    hallTicketLoading,
+    setHallTicketLoading,
+  ] = useState(false);
+
+  const [
+    hallTicketError,
+    setHallTicketError,
+  ] = useState("");
+
+  /* =======================================================
+     RESULT DATA
+     ONLY USED WHEN निकाल IS SELECTED
+  ======================================================= */
+
+  const [
+    resultList,
+    setResultList,
+  ] = useState([]);
+
+  const [
+    resultLoading,
+    setResultLoading,
+  ] = useState(false);
+
+  const [
+    resultError,
+    setResultError,
+  ] = useState("");
+
   const [
     selectedJob,
     setSelectedJob,
@@ -718,6 +762,767 @@ export default function Jobs() {
     };
 
     fetchJobs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* =======================================================
+     FETCH HALL TICKET PAGES
+
+     IMPORTANT:
+     - Existing posts API remains untouched.
+     - This runs only as a separate data source for
+       the प्रवेशपत्र category.
+     - First find the Hall Ticket parent page.
+     - Then fetch its child pages.
+     - From each child page extract the actual
+       प्रवेशपत्र / Admit Card link.
+  ======================================================= */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchHallTicketPages = async () => {
+      setHallTicketLoading(true);
+      setHallTicketError("");
+
+      try {
+        /* ---------------------------------------------------
+           STEP 1: FIND HALL TICKET PARENT PAGE
+        --------------------------------------------------- */
+
+        const parentResponse = await fetch(
+          `${PAGES_API}?slug=hall-ticket&per_page=100`
+        );
+
+        if (!parentResponse.ok) {
+          throw new Error(
+            `Hall Ticket parent API Error ${parentResponse.status}`
+          );
+        }
+
+        const parentPages =
+          await parentResponse.json();
+
+        const hallTicketParent =
+          Array.isArray(parentPages)
+            ? parentPages.find((page) => {
+                const slug = String(
+                  page?.slug || ""
+                )
+                  .toLowerCase()
+                  .trim();
+
+                const title = stripHtml(
+                  page?.title?.rendered || ""
+                )
+                  .toLowerCase()
+                  .trim();
+
+                return (
+                  slug === "hall-ticket" ||
+                  title.includes("hall ticket") ||
+                  title.includes("admit card") ||
+                  title.includes("प्रवेशपत्र")
+                );
+              })
+            : null;
+
+        if (!hallTicketParent?.id) {
+          throw new Error(
+            "Hall Ticket parent page सापडले नाही."
+          );
+        }
+
+        /* ---------------------------------------------------
+           STEP 2: FETCH ONLY CHILD PAGES
+
+           Example:
+           /hall-ticket/pnb-hall-ticket/
+           /hall-ticket/avnl-hall-ticket/
+           etc.
+        --------------------------------------------------- */
+
+        const childResponse = await fetch(
+          `${PAGES_API}?parent=${hallTicketParent.id}&per_page=${FETCH_LIMIT}&orderby=modified&order=desc`
+        );
+
+        if (!childResponse.ok) {
+          throw new Error(
+            `Hall Ticket child API Error ${childResponse.status}`
+          );
+        }
+
+        const childPages =
+          await childResponse.json();
+
+        if (!Array.isArray(childPages)) {
+          throw new Error(
+            "Hall Ticket data invalid आहे."
+          );
+        }
+
+        /* ---------------------------------------------------
+           STEP 3: NORMALIZE EACH HALL TICKET PAGE
+        --------------------------------------------------- */
+
+        const extracted = childPages
+          .map((page) => {
+            const html =
+              page?.content?.rendered || "";
+
+            if (!html) {
+              return null;
+            }
+
+            let admitCardLink = "";
+            let pageMainLink = "";
+            let examDate = "";
+
+            try {
+              const parser =
+                new DOMParser();
+
+              const doc =
+                parser.parseFromString(
+                  html,
+                  "text/html"
+                );
+
+              /* ---------------------------------------------
+                 FIND EXAM DATE
+              --------------------------------------------- */
+
+              const rows = [
+                ...doc.querySelectorAll("tr"),
+              ];
+
+              rows.forEach((row) => {
+                const rowText = (
+                  row.textContent || ""
+                )
+                  .replace(/\s+/g, " ")
+                  .trim();
+
+                if (!examDate) {
+                  const dateMatch = rowText.match(
+                    /\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December|जानेवारी|फेब्रुवारी|मार्च|एप्रिल|मे|जून|जुलै|ऑगस्ट|सप्टेंबर|ऑक्टोबर|नोव्हेंबर|डिसेंबर)\s+20\d{2}\b/i
+                  );
+
+                  if (dateMatch) {
+                    examDate =
+                      dateMatch[0];
+                  }
+                }
+
+                if (!examDate) {
+                  const numericDateMatch = rowText.match(
+                    /\b\d{1,2}[\\/.\\-]\d{1,2}[\\/.\\-]20\d{2}\b/
+                  );
+
+                  if (numericDateMatch) {
+                    examDate =
+                      numericDateMatch[0];
+                  }
+                }
+              });
+
+              /* ---------------------------------------------
+                 FIND ACTUAL प्रवेशपत्र LINK
+
+                 We specifically prefer links whose text is:
+                 प्रवेशपत्र / admit card / hall ticket
+              --------------------------------------------- */
+
+              const links = [
+                ...doc.querySelectorAll("a[href]"),
+              ];
+
+              const admitLink =
+                links.find((link) => {
+                  const text = (
+                    link.textContent || ""
+                  )
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .toLowerCase();
+
+                  return (
+                    text.includes("प्रवेशपत्र") ||
+                    text.includes("hall ticket") ||
+                    text.includes("admit card") ||
+                    text.includes("admitcard")
+                  );
+                });
+
+              if (admitLink?.href) {
+                admitCardLink =
+                  admitLink.href;
+              }
+
+              /* ---------------------------------------------
+                 FALLBACK:
+                 Sometimes the actual link text is Click Here.
+                 Find a row containing प्रवेशपत्र and use the
+                 second link in that row.
+              --------------------------------------------- */
+
+              if (!admitCardLink) {
+                const admitRow = rows.find((row) => {
+                  const text = (
+                    row.textContent || ""
+                  )
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .toLowerCase();
+
+                  return (
+                    text.includes("प्रवेशपत्र") ||
+                    text.includes("admit card") ||
+                    text.includes("hall ticket")
+                  );
+                });
+
+                if (admitRow) {
+                  const rowLinks = [
+                    ...admitRow.querySelectorAll(
+                      "a[href]"
+                    ),
+                  ];
+
+                  const externalLink =
+                    rowLinks.find((link) => {
+                      const href =
+                        link.href || "";
+
+                      const text = (
+                        link.textContent || ""
+                      )
+                        .replace(/\s+/g, " ")
+                        .trim()
+                        .toLowerCase();
+
+                      return (
+                        href &&
+                        !text.includes("प्रवेशपत्र") ||
+                        text.includes("click here")
+                      );
+                    });
+
+                  if (externalLink?.href) {
+                    admitCardLink =
+                      externalLink.href;
+                  }
+                }
+              }
+
+              /* ---------------------------------------------
+                 MAIN PAGE LINK
+              --------------------------------------------- */
+
+              const firstContentLink =
+                links.find((link) => {
+                  const href =
+                    link.href || "";
+
+                  const text = (
+                    link.textContent || ""
+                  )
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                  return (
+                    href &&
+                    text &&
+                    !text
+                      .toLowerCase()
+                      .includes("click here")
+                  );
+                });
+
+              if (firstContentLink?.href) {
+                pageMainLink =
+                  firstContentLink.href;
+              }
+            } catch (parseError) {
+              console.warn(
+                "Hall Ticket page parsing failed:",
+                parseError
+              );
+            }
+
+            /* -------------------------------------------------
+               TITLE
+            ------------------------------------------------- */
+
+            const title = stripHtml(
+              page?.title?.rendered ||
+                "प्रवेशपत्र"
+            );
+
+            /* -------------------------------------------------
+               If actual admit-card link wasn't found,
+               do not show this page as a fake card.
+            ------------------------------------------------- */
+
+            if (!admitCardLink) {
+              return null;
+            }
+
+            return {
+              id: `hall-ticket-${page.id}`,
+              title,
+              slug: page?.slug || "",
+              url:
+                page?.link ||
+                pageMainLink ||
+                "",
+              date: examDate,
+              modified:
+                page?.modified ||
+                page?.date ||
+                "",
+              excerpt: stripHtml(
+                page?.excerpt?.rendered || ""
+              ),
+              content: html,
+              fullText: stripHtml(html),
+
+              category:
+                "hall-ticket",
+              categoryLabel:
+                "प्रवेशपत्र",
+              categoryIcon:
+                "🎟️",
+              shortTags: [
+                "hall-ticket",
+              ],
+              categoryNames: [
+                "प्रवेशपत्र",
+              ],
+              tagNames: [],
+
+              /* Use actual Admit Card link */
+              pdfLink: "",
+              applyLink: admitCardLink,
+              officialLink: "",
+
+              /* Original Majhi Naukri child page */
+              originalPageUrl:
+                page?.link ||
+                pageMainLink ||
+                "",
+
+              advtNo: "",
+              totalPosts: "",
+              postDetails: "",
+              education: "",
+              ageLimit: "",
+              location: "",
+              applyMethod:
+                "ऑनलाइन प्रवेशपत्र",
+              lastDate: "",
+
+              isNew:
+                page?.modified &&
+                Date.now() -
+                  new Date(
+                    page.modified
+                  ).getTime() <
+                  2 *
+                    24 *
+                    60 *
+                    60 *
+                    1000,
+            };
+          })
+          .filter(Boolean);
+
+        /* ---------------------------------------------------
+           REMOVE DUPLICATES
+        --------------------------------------------------- */
+
+        const unique = new Map();
+
+        extracted.forEach((item) => {
+          const key =
+            item.url ||
+            item.id;
+
+          if (!unique.has(key)) {
+            unique.set(key, item);
+          }
+        });
+
+        const finalData =
+          Array.from(unique.values()).sort(
+            (a, b) =>
+              new Date(
+                b.modified ||
+                  b.date ||
+                  0
+              ).getTime() -
+              new Date(
+                a.modified ||
+                  a.date ||
+                  0
+              ).getTime()
+          );
+
+        if (!cancelled) {
+          setHallTicketList(
+            finalData
+          );
+        }
+      } catch (err) {
+        console.error(
+          "Hall Ticket API Error:",
+          err
+        );
+
+        if (!cancelled) {
+          setHallTicketError(
+            "प्रवेशपत्र अपडेट्स मिळवताना समस्या आली."
+          );
+          setHallTicketList([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setHallTicketLoading(false);
+        }
+      }
+    };
+
+    fetchHallTicketPages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* =======================================================
+     FETCH RESULT PAGES
+
+     IMPORTANT:
+     - Only the निकाल category uses WordPress Pages API.
+     - Only pages whose TITLE contains "निकाल" are used.
+     - Each table inside the page is treated as one result item.
+     - Only the relevant Majhi Naukri post link, निकाल link and
+       Click Here link are extracted from each table.
+  ======================================================= */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchResultPages = async () => {
+      setResultLoading(true);
+      setResultError("");
+
+      try {
+        /*
+         * IMPORTANT: Do NOT assume the Result page is within the
+         * first 100 WordPress pages. Search WordPress for "निकाल"
+         * first, then strictly keep only pages whose TITLE contains
+         * the word "निकाल".
+         */
+        const pages = [];
+        let pageNumber = 1;
+
+        while (pageNumber <= 20) {
+          const response = await fetch(
+            `${PAGES_API}?search=${encodeURIComponent("निकाल")}&per_page=${FETCH_LIMIT}&page=${pageNumber}&orderby=modified&order=desc`
+          );
+
+          /* WordPress returns 400 when there is no next page. */
+          if (response.status === 400 && pageNumber > 1) {
+            break;
+          }
+
+          if (!response.ok) {
+            throw new Error(
+              `Result Pages API Error ${response.status}`
+            );
+          }
+
+          const pageData = await response.json();
+
+          if (!Array.isArray(pageData) || !pageData.length) {
+            break;
+          }
+
+          pages.push(...pageData);
+
+          if (pageData.length < FETCH_LIMIT) {
+            break;
+          }
+
+          pageNumber += 1;
+        }
+
+        if (!pages.length) {
+          throw new Error('स्पष्ट "निकाल" page सापडले नाही.');
+        }
+
+        const extracted = [];
+
+        pages
+          .filter((page) => {
+            const title = stripHtml(
+              page?.title?.rendered || ""
+            ).trim();
+
+            return title.includes("निकाल");
+          })
+          .forEach((page) => {
+            const html = page?.content?.rendered || "";
+            if (!html) return;
+
+            try {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(
+                html,
+                "text/html"
+              );
+
+              const tables = [
+                ...doc.querySelectorAll("table"),
+              ];
+
+              tables.forEach((table, tableIndex) => {
+                const rows = [
+                  ...table.querySelectorAll("tr"),
+                ];
+
+                if (!rows.length) return;
+
+                /* -------------------------------------------
+                   FIRST ROW = MAIN MAJHI NAUKRI POST
+                ------------------------------------------- */
+                const headerRow = rows[0];
+                const headerLinks = [
+                  ...headerRow.querySelectorAll("a[href]"),
+                ];
+
+                const mainPostLink =
+                  headerLinks.find((link) => {
+                    try {
+                      const url = new URL(
+                        link.href,
+                        window.location.href
+                      );
+
+                      return url.hostname
+                        .toLowerCase()
+                        .includes("majhinaukri.in");
+                    } catch {
+                      return false;
+                    }
+                  })?.href || "";
+
+                const mainPostTitle = (
+                  headerRow.textContent || ""
+                )
+                  .replace(/\s+/g, " ")
+                  .trim();
+
+                if (!mainPostTitle || !mainPostLink) {
+                  return;
+                }
+
+                /* -------------------------------------------
+                   FIND RESULT ROWS
+
+                   We intentionally accept rows containing:
+                   निकाल / Result / final result / pre result /
+                   mains result etc.
+
+                   Date-only rows and unrelated links are ignored.
+                ------------------------------------------- */
+                const resultRows = rows.filter((row, index) => {
+                  if (index === 0) return false;
+
+                  const text = (row.textContent || "")
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .toLowerCase();
+
+                  return (
+                    text.includes("निकाल") ||
+                    text.includes("result")
+                  );
+                });
+
+                const resultLinks = [];
+
+                resultRows.forEach((row) => {
+                  const rowText = (row.textContent || "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                  const anchors = [
+                    ...row.querySelectorAll("a[href]"),
+                  ];
+
+                  /* Prefer the anchor whose text is निकाल/result. */
+                  const resultAnchor = anchors.find((anchor) => {
+                    const text = (anchor.textContent || "")
+                      .replace(/\s+/g, " ")
+                      .trim()
+                      .toLowerCase();
+
+                    return (
+                      text.includes("निकाल") ||
+                      text.includes("result")
+                    );
+                  }) || anchors[0];
+
+                  if (!resultAnchor?.href) return;
+
+                  const clickHereAnchor = anchors.find((anchor) => {
+                    const text = (anchor.textContent || "")
+                      .replace(/\s+/g, " ")
+                      .trim()
+                      .toLowerCase();
+
+                    return text.includes("click here");
+                  });
+
+                  const label = rowText
+                    .replace(/click here/gi, "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                  const resultUrl = resultAnchor.href;
+                  const clickUrl =
+                    clickHereAnchor?.href || resultUrl;
+
+                  const key = `${label}|${resultUrl}`;
+
+                  if (!resultLinks.some((item) => item.key === key)) {
+                    resultLinks.push({
+                      key,
+                      label,
+                      resultUrl,
+                      clickUrl,
+                    });
+                  }
+                });
+
+                /*
+                  If the table contains a result post but no result
+                  link, skip it. This prevents unrelated tables from
+                  becoming fake result cards.
+                */
+                if (!resultLinks.length) return;
+
+                const pageTitle = stripHtml(
+                  page?.title?.rendered || "निकाल"
+                ).trim();
+
+                const title =
+                  mainPostTitle || pageTitle || "निकाल";
+
+                extracted.push({
+                  id: `result-${page.id}-${tableIndex}`,
+                  title,
+                  slug: page?.slug || "",
+                  url: mainPostLink,
+                  originalPageUrl: mainPostLink,
+                  date: page?.date || "",
+                  modified:
+                    page?.modified ||
+                    page?.date ||
+                    "",
+                  excerpt: title,
+                  fullText: `${title} ${resultLinks
+                    .map((item) => item.label)
+                    .join(" ")}`,
+                  content: html,
+
+                  category: "result",
+                  categoryLabel: "निकाल",
+                  categoryIcon: "🏆",
+                  shortTags: ["result"],
+                  categoryNames: ["निकाल"],
+                  tagNames: [],
+
+                  /* Only these links are shown for Result. */
+                  resultLinks,
+                  pdfLink: "",
+                  applyLink: "",
+                  officialLink: "",
+
+                  advtNo: "",
+                  totalPosts: "",
+                  postDetails: "",
+                  education: "",
+                  ageLimit: "",
+                  location: "",
+                  applyMethod: "",
+                  lastDate: "",
+
+                  isNew:
+                    page?.modified &&
+                    Date.now() -
+                      new Date(page.modified).getTime() <
+                      2 * 24 * 60 * 60 * 1000,
+                });
+              });
+            } catch (parseError) {
+              console.warn(
+                "Result page parsing failed:",
+                parseError
+              );
+            }
+          });
+
+        /* -------------------------------------------
+           REMOVE DUPLICATES
+        ------------------------------------------- */
+        const unique = new Map();
+
+        extracted.forEach((item) => {
+          const key = `${item.url}|${item.title}|${item.resultLinks
+            .map((link) => link.resultUrl)
+            .join(",")}`;
+
+          if (!unique.has(key)) {
+            unique.set(key, item);
+          }
+        });
+
+        const finalData = Array.from(unique.values()).sort(
+          (a, b) =>
+            new Date(
+              b.modified || b.date || 0
+            ).getTime() -
+            new Date(
+              a.modified || a.date || 0
+            ).getTime()
+        );
+
+        if (!cancelled) {
+          setResultList(finalData);
+        }
+      } catch (err) {
+        console.error("Result Pages API Error:", err);
+
+        if (!cancelled) {
+          setResultError(
+            "निकाल अपडेट्स मिळवताना समस्या आली."
+          );
+          setResultList([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setResultLoading(false);
+        }
+      }
+    };
+
+    fetchResultPages();
 
     return () => {
       cancelled = true;
@@ -1563,44 +2368,86 @@ export default function Jobs() {
 
   const filteredJobs =
     useMemo(() => {
-      let result =
-        normalizedJobs;
+      /* ===================================================
+         प्रवेशपत्र = Hall Ticket Pages API
+      =================================================== */
+      if (jobCategory === "hall-ticket") {
+        let result = hallTicketList;
 
-      /* CATEGORY */
+        if (searchTerm.trim()) {
+          const query = normalizeSearchText(searchTerm);
+          result = result.filter((job) => {
+            const searchableText = normalizeSearchText(
+              [
+                job?.title,
+                job?.date,
+                job?.excerpt,
+                job?.fullText,
+              ]
+                .filter(Boolean)
+                .join(" ")
+            );
 
-      if (
-        jobCategory !==
-        "all"
-      ) {
-        result =
-          result.filter(
-            (job) =>
-              job.category ===
-              jobCategory
-          );
+            return searchableText.includes(query);
+          });
+        }
+
+        return result;
       }
 
-      /* SEARCH */
+      /* ===================================================
+         निकाल = Result Pages API
+      =================================================== */
+      if (jobCategory === "result") {
+        let result = resultList;
 
-      if (
-        searchTerm.trim()
-      ) {
-        result =
-          result.filter(
-            (job) =>
-              jobMatchesSearch(
-                job,
-                searchTerm
-              )
-          );
+        if (searchTerm.trim()) {
+          const query = normalizeSearchText(searchTerm);
+          result = result.filter((job) => {
+            const searchableText = normalizeSearchText(
+              [
+                job?.title,
+                job?.date,
+                job?.excerpt,
+                job?.fullText,
+              ]
+                .filter(Boolean)
+                .join(" ")
+            );
+
+            return searchableText.includes(query);
+          });
+        }
+
+        return result;
+      }
+
+      /* ===================================================
+         ALL OTHER CATEGORIES = ORIGINAL LOGIC
+      =================================================== */
+      let result = normalizedJobs;
+
+      if (jobCategory !== "all") {
+        result = result.filter(
+          (job) => job.category === jobCategory
+        );
+      }
+
+      if (searchTerm.trim()) {
+        result = result.filter((job) =>
+          jobMatchesSearch(job, searchTerm)
+        );
       }
 
       return result;
     }, [
       normalizedJobs,
+      hallTicketList,
+      resultList,
       jobCategory,
       searchTerm,
     ]);
+
 
   /* =======================================================
      PAGINATION
@@ -1806,7 +2653,7 @@ export default function Jobs() {
         </div>
 
         <span className="jobs-count-pill">
-          {loading
+          {(loading || hallTicketLoading || resultLoading)
             ? "..."
             : `${totalJobs} अपडेट्स`}
         </span>
@@ -1924,7 +2771,7 @@ export default function Jobs() {
         </div>
 
         <span>
-          {loading
+          {(loading || hallTicketLoading || resultLoading)
             ? "..."
             : `${totalJobs} अपडेट्स`}
         </span>
@@ -1937,6 +2784,7 @@ export default function Jobs() {
 
       {!loading &&
         !error &&
+        !(jobCategory === "hall-ticket" && hallTicketError) &&
         searchTerm.trim() && (
           <div className="jobs-search-result-info">
             🔎
@@ -1958,7 +2806,9 @@ export default function Jobs() {
 
       <div className="jobs-list">
 
-        {loading ? (
+        {loading ||
+        (jobCategory === "hall-ticket" && hallTicketLoading) ||
+        (jobCategory === "result" && resultLoading) ? (
           <div className="jobs-loading">
 
             <div className="jobs-spinner"></div>
@@ -1969,11 +2819,17 @@ export default function Jobs() {
             </p>
 
           </div>
-        ) : error ? (
+        ) : (error ||
+          (jobCategory === "hall-ticket" && hallTicketError) ||
+          (jobCategory === "result" && resultError)) ? (
           <div className="jobs-empty-container">
 
             <p className="jobs-empty">
-              {error}
+              {jobCategory === "hall-ticket"
+                ? hallTicketError
+                : jobCategory === "result"
+                  ? resultError
+                  : error}
             </p>
 
             <button
@@ -2151,7 +3007,11 @@ export default function Jobs() {
       ===================================================== */}
 
       {!loading &&
+        !(jobCategory === "hall-ticket" && hallTicketLoading) &&
+        !(jobCategory === "result" && resultLoading) &&
         !error &&
+        !(jobCategory === "hall-ticket" && hallTicketError) &&
+        !(jobCategory === "result" && resultError) &&
         totalPages > 1 && (
           <div className="jobs-pagination">
 
@@ -2246,7 +3106,11 @@ export default function Jobs() {
       ===================================================== */}
 
       {!loading &&
+        !(jobCategory === "hall-ticket" && hallTicketLoading) &&
+        !(jobCategory === "result" && resultLoading) &&
         !error &&
+        !(jobCategory === "hall-ticket" && hallTicketError) &&
+        !(jobCategory === "result" && resultError) &&
         totalJobs > 0 && (
           <div className="pagination-info">
 
@@ -2592,7 +3456,7 @@ export default function Jobs() {
 
                   {/* PDF */}
 
-                  {selectedJob.pdfLink && (
+                  {selectedJob.category !== "result" && selectedJob.pdfLink && (
                     <div className="action-box pdf-box">
 
                       <div className="action-text">
@@ -2651,11 +3515,59 @@ export default function Jobs() {
                       </div>
                     )}
 
+                  {/* RESULT LINKS */}
+
+                  {selectedJob.category === "result" &&
+                    selectedJob.resultLinks?.length > 0 && (
+                      <div className="result-links-list">
+                        {selectedJob.resultLinks.map(
+                          (resultLink, index) => (
+                            <div
+                              className="action-box result-box"
+                              key={`${resultLink.key}-${index}`}
+                            >
+                              <div className="action-text">
+                                <h4>
+                                  {resultLink.label || "निकाल"}
+                                </h4>
+
+                                <p>
+                                  संबंधित निकालाची अधिकृत लिंक
+                                </p>
+                              </div>
+
+                              <div className="result-action-buttons">
+                                <a
+                                  href={resultLink.resultUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="action-btn apply-btn"
+                                >
+                                  🏆 निकाल पाहा
+                                </a>
+
+                                <a
+                                  href={resultLink.clickUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="action-btn"
+                                >
+                                  🔗 Click Here
+                                </a>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+
                   {/* APPLY */}
 
                   {selectedJob.applyLink &&
                     selectedJob.category !==
-                    "hall-ticket" && (
+                    "hall-ticket" &&
+                    selectedJob.category !==
+                    "result" && (
                       <div className="action-box apply-box">
 
                         <div className="action-text">
@@ -2684,7 +3596,7 @@ export default function Jobs() {
 
                   {/* OFFICIAL WEBSITE */}
 
-                  {selectedJob.officialLink && (
+                  {selectedJob.category !== "result" && selectedJob.officialLink && (
                     <div className="action-box">
 
                       <div className="action-text">
@@ -2714,7 +3626,7 @@ export default function Jobs() {
 
                   {/* ORIGINAL POST */}
 
-                  {selectedJob.url && (
+                  {(selectedJob.url || selectedJob.originalPageUrl) && (
                     <div className="action-box">
 
                       <div className="action-text">
@@ -2730,6 +3642,7 @@ export default function Jobs() {
 
                       <a
                         href={
+                          selectedJob.originalPageUrl ||
                           selectedJob.url
                         }
                         target="_blank"
@@ -2747,7 +3660,8 @@ export default function Jobs() {
                   {!selectedJob.pdfLink &&
                     !selectedJob.applyLink &&
                     !selectedJob.officialLink &&
-                    !selectedJob.url && (
+                    !selectedJob.url &&
+                    !(selectedJob.category === "result" && selectedJob.resultLinks?.length) && (
                       <div className="jobs-empty-container">
                         <p className="jobs-empty">
                           या पोस्टसाठी
