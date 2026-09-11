@@ -1,0 +1,1160 @@
+/* =========================================================
+   ONLINEWALAA - INSTANT PAN FIND
+   ========================================================= */
+
+.instant-pan-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 28px 20px 40px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(37, 99, 235, 0.08),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 90% 15%,
+      rgba(249, 115, 22, 0.08),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #f8fbff 0%,
+      #ffffff 48%,
+      #fffaf5 100%
+    );
+}
+
+.instant-pan-container {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.instant-pan-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.instant-pan-header-icon {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(
+      135deg,
+      #0757d5,
+      #0b79ef
+    );
+  color: #ffffff;
+  box-shadow:
+    0 12px 28px rgba(37, 99, 235, 0.25);
+}
+
+.instant-pan-header-icon span {
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.instant-pan-brand {
+  color: #0757d5;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  margin-bottom: 3px;
+}
+
+.instant-pan-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 27px;
+  line-height: 1.15;
+  font-weight: 850;
+}
+
+.instant-pan-header p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
+
+.instant-pan-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  padding: 26px;
+  box-shadow:
+    0 18px 50px rgba(15, 23, 42, 0.09);
+}
+
+.instant-pan-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+  background:
+    linear-gradient(
+      90deg,
+      #0757d5,
+      #0b79ef,
+      #ff7a00
+    );
+}
+
+/* =========================================================
+   SERVICE TOP
+   ========================================================= */
+
+.instant-pan-card-top {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.service-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  font-size: 25px;
+}
+
+.instant-pan-card-top h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.instant-pan-card-top p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* =========================================================
+   PRICE
+   ========================================================= */
+
+.service-price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  margin-bottom: 23px;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #f8fbff
+    );
+  border: 1px solid #dbeafe;
+}
+
+.service-price-box > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service-price-box span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.service-price-box strong {
+  color: #0757d5;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.price-badge {
+  padding: 6px 9px;
+  border-radius: 7px;
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+.input-group {
+  margin-bottom: 17px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.input-wrapper input {
+  width: 100%;
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 80px 0 45px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input-wrapper input::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.input-wrapper input:focus {
+  border-color: #2563eb;
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.input-wrapper input:disabled {
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+.digit-count {
+  position: absolute;
+  right: 14px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.input-group small {
+  display: block;
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.pan-error {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.pan-error span {
+  font-size: 15px;
+}
+
+.pan-error p {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+/* =========================================================
+   BUTTON
+   ========================================================= */
+
+.find-pan-button {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      #0757d5,
+      #0b75e8
+    );
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow:
+    0 9px 22px rgba(37, 99, 235, 0.24);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.find-pan-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 13px 28px rgba(37, 99, 235, 0.3);
+}
+
+.find-pan-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.find-pan-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* =========================================================
+   INFO ROW
+   ========================================================= */
+
+.pan-info-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.pan-info-row div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 5px;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.pan-info-row span {
+  color: #16a34a;
+  font-weight: 900;
+}
+
+/* =========================================================
+   LOADING SPINNER
+   ========================================================= */
+
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: panSpin 0.7s linear infinite;
+}
+
+@keyframes panSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   RESULT
+   ========================================================= */
+
+.pan-result-section {
+  margin-top: 24px;
+  animation: resultAppear 0.4s ease;
+}
+
+@keyframes resultAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.result-heading span {
+  color: #16a34a;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.result-heading h2 {
+  margin: 2px 0 0;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.success-check {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+/* =========================================================
+   PAN CARD
+   ========================================================= */
+
+.pan-real-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 600px;
+  min-height: 330px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border-radius: 17px;
+  background:
+    linear-gradient(
+      135deg,
+      #fffdf1 0%,
+      #fffbe8 45%,
+      #fff4c8 100%
+    );
+  border: 1px solid #e5d79b;
+  box-shadow:
+    0 14px 35px rgba(120, 92, 15, 0.16);
+}
+
+.pan-real-card::before {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  right: -80px;
+  top: -80px;
+  border-radius: 50%;
+  border: 22px solid rgba(37, 99, 235, 0.05);
+}
+
+.pan-real-card::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  left: -90px;
+  bottom: -100px;
+  border-radius: 50%;
+  border: 20px solid rgba(255, 122, 0, 0.05);
+}
+
+.pan-card-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(120, 92, 15, 0.18);
+}
+
+.pan-emblem {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emblem-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 2px solid #c9b96e;
+  font-size: 20px;
+}
+
+.pan-government {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pan-government strong {
+  color: #27324a;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.pan-government span {
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.pan-card-logo {
+  margin-left: auto;
+  color: #0757d5;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 1px;
+}
+
+/* BODY */
+
+.pan-card-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 175px;
+}
+
+.pan-photo {
+  width: 112px;
+  height: 132px;
+  flex: 0 0 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border: 1px solid #d6c887;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+.photo-placeholder {
+  width: 74px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  border-radius: 3px;
+  font-size: 34px;
+  filter: grayscale(0.8);
+}
+
+.pan-information {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pan-label {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.pan-number {
+  color: #172554;
+  font-size: 30px;
+  font-weight: 950;
+  letter-spacing: 4px;
+  font-family:
+    "Courier New",
+    monospace;
+}
+
+.pan-card-note {
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* FOOTER */
+
+.pan-card-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 13px;
+  border-top: 1px solid rgba(120, 92, 15, 0.18);
+}
+
+.pan-card-footer span {
+  color: #64748b;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.pan-card-footer span:last-child {
+  color: #172554;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 2px;
+}
+
+/* =========================================================
+   RESULT ACTIONS
+   ========================================================= */
+
+.pan-result-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 600px;
+  margin: 14px auto 0;
+}
+
+.copy-pan-button {
+  min-height: 42px;
+  padding: 0 17px;
+  border-radius: 10px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #0757d5;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-pan-button:hover {
+  background: #dbeafe;
+}
+
+.charged-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.charged-info span {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.charged-info strong {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.pan-transaction-id {
+  max-width: 600px;
+  margin: 9px auto 0;
+  color: #94a3b8;
+  font-size: 9px;
+  text-align: right;
+  word-break: break-all;
+}
+
+/* =========================================================
+   DISCLAIMER
+   ========================================================= */
+
+.instant-pan-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid #e2e8f0;
+}
+
+.instant-pan-disclaimer span {
+  font-size: 14px;
+}
+
+.instant-pan-disclaimer p {
+  margin: 0;
+  color: #64748b;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   CONFIRM MODAL
+   ========================================================= */
+
+.pan-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(6px);
+}
+
+.pan-confirm-modal {
+  width: 100%;
+  max-width: 410px;
+  box-sizing: border-box;
+  padding: 25px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow:
+    0 30px 80px rgba(15, 23, 42, 0.28);
+  animation: modalAppear 0.25s ease;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.confirm-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  font-size: 23px;
+  margin-bottom: 13px;
+}
+
+.pan-confirm-modal h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.pan-confirm-modal > p {
+  margin: 7px 0 14px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.confirm-aadhaar {
+  padding: 13px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-align: center;
+}
+
+.confirm-charge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 13px;
+  padding: 12px 13px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+}
+
+.confirm-charge span {
+  color: #9a3412;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.confirm-charge strong {
+  color: #ea580c;
+  font-size: 19px;
+}
+
+.pan-confirm-modal > small {
+  display: block;
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.cancel-confirm,
+.confirm-pay {
+  height: 45px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cancel-confirm {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #64748b;
+}
+
+.confirm-pay {
+  border: none;
+  background:
+    linear-gradient(
+      135deg,
+      #0757d5,
+      #0b75e8
+    );
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.cancel-confirm:disabled,
+.confirm-pay:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .instant-pan-page {
+    padding: 22px 14px 35px;
+  }
+
+  .instant-pan-card {
+    padding: 21px;
+  }
+
+  .pan-real-card {
+    min-height: 300px;
+    padding: 19px;
+  }
+
+  .pan-card-body {
+    min-height: 160px;
+  }
+
+  .pan-photo {
+    width: 90px;
+    height: 112px;
+    flex-basis: 90px;
+  }
+
+  .photo-placeholder {
+    width: 60px;
+    height: 76px;
+  }
+
+  .pan-number {
+    font-size: 25px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .instant-pan-page {
+    padding: 15px 10px 28px;
+  }
+
+  .instant-pan-header {
+    gap: 11px;
+    margin-bottom: 15px;
+  }
+
+  .instant-pan-header-icon {
+    width: 47px;
+    height: 47px;
+    flex-basis: 47px;
+    border-radius: 13px;
+  }
+
+  .instant-pan-header-icon span {
+    font-size: 22px;
+  }
+
+  .instant-pan-brand {
+    font-size: 9px;
+  }
+
+  .instant-pan-header h1 {
+    font-size: 21px;
+  }
+
+  .instant-pan-header p {
+    font-size: 10px;
+  }
+
+  .instant-pan-card {
+    padding: 17px;
+    border-radius: 17px;
+  }
+
+  .instant-pan-card-top {
+    gap: 10px;
+  }
+
+  .service-icon {
+    width: 43px;
+    height: 43px;
+    flex-basis: 43px;
+    font-size: 20px;
+  }
+
+  .instant-pan-card-top h2 {
+    font-size: 16px;
+  }
+
+  .instant-pan-card-top p {
+    font-size: 10px;
+  }
+
+  .service-price-box {
+    padding: 11px 12px;
+    margin-bottom: 18px;
+  }
+
+  .service-price-box strong {
+    font-size: 20px;
+  }
+
+  .input-wrapper input {
+    height: 48px;
+    font-size: 13px;
+  }
+
+  .pan-info-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .pan-info-row div {
+    justify-content: flex-start;
+    padding: 8px 10px;
+  }
+
+  /* PAN CARD MOBILE */
+
+  .pan-real-card {
+    min-height: 245px;
+    padding: 14px;
+    border-radius: 13px;
+  }
+
+  .pan-card-header {
+    gap: 7px;
+    padding-bottom: 10px;
+  }
+
+  .pan-emblem {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .emblem-circle {
+    width: 29px;
+    height: 29px;
+    font-size: 14px;
+  }
+
+  .pan-government strong {
+    font-size: 8px;
+  }
+
+  .pan-government span {
+    font-size: 6px;
+  }
+
+  .pan-card-logo {
+    font-size: 7px;
+  }
+
+  .pan-card-body {
+    min-height: 140px;
+    gap: 12px;
+  }
+
+  .pan-photo {
+    width: 64px;
+    height: 83px;
+    flex-basis: 64px;
+  }
+
+  .photo-placeholder {
+    width: 44px;
+    height: 58px;
+    font-size: 23px;
+  }
+
+  .pan-label {
+    font-size: 7px;
+  }
+
+  .pan-number {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .pan-card-note {
+    font-size: 7px;
+  }
+
+  .pan-card-footer {
+    padding-top: 8px;
+  }
+
+  .pan-card-footer span {
+    font-size: 6px;
+  }
+
+  .pan-card-footer span:last-child {
+    font-size: 9px;
+  }
+
+  .pan-result-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .copy-pan-button {
+    width: 100%;
+  }
+
+  .charged-info {
+    justify-content: space-between;
+    padding: 8px 2px;
+  }
+
+  .pan-transaction-id {
+    text-align: left;
+  }
+
+  .pan-modal-overlay {
+    padding: 12px;
+  }
+
+  .pan-confirm-modal {
+    padding: 20px;
+    border-radius: 17px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL
+   ========================================================= */
+
+@media (max-width: 360px) {
+  .instant-pan-card {
+    padding: 14px;
+  }
+
+  .instant-pan-header h1 {
+    font-size: 19px;
+  }
+
+  .pan-number {
+    font-size: 16px;
+  }
+
+  .pan-real-card {
+    min-height: 225px;
+  }
+
+  .pan-photo {
+    width: 55px;
+    height: 72px;
+    flex-basis: 55px;
+  }
+
+  .photo-placeholder {
+    width: 37px;
+    height: 50px;
+    font-size: 19px;
+  }
+}

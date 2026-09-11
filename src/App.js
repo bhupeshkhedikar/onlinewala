@@ -33,11 +33,12 @@ import AdminReferrals from "./components/admin/AdminReferrals";
 import AdminWithdrawals from "./components/admin/AdminWithdrawals";
 import MobileMenu from "./components/MobileMenu";
 import AdminPayments from "./components/admin/AdminPayments";
+import InstantPanFind from "./components/InstantPanFind";
 
 const Home = ({ authUser, userData }) => (
   <>
     <div className="hero-wrapper">
-     
+     <InstantPanFind/>
       <Hero />
       <QuickWalletReferral
         user={authUser ? (userData || authUser) : null}

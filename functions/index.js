@@ -26,7 +26,7 @@ const RAZORPAY_KEY_ID =
 
 const RAZORPAY_KEY_SECRET =
   defineSecret("RAZORPAY_KEY_SECRET");
-
+const PARIPRINT_API_KEY = defineSecret("PARIPRINT_API_KEY");
 const MIN_WITHDRAWAL = 100;
 const MAX_WITHDRAWAL = 50000;
 
@@ -2103,3 +2103,765 @@ exports.payOnlineWalaaFromWallet =
 
     }
   );
+
+exports.instantPanFind = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    secrets: [PARIPRINT_API_KEY],
+  },
+
+  async (request) => {
+    console.log("========================================");
+    console.log("🚀 instantPanFind FUNCTION STARTED");
+    console.log("========================================");
+
+    try {
+      /*
+       * STEP 1
+       * Authentication
+       */
+      console.log("STEP 1: Checking authentication...");
+
+      if (!request.auth) {
+        console.error("❌ User is NOT authenticated.");
+
+        throw new HttpsError(
+          "unauthenticated",
+          "कृपया आधी Login करा."
+        );
+      }
+
+      const userId = request.auth.uid;
+
+      console.log(
+        "✅ User authenticated:",
+        userId
+      );
+
+      /*
+       * STEP 2
+       * Get Aadhaar number
+       *
+       * IMPORTANT:
+       * We NEVER log the actual Aadhaar number.
+       */
+      console.log("STEP 2: Validating Aadhaar...");
+
+      const aadhaarNumber = String(
+        request.data?.aadhaarNumber || ""
+      ).replace(/\D/g, "");
+
+      console.log(
+        "Aadhaar received:",
+        aadhaarNumber
+          ? "YES"
+          : "NO"
+      );
+
+      console.log(
+        "Aadhaar length:",
+        aadhaarNumber.length
+      );
+
+      if (!/^\d{12}$/.test(aadhaarNumber)) {
+        console.error(
+          "❌ Invalid Aadhaar number."
+        );
+
+        throw new HttpsError(
+          "invalid-argument",
+          "12 अंकी Aadhaar Number required आहे."
+        );
+      }
+
+      console.log(
+        "✅ Aadhaar validation successful."
+      );
+
+      /*
+       * STEP 3
+       * Service amount
+       */
+      const SERVICE_AMOUNT = 10;
+
+      console.log(
+        `STEP 3: Service amount = ₹${SERVICE_AMOUNT}`
+      );
+
+      /*
+       * STEP 4
+       * Get user wallet
+       */
+      console.log(
+        "STEP 4: Checking wallet balance..."
+      );
+
+      const userRef = db
+        .collection("users")
+        .doc(userId);
+
+      const userSnap =
+        await userRef.get();
+
+      if (!userSnap.exists) {
+        console.error(
+          "❌ User profile not found:",
+          userId
+        );
+
+        throw new HttpsError(
+          "not-found",
+          "User profile सापडला नाही."
+        );
+      }
+
+      const userData =
+        userSnap.data();
+
+      const availableBalance =
+        Number(
+          userData.availableBalance || 0
+        );
+
+      const walletBalance =
+        Number(
+          userData.walletBalance || 0
+        );
+
+      console.log(
+        "Wallet balance:",
+        walletBalance
+      );
+
+      console.log(
+        "Available balance:",
+        availableBalance
+      );
+
+      if (
+        availableBalance <
+        SERVICE_AMOUNT
+      ) {
+        console.error(
+          `❌ Insufficient balance. Available ₹${availableBalance}, Required ₹${SERVICE_AMOUNT}`
+        );
+
+        throw new HttpsError(
+          "failed-precondition",
+          `तुमच्या wallet मध्ये कमीत कमी ₹${SERVICE_AMOUNT} available असणे आवश्यक आहे.`
+        );
+      }
+
+      console.log(
+        "✅ Wallet balance sufficient."
+      );
+
+      /*
+       * STEP 5
+       * Get Pariprint API key
+       *
+       * Secret is NEVER logged.
+       */
+      console.log(
+        "STEP 5: Checking Pariprint API configuration..."
+      );
+
+      const apiKey =
+        PARIPRINT_API_KEY.value();
+
+      if (!apiKey) {
+        console.error(
+          "❌ PARIPRINT_API_KEY is NOT configured."
+        );
+
+        throw new HttpsError(
+          "internal",
+          "PAN service configuration missing."
+        );
+      }
+
+      console.log(
+        "✅ Pariprint API key is configured."
+      );
+
+      /*
+       * STEP 6
+       * Build Pariprint API URL
+       */
+      console.log(
+        "STEP 6: Preparing Pariprint API request..."
+      );
+
+      const apiUrl =
+        new URL(
+          "https://pariprint.in/api-proxy.php"
+        );
+
+      apiUrl.searchParams.set(
+        "slug",
+        "instant-pan-find"
+      );
+
+      apiUrl.searchParams.set(
+        "aadhaar_number",
+        aadhaarNumber
+      );
+
+      apiUrl.searchParams.set(
+        "api_key",
+        apiKey
+      );
+
+      console.log(
+        "Pariprint endpoint:",
+        "https://pariprint.in/api-proxy.php"
+      );
+
+      console.log(
+        "Pariprint slug:",
+        "instant-pan-find"
+      );
+
+      /*
+       * DO NOT log apiUrl.toString()
+       * because it contains the secret API key.
+       */
+
+      /*
+       * STEP 7
+       * Call Pariprint
+       */
+      console.log(
+        "STEP 7: Calling Pariprint API..."
+      );
+
+      let apiResponse;
+
+      try {
+        apiResponse =
+          await fetch(
+            apiUrl.toString(),
+            {
+              method: "GET",
+
+              headers: {
+                Accept:
+                  "application/json",
+              },
+            }
+          );
+
+        console.log(
+          "✅ Pariprint API request completed."
+        );
+
+        console.log(
+          "Pariprint HTTP status:",
+          apiResponse.status
+        );
+
+        console.log(
+          "Pariprint HTTP status text:",
+          apiResponse.statusText
+        );
+
+      } catch (error) {
+        console.error(
+          "❌ Pariprint network error."
+        );
+
+        console.error(
+          "Error name:",
+          error?.name
+        );
+
+        console.error(
+          "Error message:",
+          error?.message
+        );
+
+        throw new HttpsError(
+          "unavailable",
+          "PAN service temporarily unavailable."
+        );
+      }
+
+      /*
+       * STEP 8
+       * Read API response
+       */
+      console.log(
+        "STEP 8: Reading Pariprint response..."
+      );
+
+      let apiData;
+
+      try {
+        apiData =
+          await apiResponse.json();
+
+        /*
+         * IMPORTANT:
+         * This logs the actual API response
+         * so we can verify the structure.
+         *
+         * Do NOT log Aadhaar.
+         */
+        console.log(
+          "📦 PARIPRINT RESPONSE:"
+        );
+
+        console.log(
+          JSON.stringify(
+            apiData,
+            null,
+            2
+          )
+        );
+
+      } catch (error) {
+        console.error(
+          "❌ Failed to parse Pariprint JSON response."
+        );
+
+        console.error(
+          "Error message:",
+          error?.message
+        );
+
+        throw new HttpsError(
+          "internal",
+          "PAN service returned an invalid response."
+        );
+      }
+
+      /*
+       * STEP 9
+       * Check API response
+       */
+      console.log(
+        "STEP 9: Checking Pariprint response..."
+      );
+
+      console.log(
+        "API status field:",
+        apiData?.status
+      );
+
+      console.log(
+        "API message:",
+        apiData?.message
+      );
+
+      console.log(
+        "PAN field exists:",
+        Boolean(
+          apiData?.pan_number
+        )
+      );
+
+      /*
+       * Extract PAN
+       */
+      const panNumber =
+        String(
+          apiData?.pan_number || ""
+        )
+          .trim()
+          .toUpperCase();
+
+      console.log(
+        "PAN extracted:",
+        panNumber
+          ? "YES"
+          : "NO"
+      );
+
+      /*
+       * Validate PAN format
+       */
+      const validPanFormat =
+        /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(
+          panNumber
+        );
+
+      console.log(
+        "PAN format valid:",
+        validPanFormat
+      );
+
+      const apiSuccess =
+        apiData?.status === true &&
+        validPanFormat;
+
+      console.log(
+        "Final API success:",
+        apiSuccess
+      );
+
+      /*
+       * IMPORTANT:
+       * If API is not successful,
+       * wallet is NOT debited.
+       */
+      if (!apiSuccess) {
+        console.error(
+          "❌ PAN FIND FAILED."
+        );
+
+        console.error(
+          "Provider message:",
+          apiData?.message ||
+            "PAN Number not found."
+        );
+
+        throw new HttpsError(
+          "failed-precondition",
+          apiData?.message ||
+            "PAN Number सापडला नाही."
+        );
+      }
+
+      console.log(
+        "🎉 PAN FIND SUCCESSFUL."
+      );
+
+      /*
+       * STEP 10
+       * Prepare wallet transaction
+       */
+      console.log(
+        "STEP 10: Preparing wallet debit..."
+      );
+
+      const walletTransactionRef =
+        db
+          .collection(
+            "walletTransactions"
+          )
+          .doc();
+
+      const panRequestRef =
+        db
+          .collection(
+            "panFindRequests"
+          )
+          .doc();
+
+      let finalBalance = 0;
+
+      /*
+       * STEP 11
+       * Atomic wallet transaction
+       */
+      console.log(
+        "STEP 11: Starting Firestore transaction..."
+      );
+
+      await db.runTransaction(
+        async (transaction) => {
+
+          console.log(
+            "Reading fresh wallet balance..."
+          );
+
+          const freshUserSnap =
+            await transaction.get(
+              userRef
+            );
+
+          if (
+            !freshUserSnap.exists
+          ) {
+            console.error(
+              "❌ User disappeared during transaction."
+            );
+
+            throw new HttpsError(
+              "not-found",
+              "User profile सापडला नाही."
+            );
+          }
+
+          const freshUser =
+            freshUserSnap.data();
+
+          const currentAvailable =
+            Number(
+              freshUser.availableBalance ||
+                0
+            );
+
+          const currentWallet =
+            Number(
+              freshUser.walletBalance ||
+                0
+            );
+
+          console.log(
+            "Fresh available balance:",
+            currentAvailable
+          );
+
+          console.log(
+            "Fresh wallet balance:",
+            currentWallet
+          );
+
+          /*
+           * Re-check balance
+           * immediately before debit.
+           */
+          if (
+            currentAvailable <
+            SERVICE_AMOUNT
+          ) {
+            console.error(
+              "❌ Wallet became insufficient before debit."
+            );
+
+            throw new HttpsError(
+              "failed-precondition",
+              "Wallet balance insufficient आहे."
+            );
+          }
+
+          const newAvailable =
+            currentAvailable -
+            SERVICE_AMOUNT;
+
+          const newWallet =
+            Math.max(
+              0,
+              currentWallet -
+                SERVICE_AMOUNT
+            );
+
+          finalBalance =
+            newAvailable;
+
+          console.log(
+            "New available balance:",
+            newAvailable
+          );
+
+          console.log(
+            "New wallet balance:",
+            newWallet
+          );
+
+          /*
+           * Update wallet
+           */
+          transaction.update(
+            userRef,
+            {
+              walletBalance:
+                newWallet,
+
+              availableBalance:
+                newAvailable,
+
+              updatedAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+
+          /*
+           * Create wallet transaction
+           */
+          transaction.set(
+            walletTransactionRef,
+            {
+              userId,
+
+              amount:
+                SERVICE_AMOUNT,
+
+              type:
+                "SERVICE_PAYMENT",
+
+              direction:
+                "DEBIT",
+
+              status:
+                "success",
+
+              service:
+                "INSTANT_PAN_FIND",
+
+              description:
+                "Instant PAN Find",
+
+              provider:
+                "pariprint",
+
+              referenceId:
+                panRequestRef.id,
+
+              createdAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+
+          /*
+           * Create PAN request record
+           *
+           * Aadhaar is NOT stored.
+           */
+          transaction.set(
+            panRequestRef,
+            {
+              userId,
+
+              service:
+                "INSTANT_PAN_FIND",
+
+              status:
+                "success",
+
+              amount:
+                SERVICE_AMOUNT,
+
+              panNumber,
+
+              provider:
+                "pariprint",
+
+              walletTransactionId:
+                walletTransactionRef.id,
+
+              createdAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+
+          console.log(
+            "✅ Wallet update prepared."
+          );
+
+          console.log(
+            "✅ Wallet transaction prepared:",
+            walletTransactionRef.id
+          );
+
+          console.log(
+            "✅ PAN request prepared:",
+            panRequestRef.id
+          );
+        }
+      );
+
+      /*
+       * STEP 12
+       * Final success
+       */
+      console.log(
+        "========================================"
+      );
+
+      console.log(
+        "🎉 instantPanFind SUCCESS"
+      );
+
+      console.log(
+        "PAN:",
+        panNumber
+      );
+
+      console.log(
+        "Amount debited:",
+        `₹${SERVICE_AMOUNT}`
+      );
+
+      console.log(
+        "Remaining balance:",
+        finalBalance
+      );
+
+      console.log(
+        "Wallet transaction:",
+        walletTransactionRef.id
+      );
+
+      console.log(
+        "========================================"
+      );
+
+      return {
+        success: true,
+
+        panNumber,
+
+        amount:
+          SERVICE_AMOUNT,
+
+        transactionId:
+          walletTransactionRef.id,
+
+        remainingBalance:
+          finalBalance,
+
+        message:
+          "Aadhaar to PAN find successful.",
+      };
+
+    } catch (error) {
+
+      /*
+       * IMPORTANT ERROR LOG
+       */
+      console.error(
+        "========================================"
+      );
+
+      console.error(
+        "❌ instantPanFind ERROR"
+      );
+
+      console.error(
+        "Error code:",
+        error?.code
+      );
+
+      console.error(
+        "Error message:",
+        error?.message
+      );
+
+      console.error(
+        "Error details:",
+        error?.details
+      );
+
+      console.error(
+        "========================================"
+      );
+
+      /*
+       * Preserve Firebase HttpsError
+       */
+      if (
+        error instanceof HttpsError
+      ) {
+        throw error;
+      }
+
+      /*
+       * Convert unknown errors
+       * to internal error.
+       */
+      throw new HttpsError(
+        "internal",
+        "Instant PAN Find service मध्ये unexpected error आला."
+      );
+    }
+  }
+);
