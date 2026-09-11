@@ -38,7 +38,6 @@ import InstantPanFind from "./components/InstantPanFind";
 const Home = ({ authUser, userData }) => (
   <>
     <div className="hero-wrapper">
-     <InstantPanFind/>
       <Hero />
       <QuickWalletReferral
         user={authUser ? (userData || authUser) : null}
@@ -238,6 +237,11 @@ export default function App() {
         path="/resume-builder"
         element={<ResumeBuilder />}
       />
+
+          <Route
+            path="/aadhaar-to-pan"
+            element={<InstantPanFind />}
+          />
 
       <Route
         path="/biodata-builder"

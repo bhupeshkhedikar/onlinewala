@@ -5,15 +5,44 @@ import "./MobileMenu.css";
 /* ================= ICONS ================= */
 
 const HomeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
     <path d="M3 10.5 12 3l9 7.5" />
     <path d="M5.5 9.5V21h13V9.5" />
     <path d="M9.5 21v-6h5v6" />
   </svg>
 );
 
+const AadhaarPanIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
+    <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+    <circle cx="8" cy="11" r="2" />
+    <path d="M5.8 15.5c.6-1.2 1.4-1.8 2.2-1.8s1.6.6 2.2 1.8" />
+    <path d="M13 9h4.5" />
+    <path d="M13 12h4.5" />
+    <path d="M13 15h3" />
+  </svg>
+);
+
 const ResumeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
     <path d="M6 3h9l4 4v14H6z" />
     <path d="M14 3v5h5" />
     <path d="M9 13h6" />
@@ -22,7 +51,13 @@ const ResumeIcon = () => (
 );
 
 const BiodataIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="8" r="3" />
     <path d="M6 21c.7-4 2.7-6 6-6s5.3 2 6 6" />
     <rect x="3" y="3" width="18" height="18" rx="3" />
@@ -30,14 +65,26 @@ const BiodataIcon = () => (
 );
 
 const AgeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="12" r="9" />
     <path d="M12 7v5l3 2" />
   </svg>
 );
 
 const ReferralIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
     <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7" />
     <path d="M12 21V5" />
     <path d="M4 8h16v4H4z" />
@@ -47,7 +94,13 @@ const ReferralIcon = () => (
 );
 
 const WalletIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
     <path d="M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
     <path d="M4 6V4h14a2 2 0 0 1 2 2" />
     <path d="M16 13h6" />
@@ -56,11 +109,19 @@ const WalletIcon = () => (
 );
 
 const ProfileIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="8" r="3.5" />
     <path d="M5 21c.8-4.2 3.1-6.3 7-6.3s6.2 2.1 7 6.3" />
   </svg>
 );
+
+/* ================= MOBILE MENU ================= */
 
 export default function MobileMenu() {
   const navigate = useNavigate();
@@ -70,45 +131,54 @@ export default function MobileMenu() {
     {
       name: "मुखपृष्ठ",
       path: "/",
-      icon: <HomeIcon />
+      icon: <HomeIcon />,
+    },
+    {
+      name: "आधार वरून पॅन कार्ड शोधा",
+      path: "/aadhaar-to-pan",
+      icon: <AadhaarPanIcon />,
+      isNew: true,
     },
     {
       name: "रेजूम",
       path: "/resume-builder",
       icon: <ResumeIcon />,
-      free: true
+      free: true,
     },
     {
       name: "बायोडाटा",
       path: "/biodata-builder",
       icon: <BiodataIcon />,
-      free: true
+      free: true,
     },
     {
       name: "वय मोजा",
       path: "/age-calculator",
       icon: <AgeIcon />,
-      free: true
+      free: true,
     },
     {
       name: "रेफर",
       path: "/referral",
-      icon: <ReferralIcon />
+      icon: <ReferralIcon />,
     },
     {
       name: "वॉलेट",
       path: "/wallet",
-      icon: <WalletIcon />
+      icon: <WalletIcon />,
     },
     {
       name: "प्रोफाइल",
       path: "/dashboard",
-      icon: <ProfileIcon />
-    }
+      icon: <ProfileIcon />,
+    },
   ];
 
   const isActive = (path) => {
-    if (path === "/") return location.pathname === "/";
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+
     return location.pathname === path;
   };
 
@@ -125,9 +195,21 @@ export default function MobileMenu() {
               item.path === "/wallet" ? "wallet-item" : ""
             } ${
               item.path === "/referral" ? "referral-item" : ""
+            } ${
+              item.path === "/aadhaar-to-pan"
+                ? "aadhaar-pan-item"
+                : ""
             }`}
             onClick={() => navigate(item.path)}
           >
+            {/* NEW CHIP */}
+            {item.isNew && (
+              <span className="free-chip">
+                NEW
+              </span>
+            )}
+
+            {/* FREE CHIP */}
             {item.free && (
               <span className="free-chip">
                 FREE
