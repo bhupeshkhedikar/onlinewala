@@ -42,10 +42,10 @@ import InstantLlPass from "./components/InstantLlPass";
 const Home = ({ authUser, userData }) => (
   <>
     <div className="hero-wrapper">
-      <InstantLlPass/>
+      {/* <InstantLlPass/>
       <InstantDlPdf/>
       <InstantLLPdf/>
-      <InstantRCPdf/>
+      <InstantRCPdf/> */}
       <Hero />
       <QuickWalletReferral
         user={authUser ? (userData || authUser) : null}
