@@ -3552,7 +3552,7 @@ exports.instantLlPdf = onCall(
           service: "INSTANT_LL_PDF",
           serviceName: "Instant LL PDF",
           amount: SERVICE_CHARGE,
-
+          description:"Instant LL PDF",
           applicationNumber: applicationNumber,
 
           provider: "pariprint",
@@ -4060,7 +4060,7 @@ exports.instantDlPdf = onCall(
 
               serviceName:
                 "Instant DL PDF",
-
+               description:"Instant DL PDF",
               amount:
                 SERVICE_CHARGE,
 
