@@ -1,0 +1,855 @@
+/* =========================================================
+   INSTANT LL PDF
+   ========================================================= */
+
+.instant-ll-page {
+  min-height: 100vh;
+  background: #f6f8fb;
+  padding: 32px 16px 60px;
+  box-sizing: border-box;
+}
+
+.instant-ll-container {
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.instant-ll-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.ll-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    #1d4ed8,
+    #2563eb
+  );
+
+  color: white;
+  font-size: 27px;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.22);
+}
+
+.instant-ll-header h1 {
+  margin: 0;
+
+  font-size: 25px;
+  line-height: 1.2;
+
+  font-weight: 800;
+
+  color: #111827;
+}
+
+.instant-ll-header p {
+  margin: 5px 0 0;
+
+  color: #6b7280;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
+
+.instant-ll-card {
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 22px;
+
+  padding: 28px;
+
+  box-shadow:
+    0 12px 35px rgba(15, 23, 42, 0.07);
+}
+
+.service-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  margin-bottom: 13px;
+}
+
+.instant-ll-card h2 {
+  margin: 0;
+
+  font-size: 21px;
+
+  color: #111827;
+
+  font-weight: 800;
+}
+
+.ll-description {
+  margin: 8px 0 25px;
+
+  color: #6b7280;
+
+  line-height: 1.6;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.ll-form-group {
+  margin-bottom: 18px;
+}
+
+.ll-form-group label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #374151;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+.ll-input-wrapper {
+  position: relative;
+}
+
+.ll-input-icon {
+  position: absolute;
+
+  left: 15px;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #6b7280;
+
+  font-weight: 700;
+
+  font-size: 18px;
+
+  pointer-events: none;
+}
+
+.ll-input-wrapper input {
+  width: 100%;
+
+  height: 54px;
+
+  box-sizing: border-box;
+
+  border: 1.5px solid #d1d5db;
+
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  padding: 0 15px 0 43px;
+
+  font-size: 16px;
+
+  color: #111827;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ll-input-wrapper input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 4px rgba(
+      37,
+      99,
+      235,
+      0.10
+    );
+}
+
+.ll-input-wrapper input:disabled {
+  background: #f9fafb;
+
+  cursor: not-allowed;
+}
+
+.ll-form-group small {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #9ca3af;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   PRICE
+   ========================================================= */
+
+.ll-price-box {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 14px 16px;
+
+  margin: 20px 0;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+}
+
+.ll-price-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.price-icon {
+  width: 37px;
+  height: 37px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #ecfdf5;
+
+  font-size: 18px;
+}
+
+.price-label {
+  display: block;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #374151;
+}
+
+.price-note {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #9ca3af;
+
+  font-size: 11px;
+}
+
+.ll-price-box > strong {
+  color: #111827;
+
+  font-size: 20px;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.ll-error {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+
+  padding: 12px 14px;
+
+  margin-bottom: 16px;
+
+  border-radius: 12px;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  color: #b91c1c;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.error-icon {
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   SUBMIT BUTTON
+   ========================================================= */
+
+.ll-submit-btn {
+  width: 100%;
+
+  height: 54px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
+  color: white;
+
+  font-size: 15px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  box-shadow:
+    0 8px 18px rgba(
+      37,
+      99,
+      235,
+      0.22
+    );
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.ll-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 11px 23px rgba(
+      37,
+      99,
+      235,
+      0.28
+    );
+}
+
+.ll-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ll-submit-btn:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   SPINNER
+   ========================================================= */
+
+.ll-spinner {
+  width: 17px;
+  height: 17px;
+
+  border: 2px solid
+    rgba(255, 255, 255, 0.4);
+
+  border-top-color: white;
+
+  border-radius: 50%;
+
+  animation:
+    llSpin 0.7s linear infinite;
+}
+
+@keyframes llSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   NOTE
+   ========================================================= */
+
+.ll-note {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  margin-top: 15px;
+
+  padding: 11px 12px;
+
+  border-radius: 11px;
+
+  background: #f9fafb;
+
+  color: #6b7280;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   RESULT CARD
+   ========================================================= */
+
+.ll-result-card {
+  margin-top: 18px;
+
+  padding: 25px;
+
+  background: white;
+
+  border-radius: 20px;
+
+  border: 1px solid #bbf7d0;
+
+  box-shadow:
+    0 10px 30px rgba(
+      16,
+      185,
+      129,
+      0.08
+    );
+
+  text-align: center;
+}
+
+.success-icon {
+  width: 52px;
+  height: 52px;
+
+  margin: 0 auto 12px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #dcfce7;
+
+  color: #16a34a;
+
+  font-size: 27px;
+
+  font-weight: 900;
+}
+
+.ll-result-card h3 {
+  margin: 0;
+
+  color: #166534;
+
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+.ll-result-card > p {
+  margin: 8px 0 20px;
+
+  color: #6b7280;
+
+  font-size: 13px;
+}
+
+.ll-result-card > p strong {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #111827;
+
+  font-size: 15px;
+}
+
+/* =========================================================
+   RESULT INFO
+   ========================================================= */
+
+.result-info {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.result-info > div {
+  padding: 12px;
+
+  border-radius: 11px;
+
+  background: #f9fafb;
+}
+
+.result-info span {
+  display: block;
+
+  font-size: 11px;
+
+  color: #9ca3af;
+}
+
+.result-info strong {
+  display: block;
+
+  margin-top: 4px;
+
+  font-size: 15px;
+
+  color: #111827;
+}
+
+/* =========================================================
+   RESULT BUTTONS
+   ========================================================= */
+
+.ll-result-actions {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 10px;
+}
+
+.ll-view-btn,
+.ll-download-btn {
+  height: 48px;
+
+  border-radius: 11px;
+
+  border: none;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease;
+}
+
+.ll-view-btn {
+  background: #eff6ff;
+
+  color: #1d4ed8;
+
+  border: 1px solid #bfdbfe;
+}
+
+.ll-download-btn {
+  background: #16a34a;
+
+  color: white;
+}
+
+.ll-view-btn:hover,
+.ll-download-btn:hover {
+  transform: translateY(-1px);
+}
+
+.ll-new-btn {
+  margin-top: 15px;
+
+  background: transparent;
+
+  border: none;
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.ll-new-btn:hover {
+  color: #2563eb;
+}
+
+/* =========================================================
+   SUCCESS POPUP
+   ========================================================= */
+
+.ll-popup-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 18px;
+
+  background: rgba(
+    15,
+    23,
+    42,
+    0.55
+  );
+
+  backdrop-filter: blur(4px);
+}
+
+.ll-success-popup {
+  width: 100%;
+
+  max-width: 390px;
+
+  padding: 30px 25px;
+
+  border-radius: 22px;
+
+  background: white;
+
+  text-align: center;
+
+  box-shadow:
+    0 25px 70px rgba(
+      0,
+      0,
+      0,
+      0.20
+    );
+
+  animation:
+    llPopupIn 0.2s ease-out;
+}
+
+@keyframes llPopupIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(10px)
+      scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+.popup-check {
+  width: 60px;
+  height: 60px;
+
+  margin: 0 auto 14px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #dcfce7;
+
+  color: #16a34a;
+
+  font-size: 32px;
+
+  font-weight: 900;
+}
+
+.ll-success-popup h2 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 22px;
+}
+
+.ll-success-popup p {
+  margin: 9px 0 22px;
+
+  color: #6b7280;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.popup-actions {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 9px;
+}
+
+.popup-actions button {
+  width: 100%;
+
+  height: 47px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background: #16a34a;
+
+  color: white;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.popup-actions .popup-close {
+  background: #f3f4f6;
+
+  color: #374151;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .instant-ll-page {
+    padding: 20px 12px 40px;
+  }
+
+  .instant-ll-header {
+    gap: 12px;
+
+    margin-bottom: 17px;
+  }
+
+  .ll-icon {
+    width: 48px;
+    height: 48px;
+
+    border-radius: 13px;
+
+    font-size: 23px;
+  }
+
+  .instant-ll-header h1 {
+    font-size: 21px;
+  }
+
+  .instant-ll-header p {
+    font-size: 12px;
+  }
+
+  .instant-ll-card {
+    padding: 21px 17px;
+
+    border-radius: 18px;
+  }
+
+  .instant-ll-card h2 {
+    font-size: 18px;
+  }
+
+  .ll-description {
+    font-size: 13px;
+
+    margin-bottom: 20px;
+  }
+
+  .ll-input-wrapper input {
+    height: 51px;
+
+    font-size: 15px;
+  }
+
+  .ll-price-box {
+    padding: 12px;
+  }
+
+  .ll-result-card {
+    padding: 21px 16px;
+  }
+
+  .result-info {
+    grid-template-columns: 1fr;
+  }
+
+  .ll-result-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .ll-success-popup {
+    padding: 26px 20px;
+  }
+}

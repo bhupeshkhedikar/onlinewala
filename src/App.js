@@ -35,10 +35,16 @@ import MobileMenu from "./components/MobileMenu";
 import AdminPayments from "./components/admin/AdminPayments";
 import InstantPanFind from "./components/InstantPanFind";
 import InstantRCPdf from "./components/InstantRCPdf";
+import InstantLLPdf from "./components/InstantLLPdf";
+import InstantDlPdf from "./components/InstantDlPdf";
+import InstantLlPass from "./components/InstantLlPass";
 
 const Home = ({ authUser, userData }) => (
   <>
     <div className="hero-wrapper">
+      <InstantLlPass/>
+      <InstantDlPdf/>
+      <InstantLLPdf/>
       <InstantRCPdf/>
       <Hero />
       <QuickWalletReferral

@@ -3239,3 +3239,1883 @@ exports.instantRcPdf = onCall(
     };
   }
 );
+
+exports.instantLlPdf = onCall(
+  {
+    region: "asia-south1",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 60,
+    memory: "256MiB",
+  },
+
+  async (request) => {
+    const uid = request.auth?.uid;
+
+    if (!uid) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया प्रथम लॉगिन करा."
+      );
+    }
+
+    const applicationNumber = String(
+      request.data?.application_no ||
+      request.data?.applicationNumber ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+    if (!applicationNumber) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Learning Licence Application Number टाका."
+      );
+    }
+
+    /*
+     * Application number basic validation.
+     *
+     * PariPrint may have different application number formats,
+     * therefore we don't make this overly restrictive.
+     */
+    if (!/^[A-Z0-9-]{5,30}$/.test(applicationNumber)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया योग्य Application Number टाका."
+      );
+    }
+
+    /*
+     * -------------------------------------------------------
+     * WALLET
+     * -------------------------------------------------------
+     *
+     * IMPORTANT:
+     * खाली LL साठी OnlineWalaa service charge set करा.
+     *
+     * Example:
+     * Provider fee = ₹3
+     * OnlineWalaa charge = ₹10
+     *
+     * जर तुमचा charge वेगळा असेल तर फक्त ही value बदला.
+     */
+
+    const SERVICE_CHARGE = 50;
+
+    const userRef = db.collection("users").doc(uid);
+
+    // -------------------------------------------------------
+    // Check wallet balance
+    // -------------------------------------------------------
+
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "User account सापडले नाही."
+      );
+    }
+
+    const userData = userSnap.data() || {};
+
+    const currentBalance = Number(
+      userData.walletBalance ??
+      userData.balance ??
+      0
+    );
+
+    if (!Number.isFinite(currentBalance)) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Wallet balance invalid आहे."
+      );
+    }
+
+    if (currentBalance < SERVICE_CHARGE) {
+      throw new HttpsError(
+        "failed-precondition",
+        `तुमच्या wallet मध्ये पुरेशी रक्कम नाही. आवश्यक रक्कम ₹${SERVICE_CHARGE} आहे.`
+      );
+    }
+
+    // -------------------------------------------------------
+    // Call PariPrint API
+    // -------------------------------------------------------
+
+    const apiKey = PARIPRINT_API_KEY.value();
+
+    if (!apiKey) {
+      console.error("PARIPRINT_API_KEY is missing.");
+
+      throw new HttpsError(
+        "failed-precondition",
+        "Service configuration उपलब्ध नाही."
+      );
+    }
+
+    const apiUrl =
+      "https://pariprint.in/api-proxy.php" +
+      "?slug=instant-ll-pdf" +
+      "&application_no=" +
+      encodeURIComponent(applicationNumber) +
+      "&api_key=" +
+      encodeURIComponent(apiKey);
+
+    console.log("========================================");
+    console.log("INSTANT LL PDF REQUEST");
+    console.log("User:", uid);
+    console.log("Application Number:", applicationNumber);
+    console.log("Calling PariPrint API...");
+    console.log("========================================");
+
+    let apiResponse;
+
+    try {
+      apiResponse = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+    } catch (error) {
+      console.error("PariPrint connection error:", error);
+
+      throw new HttpsError(
+        "unavailable",
+        "LL PDF service शी संपर्क होऊ शकला नाही. कृपया पुन्हा प्रयत्न करा."
+      );
+    }
+
+    const rawText = await apiResponse.text();
+
+    console.log("PariPrint HTTP STATUS:", apiResponse.status);
+
+    let apiData;
+
+    try {
+      apiData = JSON.parse(rawText);
+    } catch (error) {
+      console.error("Invalid PariPrint JSON response:", rawText);
+
+      throw new HttpsError(
+        "internal",
+        "LL service कडून invalid response मिळाला."
+      );
+    }
+
+    console.log(
+      "PariPrint RESPONSE:",
+      JSON.stringify({
+        status: apiData?.status,
+        message: apiData?.message,
+        fee: apiData?.fee,
+        order_id: apiData?.order_id,
+        application_number: apiData?.application_number,
+        hasPdf: Boolean(apiData?.data?.pdf || apiData?.pdf),
+      })
+    );
+
+    // -------------------------------------------------------
+    // Check provider success
+    // -------------------------------------------------------
+
+    const providerSuccess =
+      apiData?.status === "success" ||
+      apiData?.status === true ||
+      apiData?.status === "SUCCESS";
+
+    const pdfBase64 = String(
+      apiData?.data?.pdf ||
+      apiData?.pdf ||
+      ""
+    ).trim();
+
+    /*
+     * PDF is the actual success criterion.
+     *
+     * PariPrint response:
+     *
+     * {
+     *   status: "success",
+     *   data: {
+     *      pdf: "JVBERi0xLjQK..."
+     *   }
+     * }
+     */
+
+    if (!providerSuccess || !pdfBase64) {
+      console.log(
+        "LL PDF NOT AVAILABLE:",
+        apiData?.message || "No PDF returned"
+      );
+
+      throw new HttpsError(
+        "not-found",
+        apiData?.message ||
+          "Learning Licence PDF उपलब्ध नाही."
+      );
+    }
+
+    // -------------------------------------------------------
+    // Basic Base64 validation
+    // -------------------------------------------------------
+
+    if (pdfBase64.length < 100) {
+      console.error("Invalid/too-small PDF Base64 response.");
+
+      throw new HttpsError(
+        "internal",
+        "Provider कडून valid PDF मिळाली नाही."
+      );
+    }
+
+    /*
+     * Most PDF Base64 strings start with:
+     *
+     * JVBERi0
+     *
+     * because PDF starts with %PDF.
+     */
+
+    if (!pdfBase64.startsWith("JVBERi")) {
+      console.warn(
+        "PDF Base64 does not start with expected PDF signature."
+      );
+    }
+
+    // -------------------------------------------------------
+    // Generate transaction ID
+    // -------------------------------------------------------
+
+    const transactionRef =
+      db.collection("walletTransactions").doc();
+
+    const llRequestRef =
+      db.collection("llPdfRequests").doc();
+
+    const transactionId = transactionRef.id;
+    const requestId = llRequestRef.id;
+
+    // -------------------------------------------------------
+    // ATOMIC WALLET DEBIT
+    // -------------------------------------------------------
+
+    let remainingBalance = 0;
+
+    try {
+      await db.runTransaction(async (transaction) => {
+        const freshUserSnap = await transaction.get(userRef);
+
+        if (!freshUserSnap.exists) {
+          throw new Error("USER_NOT_FOUND");
+        }
+
+        const freshUserData = freshUserSnap.data() || {};
+
+        const balance = Number(
+          freshUserData.walletBalance ??
+          freshUserData.balance ??
+          0
+        );
+
+        if (!Number.isFinite(balance)) {
+          throw new Error("INVALID_BALANCE");
+        }
+
+        if (balance < SERVICE_CHARGE) {
+          throw new Error("INSUFFICIENT_BALANCE");
+        }
+
+        remainingBalance = Number(
+          (balance - SERVICE_CHARGE).toFixed(2)
+        );
+
+        /*
+         * Keep walletBalance as your main wallet field.
+         *
+         * If your existing wallet uses another field,
+         * adapt this section to your existing wallet structure.
+         */
+
+        transaction.update(userRef, {
+          walletBalance: remainingBalance,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Wallet transaction record
+
+        transaction.set(transactionRef, {
+          userId: uid,
+          type: "debit",
+          service: "INSTANT_LL_PDF",
+          serviceName: "Instant LL PDF",
+          amount: SERVICE_CHARGE,
+
+          applicationNumber: applicationNumber,
+
+          provider: "pariprint",
+
+          providerFee: Number(apiData?.fee || 0),
+
+          providerOrderId:
+            apiData?.order_id ||
+            null,
+
+          status: "SUCCESS",
+
+          balanceBefore: balance,
+          balanceAfter: remainingBalance,
+
+          requestId,
+
+          createdAt:
+            admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // LL request record
+
+        transaction.set(llRequestRef, {
+          userId: uid,
+
+          applicationNumber,
+
+          service: "INSTANT_LL_PDF",
+
+          amount: SERVICE_CHARGE,
+
+          providerFee: Number(apiData?.fee || 0),
+
+          providerOrderId:
+            apiData?.order_id ||
+            null,
+
+          providerMessage:
+            apiData?.message ||
+            "Learning Licence PDF fetched successfully.",
+
+          status: "SUCCESS",
+
+          transactionId,
+
+          createdAt:
+            admin.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+    } catch (error) {
+      console.error("Wallet transaction error:", error);
+
+      if (error.message === "INSUFFICIENT_BALANCE") {
+        throw new HttpsError(
+          "failed-precondition",
+          "तुमच्या wallet मध्ये पुरेशी रक्कम नाही."
+        );
+      }
+
+      if (error.message === "USER_NOT_FOUND") {
+        throw new HttpsError(
+          "not-found",
+          "User account सापडले नाही."
+        );
+      }
+
+      throw new HttpsError(
+        "internal",
+        "Wallet debit करण्यात समस्या आली."
+      );
+    }
+
+    // -------------------------------------------------------
+    // SUCCESS
+    // -------------------------------------------------------
+
+    console.log("========================================");
+    console.log("LL PDF SUCCESS");
+    console.log("Application:", applicationNumber);
+    console.log("Transaction:", transactionId);
+    console.log("Amount:", SERVICE_CHARGE);
+    console.log("Remaining Balance:", remainingBalance);
+    console.log("========================================");
+
+    return {
+      success: true,
+
+      message:
+        apiData?.message ||
+        "Learning Licence PDF successfully fetched.",
+
+      applicationNumber,
+
+      pdf: pdfBase64,
+
+      amount: SERVICE_CHARGE,
+
+      transactionId,
+
+      requestId,
+
+      providerOrderId:
+        apiData?.order_id ||
+        null,
+
+      remainingBalance,
+    };
+  }
+);
+
+exports.instantDlPdf = onCall(
+  {
+    region: "asia-south1",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 60,
+    memory: "256MiB",
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+
+    if (!uid) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया प्रथम लॉगिन करा."
+      );
+    }
+
+    const dlNumber = String(
+      request.data?.dl ||
+      request.data?.dlNumber ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+    const dob = String(
+      request.data?.dob || ""
+    ).trim();
+
+    // =====================================================
+    // VALIDATION
+    // =====================================================
+
+    if (!dlNumber) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Driving Licence Number टाका."
+      );
+    }
+
+    if (!/^[A-Z0-9-]{5,30}$/.test(dlNumber)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया योग्य Driving Licence Number टाका."
+      );
+    }
+
+    if (!dob) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Date of Birth टाका."
+      );
+    }
+
+    // Expected format: DD-MM-YYYY
+    const dobRegex =
+      /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
+
+    if (!dobRegex.test(dob)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Date of Birth DD-MM-YYYY format मध्ये टाका."
+      );
+    }
+
+    // =====================================================
+    // ONLINEWALAA CHARGE
+    // =====================================================
+
+    const SERVICE_CHARGE = 50;
+
+    const userRef =
+      db.collection("users").doc(uid);
+
+    // =====================================================
+    // CHECK USER / WALLET
+    // =====================================================
+
+    const userSnap =
+      await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "User account सापडले नाही."
+      );
+    }
+
+    const userData =
+      userSnap.data() || {};
+
+    const currentBalance = Number(
+      userData.walletBalance ??
+      userData.balance ??
+      0
+    );
+
+    if (
+      !Number.isFinite(currentBalance)
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Wallet balance invalid आहे."
+      );
+    }
+
+    if (
+      currentBalance < SERVICE_CHARGE
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        `तुमच्या wallet मध्ये पुरेशी रक्कम नाही. आवश्यक रक्कम ₹${SERVICE_CHARGE} आहे.`
+      );
+    }
+
+    // =====================================================
+    // PARIPRINT API
+    // =====================================================
+
+    const apiKey =
+      PARIPRINT_API_KEY.value();
+
+    if (!apiKey) {
+      console.error(
+        "PARIPRINT_API_KEY is missing."
+      );
+
+      throw new HttpsError(
+        "failed-precondition",
+        "Service configuration उपलब्ध नाही."
+      );
+    }
+
+    const apiUrl =
+      "https://pariprint.in/api-proxy.php" +
+      "?slug=instant-dl-pdf" +
+      "&dl=" +
+      encodeURIComponent(dlNumber) +
+      "&dob=" +
+      encodeURIComponent(dob) +
+      "&api_key=" +
+      encodeURIComponent(apiKey);
+
+    console.log(
+      "========================================"
+    );
+
+    console.log(
+      "INSTANT DL PDF REQUEST"
+    );
+
+    console.log(
+      "User:",
+      uid
+    );
+
+    console.log(
+      "DL Number:",
+      dlNumber
+    );
+
+    console.log(
+      "DOB:",
+      dob
+    );
+
+    let apiResponse;
+
+    try {
+      apiResponse =
+        await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        });
+    } catch (error) {
+      console.error(
+        "PariPrint connection error:",
+        error
+      );
+
+      throw new HttpsError(
+        "unavailable",
+        "DL PDF service शी संपर्क होऊ शकला नाही. कृपया पुन्हा प्रयत्न करा."
+      );
+    }
+
+    const rawText =
+      await apiResponse.text();
+
+    console.log(
+      "HTTP STATUS:",
+      apiResponse.status
+    );
+
+    let apiData;
+
+    try {
+      apiData =
+        JSON.parse(rawText);
+    } catch (error) {
+      console.error(
+        "Invalid PariPrint response:",
+        rawText
+      );
+
+      throw new HttpsError(
+        "internal",
+        "DL service कडून invalid response मिळाला."
+      );
+    }
+
+    // =====================================================
+    // EXTRACT PDF
+    // =====================================================
+
+    const pdfBase64 =
+      String(
+        apiData?.data?.a4_base64 ||
+        apiData?.a4_base64 ||
+        apiData?.data?.pdf ||
+        apiData?.pdf ||
+        ""
+      ).trim();
+
+    const providerSuccess =
+      apiData?.status === "SUCCESS" ||
+      apiData?.status === "success" ||
+      apiData?.status === true;
+
+    console.log(
+      "Provider Status:",
+      apiData?.status
+    );
+
+    console.log(
+      "Provider Message:",
+      apiData?.message
+    );
+
+    console.log(
+      "DL Number:",
+      apiData?.data?.dl_number
+    );
+
+    console.log(
+      "Has PDF:",
+      Boolean(pdfBase64)
+    );
+
+    // =====================================================
+    // SUCCESS ONLY IF PDF EXISTS
+    // =====================================================
+
+    if (
+      !providerSuccess ||
+      !pdfBase64
+    ) {
+      console.log(
+        "DL PDF NOT AVAILABLE"
+      );
+
+      throw new HttpsError(
+        "not-found",
+        apiData?.message ||
+          "Driving Licence PDF उपलब्ध नाही."
+      );
+    }
+
+    if (
+      pdfBase64.length < 100
+    ) {
+      throw new HttpsError(
+        "internal",
+        "Provider कडून valid PDF मिळाली नाही."
+      );
+    }
+
+    // =====================================================
+    // REMOVE DATA URL PREFIX IF PRESENT
+    // =====================================================
+
+    const cleanPdfBase64 =
+      pdfBase64.replace(
+        /^data:application\/pdf;base64,/i,
+        ""
+      );
+
+    // =====================================================
+    // TRANSACTION REFERENCES
+    // =====================================================
+
+    const transactionRef =
+      db
+        .collection("walletTransactions")
+        .doc();
+
+    const dlRequestRef =
+      db
+        .collection("dlPdfRequests")
+        .doc();
+
+    const transactionId =
+      transactionRef.id;
+
+    const requestId =
+      dlRequestRef.id;
+
+    let remainingBalance = 0;
+
+    // =====================================================
+    // ATOMIC WALLET DEBIT
+    // =====================================================
+
+    try {
+      await db.runTransaction(
+        async (transaction) => {
+          const freshUserSnap =
+            await transaction.get(
+              userRef
+            );
+
+          if (
+            !freshUserSnap.exists
+          ) {
+            throw new Error(
+              "USER_NOT_FOUND"
+            );
+          }
+
+          const freshUserData =
+            freshUserSnap.data() || {};
+
+          const balance =
+            Number(
+              freshUserData.walletBalance ??
+              freshUserData.balance ??
+              0
+            );
+
+          if (
+            !Number.isFinite(balance)
+          ) {
+            throw new Error(
+              "INVALID_BALANCE"
+            );
+          }
+
+          if (
+            balance <
+            SERVICE_CHARGE
+          ) {
+            throw new Error(
+              "INSUFFICIENT_BALANCE"
+            );
+          }
+
+          remainingBalance =
+            Number(
+              (
+                balance -
+                SERVICE_CHARGE
+              ).toFixed(2)
+            );
+
+          // Wallet update
+
+          transaction.update(
+            userRef,
+            {
+              walletBalance:
+                remainingBalance,
+
+              updatedAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+
+          // Wallet transaction
+
+          transaction.set(
+            transactionRef,
+            {
+              userId: uid,
+
+              type: "debit",
+
+              service:
+                "INSTANT_DL_PDF",
+
+              serviceName:
+                "Instant DL PDF",
+
+              amount:
+                SERVICE_CHARGE,
+
+              dlNumber,
+
+              dob,
+
+              provider:
+                "pariprint",
+
+              providerFee:
+                Number(
+                  apiData?.fee || 0
+                ),
+
+              providerOrderId:
+                apiData?.order_id ||
+                null,
+
+              status:
+                "SUCCESS",
+
+              balanceBefore:
+                balance,
+
+              balanceAfter:
+                remainingBalance,
+
+              requestId,
+
+              createdAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+
+          // DL request record
+
+          transaction.set(
+            dlRequestRef,
+            {
+              userId: uid,
+
+              dlNumber,
+
+              dob,
+
+              service:
+                "INSTANT_DL_PDF",
+
+              amount:
+                SERVICE_CHARGE,
+
+              providerFee:
+                Number(
+                  apiData?.fee || 0
+                ),
+
+              providerOrderId:
+                apiData?.order_id ||
+                null,
+
+              providerMessage:
+                apiData?.message ||
+                "DL card generated successfully.",
+
+              status:
+                "SUCCESS",
+
+              transactionId,
+
+              createdAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+        }
+      );
+    } catch (error) {
+      console.error(
+        "Wallet transaction error:",
+        error
+      );
+
+      if (
+        error.message ===
+        "INSUFFICIENT_BALANCE"
+      ) {
+        throw new HttpsError(
+          "failed-precondition",
+          "तुमच्या wallet मध्ये पुरेशी रक्कम नाही."
+        );
+      }
+
+      throw new HttpsError(
+        "internal",
+        "Wallet debit करण्यात समस्या आली."
+      );
+    }
+
+    // =====================================================
+    // SUCCESS RESPONSE
+    // =====================================================
+
+    console.log(
+      "DL PDF SUCCESS"
+    );
+
+    console.log(
+      "Transaction:",
+      transactionId
+    );
+
+    console.log(
+      "Amount:",
+      SERVICE_CHARGE
+    );
+
+    console.log(
+      "Remaining Balance:",
+      remainingBalance
+    );
+
+    return {
+      success: true,
+
+      message:
+        apiData?.message ||
+        "DL card generated successfully.",
+
+      dlNumber,
+
+      dob,
+
+      pdf:
+        cleanPdfBase64,
+
+      amount:
+        SERVICE_CHARGE,
+
+      transactionId,
+
+      requestId,
+
+      providerOrderId:
+        apiData?.order_id ||
+        null,
+
+      remainingBalance,
+    };
+  }
+);
+
+exports.instantLlPass = onCall(
+  {
+    region: "asia-south1",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 60,
+    memory: "256MiB",
+  },
+  async (request) => {
+    // ----------------------------------------------------------
+    // AUTH
+    // ----------------------------------------------------------
+
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया प्रथम लॉगिन करा."
+      );
+    }
+
+    const uid = request.auth.uid;
+
+    // ----------------------------------------------------------
+    // INPUT
+    // ----------------------------------------------------------
+
+    const {
+      app_no,
+      dob,
+      password,
+      State,
+    } = request.data || {};
+
+    const applicationNumber =
+      String(app_no || "").trim();
+
+    const dateOfBirth =
+      String(dob || "").trim();
+
+    const llPassword =
+      String(password || "").trim();
+
+    const state =
+      String(State || "")
+        .trim()
+        .toUpperCase();
+
+    // ----------------------------------------------------------
+    // VALIDATE APPLICATION
+    // ----------------------------------------------------------
+
+    if (!applicationNumber) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Application Number टाका."
+      );
+    }
+
+    if (
+      !/^[A-Za-z0-9-]{5,30}$/.test(
+        applicationNumber
+      )
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया योग्य Application Number टाका."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // VALIDATE DOB
+    // ----------------------------------------------------------
+
+    const dobRegex =
+      /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
+
+    if (!dateOfBirth) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Date of Birth टाका."
+      );
+    }
+
+    if (!dobRegex.test(dateOfBirth)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "DOB DD-MM-YYYY format मध्ये टाका."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // VALIDATE PASSWORD
+    // ----------------------------------------------------------
+
+    if (!llPassword) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया LL Test Password टाका."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // VALIDATE STATE
+    // ----------------------------------------------------------
+
+    if (!state) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया State निवडा."
+      );
+    }
+
+    if (!/^[A-Z]{2,20}$/.test(state)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया योग्य State निवडा."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // CHARGE
+    // ----------------------------------------------------------
+
+    const SERVICE_CHARGE = 120;
+
+    // ----------------------------------------------------------
+    // USER
+    // ----------------------------------------------------------
+
+    const userRef =
+      db.collection("users").doc(uid);
+
+    const userSnap =
+      await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "User profile सापडला नाही."
+      );
+    }
+
+    const userData =
+      userSnap.data() || {};
+
+    const currentBalance =
+      Number(
+        userData.walletBalance ??
+        userData.wallet ??
+        userData.balance ??
+        0
+      );
+
+    if (
+      !Number.isFinite(currentBalance) ||
+      currentBalance < SERVICE_CHARGE
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        `Wallet मध्ये पुरेशी रक्कम नाही. या सेवेसाठी ₹${SERVICE_CHARGE} आवश्यक आहेत.`
+      );
+    }
+
+    // ----------------------------------------------------------
+    // API KEY
+    // ----------------------------------------------------------
+
+    const apiKey =
+      PARIPRINT_API_KEY.value();
+
+    if (!apiKey) {
+      console.error(
+        "PARIPRINT_API_KEY is missing."
+      );
+
+      throw new HttpsError(
+        "failed-precondition",
+        "Service configuration error."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // PROVIDER REQUEST
+    // ----------------------------------------------------------
+
+    const params =
+      new URLSearchParams();
+
+    params.set(
+      "slug",
+      "instant-ll-pass"
+    );
+
+    params.set(
+      "app_no",
+      applicationNumber
+    );
+
+    params.set(
+      "dob",
+      dateOfBirth
+    );
+
+    params.set(
+      "password",
+      llPassword
+    );
+
+    params.set(
+      "State",
+      state
+    );
+
+    params.set(
+      "api_key",
+      apiKey
+    );
+
+    const apiUrl =
+      `https://pariprint.in/api-proxy.php?${params.toString()}`;
+
+    let providerResponse;
+
+    try {
+      providerResponse =
+        await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        });
+    } catch (error) {
+      console.error(
+        "LL Pass provider request error:",
+        error
+      );
+
+      throw new HttpsError(
+        "unavailable",
+        "LL Pass service सध्या उपलब्ध नाही."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // RESPONSE
+    // ----------------------------------------------------------
+
+    const rawText =
+      await providerResponse.text();
+
+    console.log(
+      "LL PASS HTTP STATUS:",
+      providerResponse.status
+    );
+
+    console.log(
+      "LL PASS RESPONSE:",
+      rawText.substring(0, 5000)
+    );
+
+    let apiData;
+
+    try {
+      apiData =
+        JSON.parse(rawText);
+    } catch (error) {
+      throw new HttpsError(
+        "unavailable",
+        "Provider कडून invalid response मिळाला."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // SUCCESS
+    // ----------------------------------------------------------
+
+    const providerStatus =
+      apiData?.status;
+
+    const isSuccess =
+      providerStatus === true ||
+      String(providerStatus)
+        .trim()
+        .toLowerCase() === "true" ||
+      String(providerStatus)
+        .trim()
+        .toLowerCase() === "success";
+
+    if (!isSuccess) {
+      console.warn(
+        "LL Pass failed:",
+        apiData
+      );
+
+      throw new HttpsError(
+        "failed-precondition",
+        String(
+          apiData?.message ||
+          "LL Pass request successful झाला नाही. Wallet मधून पैसे deduct केलेले नाहीत."
+        )
+      );
+    }
+
+    // ----------------------------------------------------------
+    // PROVIDER ORDER / REQUEST ID
+    // ----------------------------------------------------------
+
+    const providerRequestId =
+      String(
+        apiData?.request_id ||
+        apiData?.requestId ||
+        apiData?.order_id ||
+        apiData?.result_value ||
+        ""
+      ).trim();
+
+    if (!providerRequestId) {
+      console.error(
+        "Provider success but no request/order ID:",
+        apiData
+      );
+
+      throw new HttpsError(
+        "unavailable",
+        "Provider success मिळाला पण Request ID मिळाला नाही. Wallet मधून पैसे deduct केलेले नाहीत."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // FIRESTORE DOCUMENT IDS
+    // ----------------------------------------------------------
+
+    const applicantRef =
+      db.collection(
+        "llPassApplicants"
+      ).doc();
+
+    const transactionRef =
+      db.collection(
+        "walletTransactions"
+      ).doc();
+
+    let newBalance = 0;
+
+    // ----------------------------------------------------------
+    // ATOMIC WALLET + APPLICANT RECORD
+    // ----------------------------------------------------------
+
+    try {
+      await db.runTransaction(
+        async (transaction) => {
+          const freshUserSnap =
+            await transaction.get(
+              userRef
+            );
+
+          if (!freshUserSnap.exists) {
+            throw new HttpsError(
+              "not-found",
+              "User profile सापडला नाही."
+            );
+          }
+
+          const freshUserData =
+            freshUserSnap.data() || {};
+
+          const walletBalance =
+            Number(
+              freshUserData.walletBalance ??
+              freshUserData.wallet ??
+              freshUserData.balance ??
+              0
+            );
+
+          if (
+            !Number.isFinite(
+              walletBalance
+            ) ||
+            walletBalance < SERVICE_CHARGE
+          ) {
+            throw new HttpsError(
+              "failed-precondition",
+              `Wallet मध्ये ₹${SERVICE_CHARGE} पेक्षा कमी balance आहे.`
+            );
+          }
+
+          newBalance =
+            walletBalance -
+            SERVICE_CHARGE;
+
+          // ----------------------------------------------------
+          // WALLET UPDATE
+          // ----------------------------------------------------
+
+          transaction.update(
+            userRef,
+            {
+              walletBalance:
+                newBalance,
+
+              updatedAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+            }
+          );
+
+          // ----------------------------------------------------
+          // WALLET TRANSACTION
+          // ----------------------------------------------------
+
+          transaction.set(
+            transactionRef,
+            {
+              uid,
+
+              type: "debit",
+
+              amount:
+                SERVICE_CHARGE,
+
+              service:
+                "INSTANT_LL_PASS",
+
+              serviceName:
+                "Instant LL Pass",
+
+              description:
+                "Instant Learning Licence Test Pass",
+
+              applicationNumber,
+
+              dob: dateOfBirth,
+
+              state,
+
+              providerRequestId,
+
+              status:
+                "success",
+
+              createdAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+
+              balanceBefore:
+                walletBalance,
+
+              balanceAfter:
+                newBalance,
+            }
+          );
+
+          // ----------------------------------------------------
+          // APPLICANT DATA
+          //
+          // IMPORTANT:
+          // PASSWORD IS NOT STORED.
+          // ----------------------------------------------------
+
+          transaction.set(
+            applicantRef,
+            {
+              uid,
+
+              applicationNumber,
+
+              dob: dateOfBirth,
+
+              state,
+
+              providerRequestId,
+
+              providerOrderId:
+                providerRequestId,
+
+              status:
+                "submitted",
+
+              statusMessage:
+                String(
+                  apiData?.message ||
+                  "Request successful."
+                ),
+
+              amount:
+                SERVICE_CHARGE,
+
+              transactionId:
+                transactionRef.id,
+
+              createdAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+
+              updatedAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+
+              lastStatusCheck:
+                null,
+            }
+          );
+        }
+      );
+    } catch (error) {
+      console.error(
+        "LL Pass transaction error:",
+        error
+      );
+
+      if (
+        error instanceof HttpsError
+      ) {
+        throw error;
+      }
+
+      throw new HttpsError(
+        "internal",
+        "LL Pass successful झाला पण wallet transaction पूर्ण झाली नाही."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // RETURN
+    // ----------------------------------------------------------
+
+    return {
+      success: true,
+
+      message:
+        String(
+          apiData?.message ||
+          "LL Pass request successful."
+        ),
+
+      applicationNumber,
+
+      dob: dateOfBirth,
+
+      state,
+
+      requestId:
+        providerRequestId,
+
+      orderId:
+        providerRequestId,
+
+      applicantId:
+        applicantRef.id,
+
+      transactionId:
+        transactionRef.id,
+
+      amount:
+        SERVICE_CHARGE,
+
+      remainingBalance:
+        newBalance,
+    };
+  }
+);
+
+
+exports.checkLlPassStatus = onCall(
+  {
+    region: "asia-south1",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 60,
+    memory: "256MiB",
+  },
+  async (request) => {
+    // ----------------------------------------------------------
+    // AUTH
+    // ----------------------------------------------------------
+
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया प्रथम लॉगिन करा."
+      );
+    }
+
+    const uid =
+      request.auth.uid;
+
+    // ----------------------------------------------------------
+    // INPUT
+    // ----------------------------------------------------------
+
+    const {
+      applicantId,
+      orderId,
+    } = request.data || {};
+
+    let applicantData = null;
+    let applicantRef = null;
+
+    // ----------------------------------------------------------
+    // OPTION 1:
+    // FIRESTORE APPLICANT ID
+    // ----------------------------------------------------------
+
+    if (applicantId) {
+      applicantRef =
+        db.collection(
+          "llPassApplicants"
+        ).doc(
+          String(applicantId)
+        );
+
+      const applicantSnap =
+        await applicantRef.get();
+
+      if (!applicantSnap.exists) {
+        throw new HttpsError(
+          "not-found",
+          "LL application सापडली नाही."
+        );
+      }
+
+      applicantData =
+        applicantSnap.data();
+
+      // --------------------------------------------------------
+      // SECURITY:
+      // USER CAN ONLY CHECK THEIR OWN APPLICATION
+      // --------------------------------------------------------
+
+      if (
+        applicantData.uid !== uid
+      ) {
+        throw new HttpsError(
+          "permission-denied",
+          "ही application तुमची नाही."
+        );
+      }
+    }
+
+    // ----------------------------------------------------------
+    // OPTION 2:
+    // DIRECT ORDER ID
+    // ----------------------------------------------------------
+
+    if (
+      !applicantData &&
+      orderId
+    ) {
+      const snapshot =
+        await db
+          .collection(
+            "llPassApplicants"
+          )
+          .where(
+            "uid",
+            "==",
+            uid
+          )
+          .where(
+            "providerOrderId",
+            "==",
+            String(orderId)
+          )
+          .limit(1)
+          .get();
+
+      if (
+        snapshot.empty
+      ) {
+        throw new HttpsError(
+          "not-found",
+          "ही LL application सापडली नाही."
+        );
+      }
+
+      applicantRef =
+        snapshot.docs[0].ref;
+
+      applicantData =
+        snapshot.docs[0].data();
+    }
+
+    if (!applicantData) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Applicant ID किंवा Order ID आवश्यक आहे."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // ORDER ID
+    // ----------------------------------------------------------
+
+    const providerOrderId =
+      String(
+        applicantData.providerOrderId ||
+        applicantData.providerRequestId ||
+        ""
+      ).trim();
+
+    if (!providerOrderId) {
+      throw new HttpsError(
+        "failed-precondition",
+        "या application साठी provider Order ID उपलब्ध नाही."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // API KEY
+    // ----------------------------------------------------------
+
+    const apiKey =
+      PARIPRINT_API_KEY.value();
+
+    if (!apiKey) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Service configuration error."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // STATUS API
+    // ----------------------------------------------------------
+
+    const params =
+      new URLSearchParams();
+
+    params.set(
+      "slug",
+      "ll-exam-request"
+    );
+
+    params.set(
+      "api_key",
+      apiKey
+    );
+
+    params.set(
+      "order_id",
+      providerOrderId
+    );
+
+    const statusUrl =
+      `https://pariprint.in/api-proxy.php?${params.toString()}`;
+
+    let providerResponse;
+
+    try {
+      providerResponse =
+        await fetch(statusUrl, {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        });
+    } catch (error) {
+      console.error(
+        "LL status provider error:",
+        error
+      );
+
+      throw new HttpsError(
+        "unavailable",
+        "Status service सध्या उपलब्ध नाही."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // RESPONSE
+    // ----------------------------------------------------------
+
+    const rawText =
+      await providerResponse.text();
+
+    console.log(
+      "LL STATUS HTTP:",
+      providerResponse.status
+    );
+
+    console.log(
+      "LL STATUS RESPONSE:",
+      rawText.substring(0, 5000)
+    );
+
+    let apiData;
+
+    try {
+      apiData =
+        JSON.parse(rawText);
+    } catch (error) {
+      throw new HttpsError(
+        "unavailable",
+        "Status provider कडून invalid response मिळाला."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // EXTRACT STATUS
+    //
+    // Different provider responses may use:
+    // status
+    // exam_status
+    // request_status
+    // data.status
+    // message
+    // ----------------------------------------------------------
+
+    const providerStatus =
+      apiData?.status ??
+      apiData?.exam_status ??
+      apiData?.request_status ??
+      apiData?.data?.status ??
+      apiData?.data?.exam_status ??
+      "";
+
+    const statusText =
+      String(
+        providerStatus ||
+        ""
+      )
+        .trim();
+
+    const statusMessage =
+      String(
+        apiData?.message ||
+        apiData?.data?.message ||
+        ""
+      ).trim();
+
+    // ----------------------------------------------------------
+    // UPDATE FIRESTORE
+    // ----------------------------------------------------------
+
+    const updateData = {
+      status:
+        statusText ||
+        applicantData.status ||
+        "submitted",
+
+      statusMessage:
+        statusMessage ||
+        applicantData.statusMessage ||
+        "",
+
+      lastStatusCheck:
+        admin.firestore.FieldValue.serverTimestamp(),
+
+      updatedAt:
+        admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Save useful provider fields if available.
+    if (
+      apiData?.result !== undefined
+    ) {
+      updateData.providerResult =
+        apiData.result;
+    }
+
+    if (
+      apiData?.data !== undefined
+    ) {
+      updateData.providerData =
+        apiData.data;
+    }
+
+    await applicantRef.update(
+      updateData
+    );
+
+    // ----------------------------------------------------------
+    // RETURN
+    // ----------------------------------------------------------
+
+    return {
+      success: true,
+
+      applicantId:
+        applicantRef.id,
+
+      applicationNumber:
+        applicantData.applicationNumber,
+
+      dob:
+        applicantData.dob,
+
+      state:
+        applicantData.state,
+
+      orderId:
+        providerOrderId,
+
+      status:
+        statusText ||
+        applicantData.status ||
+        "submitted",
+
+      message:
+        statusMessage ||
+        "Status मिळाला.",
+
+      providerResponse:
+        apiData,
+    };
+  }
+);

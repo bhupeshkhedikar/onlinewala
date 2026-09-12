@@ -1,0 +1,1234 @@
+/* =========================================================
+   INSTANT DL PDF PAGE
+   ========================================================= */
+
+.instant-dl-page {
+  min-height: 100vh;
+
+  background: #f6f8fb;
+
+  padding: 32px 16px 60px;
+
+  box-sizing: border-box;
+}
+
+.instant-dl-container {
+  width: 100%;
+
+  max-width: 620px;
+
+  margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.instant-dl-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+  margin-bottom: 21px;
+}
+
+.dl-icon {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    #7c3aed,
+    #4f46e5
+  );
+
+  color: white;
+
+  font-size: 26px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(79, 70, 229, 0.22);
+}
+
+.instant-dl-header h1 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 25px;
+
+  line-height: 1.2;
+
+  font-weight: 800;
+}
+
+.instant-dl-header p {
+  margin: 5px 0 0;
+
+  color: #6b7280;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
+
+.instant-dl-card {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 22px;
+
+  padding: 28px;
+
+  box-shadow:
+    0 12px 35px
+    rgba(15, 23, 42, 0.07);
+}
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.dl-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
+  background: #f5f3ff;
+
+  color: #6d28d9;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  margin-bottom: 13px;
+}
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.instant-dl-card h2 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 21px;
+
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.dl-description {
+  margin: 8px 0 25px;
+
+  color: #6b7280;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.dl-form-group {
+  margin-bottom: 18px;
+}
+
+.dl-form-group label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #374151;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+.dl-input-wrapper {
+  position: relative;
+
+  width: 100%;
+}
+
+.dl-input-icon {
+  position: absolute;
+
+  left: 14px;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #6b7280;
+
+  font-size: 17px;
+
+  pointer-events: none;
+
+  z-index: 2;
+}
+
+.dl-input-wrapper input {
+  width: 100%;
+
+  height: 54px;
+
+  box-sizing: border-box;
+
+  padding: 0 15px 0 43px;
+
+  border: 1.5px solid #d1d5db;
+
+  border-radius: 13px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 15px;
+
+  font-family: inherit;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.dl-input-wrapper input::placeholder {
+  color: #9ca3af;
+}
+
+.dl-input-wrapper input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(99, 102, 241, 0.10);
+}
+
+.dl-input-wrapper input:disabled {
+  background: #f9fafb;
+
+  cursor: not-allowed;
+}
+
+.dl-form-group small {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #9ca3af;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   PRICE BOX
+   ========================================================= */
+
+.dl-price-box {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 14px 16px;
+
+  margin: 20px 0;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  box-sizing: border-box;
+}
+
+.dl-price-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.dl-price-icon {
+  width: 37px;
+  height: 37px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #ecfdf5;
+
+  font-size: 18px;
+}
+
+.dl-price-label {
+  display: block;
+
+  color: #374151;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.dl-price-box small {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #9ca3af;
+
+  font-size: 11px;
+}
+
+.dl-price-box > strong {
+  color: #111827;
+
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.dl-error {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+
+  padding: 12px 14px;
+
+  margin-bottom: 16px;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 12px;
+
+  color: #b91c1c;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.dl-error-icon {
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   SUBMIT BUTTON
+   ========================================================= */
+
+.dl-submit-btn {
+  width: 100%;
+
+  height: 54px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background: linear-gradient(
+    135deg,
+    #6366f1,
+    #4f46e5
+  );
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 800;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  box-shadow:
+    0 8px 18px
+    rgba(79, 70, 229, 0.22);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.dl-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 11px 23px
+    rgba(79, 70, 229, 0.28);
+}
+
+.dl-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.dl-submit-btn:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   LOADING SPINNER
+   ========================================================= */
+
+.dl-spinner {
+  width: 17px;
+  height: 17px;
+
+  border: 2px solid
+    rgba(255, 255, 255, 0.4);
+
+  border-top-color: #ffffff;
+
+  border-radius: 50%;
+
+  animation:
+    dlSpin 0.7s linear infinite;
+}
+
+@keyframes dlSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   SECURITY NOTE
+   ========================================================= */
+
+.dl-note {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  margin-top: 15px;
+
+  padding: 11px 12px;
+
+  border-radius: 11px;
+
+  background: #f9fafb;
+
+  color: #6b7280;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   RESULT CARD
+   ========================================================= */
+
+.dl-result-card {
+  margin-top: 18px;
+
+  padding: 25px;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  border: 1px solid #bbf7d0;
+
+  text-align: center;
+
+  box-shadow:
+    0 10px 30px
+    rgba(16, 185, 129, 0.08);
+}
+
+.dl-success-icon {
+  width: 52px;
+  height: 52px;
+
+  margin: 0 auto 12px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #dcfce7;
+
+  color: #16a34a;
+
+  font-size: 27px;
+
+  font-weight: 900;
+}
+
+.dl-result-card h3 {
+  margin: 0;
+
+  color: #166534;
+
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+.dl-result-card > p {
+  margin: 8px 0 20px;
+
+  color: #6b7280;
+
+  font-size: 13px;
+}
+
+.dl-result-card > p strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #111827;
+
+  font-size: 15px;
+}
+
+/* =========================================================
+   RESULT INFO
+   ========================================================= */
+
+.dl-result-info {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.dl-result-info > div {
+  padding: 12px;
+
+  background: #f9fafb;
+
+  border-radius: 11px;
+}
+
+.dl-result-info span {
+  display: block;
+
+  color: #9ca3af;
+
+  font-size: 11px;
+}
+
+.dl-result-info strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #111827;
+
+  font-size: 15px;
+}
+
+/* =========================================================
+   RESULT ACTIONS
+   ========================================================= */
+
+.dl-actions {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 10px;
+}
+
+.dl-view-btn,
+.dl-download-btn {
+  height: 48px;
+
+  border-radius: 11px;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.dl-view-btn {
+  background: #eef2ff;
+
+  color: #4338ca;
+
+  border: 1px solid #c7d2fe;
+}
+
+.dl-download-btn {
+  background: #16a34a;
+
+  color: #ffffff;
+
+  border: none;
+}
+
+.dl-view-btn:hover,
+.dl-download-btn:hover {
+  transform: translateY(-1px);
+}
+
+.dl-new-btn {
+  margin-top: 15px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #6b7280;
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.dl-new-btn:hover {
+  color: #4f46e5;
+}
+
+/* =========================================================
+   =========================================================
+   CENTER PDF SUCCESS POPUP
+   =========================================================
+   ========================================================= */
+
+.dl-popup-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background:
+    rgba(15, 23, 42, 0.68);
+
+  backdrop-filter: blur(5px);
+
+  overflow-y: auto;
+}
+
+/* =========================================================
+   PDF POPUP
+   ========================================================= */
+
+.dl-pdf-popup {
+  position: relative;
+
+  width: min(850px, 100%);
+
+  max-height:
+    calc(100vh - 40px);
+
+  display: flex;
+
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border-radius: 22px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 30px 90px
+    rgba(0, 0, 0, 0.30);
+
+  animation:
+    dlPopupOpen 0.22s ease-out;
+}
+
+@keyframes dlPopupOpen {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(15px)
+      scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* =========================================================
+   POPUP CLOSE
+   ========================================================= */
+
+.dl-popup-x {
+  position: absolute;
+
+  top: 13px;
+
+  right: 14px;
+
+  z-index: 20;
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f3f4f6;
+
+  color: #374151;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 26px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.dl-popup-x:hover {
+  background: #e5e7eb;
+
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   POPUP HEADER
+   ========================================================= */
+
+.dl-popup-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  padding:
+    20px
+    58px
+    16px
+    22px;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  flex-shrink: 0;
+
+  box-sizing: border-box;
+}
+
+.dl-popup-success-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #dcfce7;
+
+  color: #16a34a;
+
+  font-size: 23px;
+
+  font-weight: 900;
+}
+
+.dl-popup-header h2 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 19px;
+
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.dl-popup-header p {
+  margin: 3px 0 0;
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+   PDF PREVIEW
+   ========================================================= */
+
+.dl-pdf-preview-wrapper {
+  width: 100%;
+
+  height: min(
+    65vh,
+    650px
+  );
+
+  min-height: 400px;
+
+  padding: 14px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: #e5e7eb;
+
+  overflow: hidden;
+}
+
+.dl-pdf-preview {
+  display: block;
+
+  width: 100%;
+
+  height: 100%;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 15px
+    rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================================
+   POPUP INFO
+   ========================================================= */
+
+.dl-popup-info {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin: 0 18px;
+
+  padding: 10px 13px;
+
+  box-sizing: border-box;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 10px;
+
+  flex-shrink: 0;
+}
+
+.dl-popup-info > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.dl-popup-info span {
+  color: #6b7280;
+
+  font-size: 11px;
+}
+
+.dl-popup-info strong {
+  color: #111827;
+
+  font-size: 13px;
+}
+
+/* =========================================================
+   POPUP ACTIONS
+   ========================================================= */
+
+.dl-popup-actions {
+  display: grid;
+
+  grid-template-columns:
+    1fr 130px;
+
+  gap: 10px;
+
+  padding:
+    14px
+    18px
+    18px;
+
+  flex-shrink: 0;
+
+  box-sizing: border-box;
+}
+
+.dl-popup-download,
+.dl-popup-close-btn {
+  height: 46px;
+
+  border-radius: 11px;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.dl-popup-download {
+  border: none;
+
+  background: #16a34a;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 6px 15px
+    rgba(22, 163, 74, 0.20);
+}
+
+.dl-popup-download:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 9px 20px
+    rgba(22, 163, 74, 0.27);
+}
+
+.dl-popup-close-btn {
+  border: 1px solid #d1d5db;
+
+  background: #ffffff;
+
+  color: #374151;
+}
+
+.dl-popup-close-btn:hover {
+  transform: translateY(-1px);
+
+  background: #f9fafb;
+}
+
+/* =========================================================
+   MOBILE POPUP
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .instant-dl-page {
+    padding:
+      20px
+      12px
+      40px;
+  }
+
+  .instant-dl-header {
+    gap: 12px;
+
+    margin-bottom: 17px;
+  }
+
+  .dl-icon {
+    width: 48px;
+    height: 48px;
+
+    border-radius: 13px;
+
+    font-size: 22px;
+  }
+
+  .instant-dl-header h1 {
+    font-size: 21px;
+  }
+
+  .instant-dl-header p {
+    font-size: 12px;
+  }
+
+  .instant-dl-card {
+    padding:
+      21px
+      17px;
+
+    border-radius: 18px;
+  }
+
+  .instant-dl-card h2 {
+    font-size: 18px;
+  }
+
+  .dl-description {
+    font-size: 13px;
+
+    margin-bottom: 20px;
+  }
+
+  .dl-input-wrapper input {
+    height: 51px;
+
+    font-size: 14px;
+  }
+
+  .dl-price-box {
+    padding: 12px;
+  }
+
+  .dl-result-card {
+    padding:
+      21px
+      16px;
+  }
+
+  .dl-result-info {
+    grid-template-columns: 1fr;
+  }
+
+  .dl-actions {
+    grid-template-columns: 1fr;
+  }
+
+  /* =======================================================
+     MOBILE PDF POPUP
+     ======================================================= */
+
+  .dl-popup-overlay {
+    padding: 10px;
+  }
+
+  .dl-pdf-popup {
+    width: 100%;
+
+    max-height:
+      calc(100vh - 20px);
+
+    border-radius: 17px;
+  }
+
+  .dl-popup-header {
+    padding:
+      16px
+      50px
+      13px
+      16px;
+  }
+
+  .dl-popup-success-icon {
+    width: 37px;
+    height: 37px;
+
+    font-size: 20px;
+  }
+
+  .dl-popup-header h2 {
+    font-size: 17px;
+  }
+
+  .dl-popup-header p {
+    font-size: 11px;
+  }
+
+  .dl-popup-x {
+    top: 10px;
+
+    right: 10px;
+
+    width: 34px;
+    height: 34px;
+
+    font-size: 24px;
+  }
+
+  .dl-pdf-preview-wrapper {
+    height: 58vh;
+
+    min-height: 330px;
+
+    padding: 8px;
+  }
+
+  .dl-pdf-preview {
+    border-radius: 7px;
+  }
+
+  .dl-popup-info {
+    margin:
+      8px 12px 0;
+
+    padding:
+      9px
+      11px;
+  }
+
+  .dl-popup-info > div {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 2px;
+  }
+
+  .dl-popup-actions {
+    grid-template-columns: 1fr;
+
+    padding:
+      10px
+      12px
+      12px;
+  }
+
+  .dl-popup-download,
+  .dl-popup-close-btn {
+    height: 44px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+  .dl-pdf-preview-wrapper {
+    height: 54vh;
+
+    min-height: 290px;
+  }
+
+  .dl-popup-header {
+    padding-left: 13px;
+  }
+
+  .dl-popup-info {
+    font-size: 10px;
+  }
+}
