@@ -2808,3 +2808,434 @@ exports.instantPanFind = onCall(
     }
   }
 );
+
+exports.instantRcPdf = onCall(
+  {
+    region: "asia-south1",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 120,
+    memory: "256MiB",
+  },
+  async (request) => {
+    // ============================================================
+    // 1. AUTH CHECK
+    // ============================================================
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया आधी लॉगिन करा."
+      );
+    }
+
+    const userId = request.auth.uid;
+
+    // ============================================================
+    // 2. INPUT
+    // ============================================================
+    let rcNumber = String(
+      request.data?.rcNumber || ""
+    )
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+    if (!rcNumber) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया RC नंबर टाका."
+      );
+    }
+
+    // Basic RC number validation
+    if (!/^[A-Z0-9-]+$/.test(rcNumber)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया योग्य RC नंबर टाका."
+      );
+    }
+
+    // ============================================================
+    // 3. SERVICE CHARGE
+    // ============================================================
+    const SERVICE_CHARGE = 40;
+
+    // ============================================================
+    // 4. USER WALLET CHECK
+    // ============================================================
+    const userRef = db.collection("users").doc(userId);
+
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "यूजर खाते सापडले नाही."
+      );
+    }
+
+    const userData = userSnap.data() || {};
+
+    const currentBalance = Number(
+      userData.walletBalance || 0
+    );
+
+    if (!Number.isFinite(currentBalance)) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Wallet balance उपलब्ध नाही."
+      );
+    }
+
+    if (currentBalance < SERVICE_CHARGE) {
+      throw new HttpsError(
+        "failed-precondition",
+        `तुमच्या Wallet मध्ये पुरेशी रक्कम नाही. ₹${SERVICE_CHARGE} आवश्यक आहेत.`
+      );
+    }
+
+    // ============================================================
+    // 5. PARIPRINT API
+    // ============================================================
+    const apiKey = PARIPRINT_API_KEY.value();
+
+    if (!apiKey) {
+      console.error("PARIPRINT_API_KEY is missing.");
+
+      throw new HttpsError(
+        "internal",
+        "Service configuration error."
+      );
+    }
+
+    const apiUrl =
+      "https://pariprint.in/api-proxy.php" +
+      "?slug=instant-rc-pdf" +
+      "&api_key=" +
+      encodeURIComponent(apiKey) +
+      "&rcno=" +
+      encodeURIComponent(rcNumber);
+
+    console.log("==========================================");
+    console.log("INSTANT RC PDF REQUEST");
+    console.log("User:", userId);
+    console.log("RC Number:", rcNumber);
+    console.log("==========================================");
+
+    // ============================================================
+    // 6. PROVIDER REQUEST WITH RETRIES
+    // ============================================================
+    let providerResponse = null;
+    let responseText = "";
+    let lastError = null;
+
+    const MAX_ATTEMPTS = 3;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        console.log(
+          `Calling Pariprint API - Attempt ${attempt}/${MAX_ATTEMPTS}`
+        );
+
+        providerResponse = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "OnlineWalaa/1.0",
+          },
+        });
+
+        responseText = await providerResponse.text();
+
+        console.log("========== PARIPRINT DEBUG ==========");
+        console.log("HTTP STATUS:", providerResponse.status);
+        console.log("RAW RESPONSE:", responseText);
+        console.log("======================================");
+
+        // Retry temporary provider/server errors
+        if (
+          [502, 503, 504].includes(providerResponse.status) &&
+          attempt < MAX_ATTEMPTS
+        ) {
+          console.log(
+            `Temporary provider error ${providerResponse.status}. Retrying...`
+          );
+
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1500 * attempt)
+          );
+
+          continue;
+        }
+
+        break;
+      } catch (error) {
+        lastError = error;
+
+        console.error(
+          `Pariprint request failed on attempt ${attempt}:`,
+          error
+        );
+
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1500 * attempt)
+          );
+        }
+      }
+    }
+
+    if (!providerResponse) {
+      console.error(
+        "Pariprint provider unavailable:",
+        lastError
+      );
+
+      throw new HttpsError(
+        "unavailable",
+        "RC PDF सेवा सध्या उपलब्ध नाही. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
+      );
+    }
+
+    // ============================================================
+    // 7. PARSE PROVIDER RESPONSE
+    // ============================================================
+    let apiData = null;
+
+    try {
+      apiData = JSON.parse(responseText);
+    } catch (error) {
+      console.error("JSON PARSE ERROR:", error);
+      console.error("RAW RESPONSE:", responseText);
+
+      throw new HttpsError(
+        "failed-precondition",
+        "RC PDF service कडून योग्य response मिळाला नाही."
+      );
+    }
+
+    console.log("========== PARSED RESPONSE ==========");
+    console.log(JSON.stringify(apiData, null, 2));
+    console.log("=====================================");
+
+    // ============================================================
+    // 8. EXTRACT PDF LINK
+    // ============================================================
+    const pdfLink = String(
+      apiData?.pdf_link ||
+      apiData?.pdfLink ||
+      apiData?.download_url ||
+      ""
+    ).trim();
+
+    console.log("FINAL PDF LINK:", pdfLink);
+
+    // ============================================================
+    // 9. IMPORTANT:
+    //    PDF LINK EXISTS = SUCCESS
+    //
+    //    We don't depend only on HTTP status or `status`
+    //    because provider may return a valid PDF link with
+    //    a non-200 response.
+    // ============================================================
+    if (!pdfLink) {
+      console.error(
+        "RC PDF NOT FOUND - Provider returned no PDF link."
+      );
+
+      throw new HttpsError(
+        "failed-precondition",
+        apiData?.message ||
+          "RC PDF not found or unavailable."
+      );
+    }
+
+    // ============================================================
+    // 10. PDF URL VALIDATION
+    // ============================================================
+    let parsedPdfUrl;
+
+    try {
+      parsedPdfUrl = new URL(pdfLink);
+    } catch (error) {
+      console.error("Invalid PDF URL:", pdfLink);
+
+      throw new HttpsError(
+        "failed-precondition",
+        "RC PDF ची download link योग्य नाही."
+      );
+    }
+
+    if (
+      parsedPdfUrl.protocol !== "http:" &&
+      parsedPdfUrl.protocol !== "https:"
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        "RC PDF ची download link सुरक्षित नाही."
+      );
+    }
+
+    // ============================================================
+    // 11. PROVIDER SUCCESS
+    // ============================================================
+    const requestId =
+      apiData?.request_id ||
+      apiData?.order_id ||
+      null;
+
+    const providerMessage =
+      apiData?.message ||
+      "RC PDF fetched successfully.";
+
+    // ============================================================
+    // 12. ATOMIC WALLET DEBIT
+    // ============================================================
+    const transactionId = db
+      .collection("walletTransactions")
+      .doc().id;
+
+    const rcRequestId = db
+      .collection("rcPdfRequests")
+      .doc().id;
+
+    let remainingBalance = 0;
+
+    await db.runTransaction(async (transaction) => {
+      const freshUserSnap = await transaction.get(userRef);
+
+      if (!freshUserSnap.exists) {
+        throw new HttpsError(
+          "not-found",
+          "यूजर खाते सापडले नाही."
+        );
+      }
+
+      const freshUserData = freshUserSnap.data() || {};
+
+      const walletBalance = Number(
+        freshUserData.walletBalance || 0
+      );
+
+      if (
+        !Number.isFinite(walletBalance) ||
+        walletBalance < SERVICE_CHARGE
+      ) {
+        throw new HttpsError(
+          "failed-precondition",
+          `Wallet मध्ये ₹${SERVICE_CHARGE} पेक्षा कमी balance आहे.`
+        );
+      }
+
+      remainingBalance =
+        Math.round(
+          (walletBalance - SERVICE_CHARGE) * 100
+        ) / 100;
+
+      // ------------------------------------------
+      // Deduct wallet
+      // ------------------------------------------
+      transaction.update(userRef, {
+        walletBalance: remainingBalance,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // ------------------------------------------
+      // Wallet transaction record
+      // ------------------------------------------
+      const walletTransactionRef = db
+        .collection("walletTransactions")
+        .doc(transactionId);
+
+      transaction.set(walletTransactionRef, {
+        userId,
+        type: "debit",
+        amount: SERVICE_CHARGE,
+
+        service: "INSTANT_RC_PDF",
+        serviceName: "Instant RC PDF",
+
+        rcNumber,
+
+        requestId,
+        provider: "PARIPRINT",
+
+        description: `Instant RC PDF - ${rcNumber}`,
+
+        balanceBefore: walletBalance,
+        balanceAfter: remainingBalance,
+
+        status: "SUCCESS",
+
+        createdAt:
+          admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // ------------------------------------------
+      // RC request record
+      // ------------------------------------------
+      const rcRequestRef = db
+        .collection("rcPdfRequests")
+        .doc(rcRequestId);
+
+      transaction.set(rcRequestRef, {
+        userId,
+
+        rcNumber,
+
+        amount: SERVICE_CHARGE,
+
+        pdfLink,
+
+        requestId,
+
+        orderId:
+          apiData?.order_id || null,
+
+        providerMessage,
+
+        providerStatus:
+          apiData?.status ?? null,
+
+        responseCode:
+          apiData?.response_code ??
+          providerResponse.status,
+
+        status: "SUCCESS",
+
+        transactionId,
+
+        createdAt:
+          admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+
+    // ============================================================
+    // 13. SUCCESS RESPONSE TO FRONTEND
+    // ============================================================
+    console.log("==========================================");
+    console.log("INSTANT RC PDF SUCCESS");
+    console.log("RC:", rcNumber);
+    console.log("PDF:", pdfLink);
+    console.log("Transaction:", transactionId);
+    console.log("Remaining Balance:", remainingBalance);
+    console.log("==========================================");
+
+    return {
+      success: true,
+
+      message: providerMessage,
+
+      rcNumber,
+
+      pdfLink,
+
+      amount: SERVICE_CHARGE,
+
+      transactionId,
+
+      requestId,
+
+      remainingBalance,
+    };
+  }
+);

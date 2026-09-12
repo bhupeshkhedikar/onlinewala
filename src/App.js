@@ -34,10 +34,12 @@ import AdminWithdrawals from "./components/admin/AdminWithdrawals";
 import MobileMenu from "./components/MobileMenu";
 import AdminPayments from "./components/admin/AdminPayments";
 import InstantPanFind from "./components/InstantPanFind";
+import InstantRCPdf from "./components/InstantRCPdf";
 
 const Home = ({ authUser, userData }) => (
   <>
     <div className="hero-wrapper">
+      <InstantRCPdf/>
       <Hero />
       <QuickWalletReferral
         user={authUser ? (userData || authUser) : null}
