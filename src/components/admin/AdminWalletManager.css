@@ -1,0 +1,1610 @@
+/* =========================================================
+   ADMIN WALLET MANAGER
+========================================================= */
+
+.admin-wallet-page {
+  width: 100%;
+  min-height: 100%;
+  background: #f8fafc;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.admin-wallet-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.admin-wallet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.admin-wallet-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-wallet-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    #eff6ff,
+    #dbeafe
+  );
+
+  border: 1px solid #bfdbfe;
+
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.admin-wallet-heading > div:last-child > span {
+  display: block;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+
+  color: #2563eb;
+
+  margin-bottom: 4px;
+}
+
+.admin-wallet-heading h1 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.admin-wallet-heading p {
+  margin: 5px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.admin-wallet-refresh {
+  min-height: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 0 16px;
+
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #334155;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.admin-wallet-refresh:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.admin-wallet-refresh:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.refresh-spinning {
+  display: inline-block;
+  animation: walletRefreshSpin 0.8s linear infinite;
+}
+
+@keyframes walletRefreshSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.admin-wallet-search-box {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  min-height: 54px;
+
+  margin-bottom: 14px;
+
+  box-shadow: 0 3px 12px rgba(
+    15,
+    23,
+    42,
+    0.04
+  );
+}
+
+.admin-wallet-search-icon {
+  width: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #64748b;
+  font-size: 23px;
+}
+
+.admin-wallet-search-box input {
+  flex: 1;
+
+  height: 52px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  padding: 0 10px;
+
+  color: #0f172a;
+
+  font-size: 14px;
+}
+
+.admin-wallet-search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.admin-wallet-search-box > button {
+  width: 40px;
+  height: 40px;
+
+  margin-right: 7px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #f1f5f9;
+
+  color: #64748b;
+
+  font-size: 22px;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   RESULT BAR
+========================================================= */
+
+.admin-wallet-result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin: 0 2px 12px;
+
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+.admin-wallet-result-bar strong {
+  color: #0f172a;
+}
+
+/* =========================================================
+   USER LIST
+========================================================= */
+
+.admin-wallet-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-wallet-user-card {
+  display: grid;
+
+  grid-template-columns:
+    minmax(260px, 1.8fr)
+    170px
+    90px;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 15px 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  box-shadow: 0 3px 12px rgba(
+    15,
+    23,
+    42,
+    0.035
+  );
+
+  transition: 0.2s ease;
+}
+
+.admin-wallet-user-card:hover {
+  border-color: #bfdbfe;
+
+  box-shadow: 0 7px 20px rgba(
+    37,
+    99,
+    235,
+    0.08
+  );
+}
+
+/* =========================================================
+   USER INFO
+========================================================= */
+
+.admin-wallet-user-info {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+
+  gap: 13px;
+}
+
+.admin-wallet-avatar {
+  width: 46px;
+  height: 46px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: #eff6ff;
+
+  border: 1px solid #dbeafe;
+
+  color: #2563eb;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.admin-wallet-user-details {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-wallet-user-details strong {
+  color: #0f172a;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-wallet-user-details span {
+  color: #64748b;
+
+  font-size: 12px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-wallet-user-details small {
+  color: #94a3b8;
+
+  font-size: 10px;
+}
+
+.admin-wallet-user-details .admin-wallet-user-id {
+  font-family: monospace;
+}
+
+/* =========================================================
+   HIDDEN BALANCE
+========================================================= */
+
+.admin-wallet-hidden-balance {
+  text-align: right;
+}
+
+.admin-wallet-hidden-balance span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #94a3b8;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.admin-wallet-hidden-balance strong {
+  color: #cbd5e1;
+
+  font-size: 18px;
+
+  letter-spacing: 3px;
+}
+
+/* =========================================================
+   SEE BUTTON
+========================================================= */
+
+.admin-wallet-user-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-wallet-see-btn {
+  min-width: 76px;
+  height: 38px;
+
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.admin-wallet-see-btn:hover {
+  background: #dbeafe;
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.admin-wallet-empty {
+  padding: 65px 20px;
+
+  text-align: center;
+
+  background: #ffffff;
+
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+}
+
+.admin-wallet-empty > div {
+  font-size: 38px;
+  margin-bottom: 8px;
+}
+
+.admin-wallet-empty h3 {
+  margin: 0;
+
+  color: #334155;
+
+  font-size: 16px;
+}
+
+.admin-wallet-empty p {
+  margin: 6px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.admin-wallet-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(
+    15,
+    23,
+    42,
+    0.55
+  );
+
+  backdrop-filter: blur(5px);
+
+  overflow-y: auto;
+}
+
+/* =========================================================
+   MAIN MODAL
+========================================================= */
+
+.admin-wallet-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 680px;
+
+  max-height: calc(
+    100vh - 40px
+  );
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  box-shadow: 0 25px 70px rgba(
+    15,
+    23,
+    42,
+    0.25
+  );
+
+  padding: 24px;
+}
+
+.admin-wallet-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 18px;
+}
+
+.admin-wallet-modal-user {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
+.admin-wallet-modal-avatar {
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-wallet-modal-user h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.admin-wallet-modal-user p {
+  margin: 3px 0 0;
+
+  color: #64748b;
+
+  font-size: 12px;
+
+  word-break: break-word;
+}
+
+.admin-wallet-close {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: #f1f5f9;
+
+  color: #64748b;
+
+  font-size: 22px;
+
+  cursor: pointer;
+}
+
+.admin-wallet-close:hover {
+  background: #e2e8f0;
+}
+
+/* =========================================================
+   USER META
+========================================================= */
+
+.admin-wallet-user-meta {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(130px, 0.5fr);
+
+  gap: 10px;
+
+  margin-bottom: 15px;
+}
+
+.admin-wallet-user-meta > div {
+  padding: 11px 13px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 10px;
+
+  min-width: 0;
+}
+
+.admin-wallet-user-meta span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #94a3b8;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.admin-wallet-user-meta strong {
+  display: block;
+
+  color: #334155;
+
+  font-size: 11px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   BALANCE CARD
+========================================================= */
+
+.admin-wallet-balance-card {
+  padding: 19px;
+
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    #f8fafc,
+    #eff6ff
+  );
+
+  border: 1px solid #dbeafe;
+
+  margin-bottom: 14px;
+}
+
+.admin-wallet-balance-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.admin-wallet-balance-top span {
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-wallet-balance-value {
+  margin-top: 4px;
+}
+
+.admin-wallet-balance-value strong {
+  color: #0f172a;
+
+  font-size: 30px;
+  font-weight: 850;
+
+  letter-spacing: 1px;
+}
+
+.admin-wallet-eye-btn {
+  min-width: 80px;
+  height: 36px;
+
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #2563eb;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.admin-wallet-eye-btn:hover {
+  background: #eff6ff;
+}
+
+.admin-wallet-balance-divider {
+  height: 1px;
+
+  background: #dbeafe;
+
+  margin: 15px 0;
+}
+
+.admin-wallet-available {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-wallet-available span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+.admin-wallet-available strong {
+  color: #2563eb;
+
+  font-size: 16px;
+}
+
+.admin-wallet-balance-lock {
+  font-size: 18px;
+}
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.admin-wallet-success-message {
+  padding: 11px 13px;
+
+  margin-bottom: 13px;
+
+  border-radius: 10px;
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+
+  color: #15803d;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.admin-wallet-actions {
+  margin-bottom: 22px;
+}
+
+.admin-wallet-add-money-btn {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  border: 1px solid #bfdbfe;
+  border-radius: 13px;
+
+  background: #eff6ff;
+
+  color: #1d4ed8;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.admin-wallet-add-money-btn:hover {
+  background: #dbeafe;
+
+  border-color: #93c5fd;
+}
+
+.admin-wallet-add-money-btn > span {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  font-size: 19px;
+}
+
+.admin-wallet-add-money-btn strong {
+  display: block;
+
+  color: #1e40af;
+
+  font-size: 13px;
+}
+
+.admin-wallet-add-money-btn small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   TRANSACTIONS
+========================================================= */
+
+.admin-wallet-section-title {
+  margin-bottom: 10px;
+}
+
+.admin-wallet-section-title span {
+  display: block;
+
+  color: #2563eb;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.admin-wallet-section-title h3 {
+  margin: 3px 0 0;
+
+  color: #0f172a;
+
+  font-size: 15px;
+}
+
+.admin-wallet-transaction-list {
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 13px;
+
+  overflow: hidden;
+}
+
+.admin-wallet-transaction {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 11px 13px;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-wallet-transaction:last-child {
+  border-bottom: 0;
+}
+
+.admin-wallet-transaction-icon {
+  width: 33px;
+  height: 33px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 9px;
+
+  background: #f0fdf4;
+
+  color: #16a34a;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-wallet-transaction-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-wallet-transaction-info strong {
+  display: block;
+
+  color: #334155;
+
+  font-size: 11px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-wallet-transaction-info span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #94a3b8;
+
+  font-size: 9px;
+}
+
+.admin-wallet-credit {
+  color: #16a34a;
+
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.admin-wallet-debit {
+  color: #dc2626;
+
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.admin-wallet-transactions-loading,
+.admin-wallet-no-transactions {
+  padding: 20px;
+
+  text-align: center;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 12px;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   ADD MONEY MODAL
+========================================================= */
+
+.admin-wallet-add-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 440px;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  padding: 26px;
+
+  box-shadow: 0 25px 70px rgba(
+    15,
+    23,
+    42,
+    0.28
+  );
+}
+
+.admin-wallet-add-icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 12px;
+
+  border-radius: 17px;
+
+  background: #eff6ff;
+
+  border: 1px solid #bfdbfe;
+
+  font-size: 27px;
+}
+
+.admin-wallet-add-modal h2 {
+  margin: 0;
+
+  text-align: center;
+
+  color: #0f172a;
+
+  font-size: 19px;
+}
+
+.admin-wallet-add-user {
+  margin: 6px 0 18px;
+
+  text-align: center;
+
+  color: #334155;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-wallet-add-user span {
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.admin-wallet-current-small {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 11px 13px;
+
+  margin-bottom: 16px;
+
+  border-radius: 10px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+}
+
+.admin-wallet-current-small span {
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+.admin-wallet-current-small strong {
+  color: #0f172a;
+
+  font-size: 14px;
+}
+
+.admin-wallet-add-modal label {
+  display: block;
+
+  margin: 0 0 6px;
+
+  color: #334155;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-wallet-required {
+  color: #dc2626;
+
+  margin-left: 2px;
+}
+
+.admin-wallet-optional {
+  color: #94a3b8;
+
+  font-size: 9px;
+
+  font-weight: 500;
+
+  margin-left: 5px;
+}
+
+.admin-wallet-amount-input {
+  display: flex;
+  align-items: center;
+
+  height: 50px;
+
+  margin-bottom: 15px;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  overflow: hidden;
+}
+
+.admin-wallet-amount-input:focus-within {
+  border-color: #60a5fa;
+
+  box-shadow: 0 0 0 3px
+    rgba(
+      59,
+      130,
+      246,
+      0.1
+    );
+}
+
+.admin-wallet-amount-input > span {
+  padding-left: 14px;
+
+  color: #2563eb;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-wallet-amount-input input {
+  flex: 1;
+
+  width: 100%;
+  height: 48px;
+
+  border: 0;
+  outline: 0;
+
+  padding: 0 12px;
+
+  color: #0f172a;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  background: transparent;
+}
+
+.admin-wallet-add-modal textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  resize: vertical;
+
+  min-height: 80px;
+
+  margin-bottom: 13px;
+
+  padding: 11px 12px;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 11px;
+
+  outline: 0;
+
+  color: #0f172a;
+
+  font-family: inherit;
+
+  font-size: 12px;
+}
+
+.admin-wallet-add-modal textarea:focus {
+  border-color: #60a5fa;
+
+  box-shadow: 0 0 0 3px
+    rgba(
+      59,
+      130,
+      246,
+      0.1
+    );
+}
+
+/* =========================================================
+   MODAL ERROR
+========================================================= */
+
+.admin-wallet-modal-error {
+  padding: 10px 12px;
+
+  margin-bottom: 12px;
+
+  border-radius: 9px;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  color: #b91c1c;
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   SAVE BUTTON
+========================================================= */
+
+.admin-wallet-save-btn {
+  width: 100%;
+
+  height: 48px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: #2563eb;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  transition: 0.2s ease;
+}
+
+.admin-wallet-save-btn:hover {
+  background: #1d4ed8;
+}
+
+.admin-wallet-save-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-wallet-btn-spinner {
+  width: 16px;
+  height: 16px;
+
+  border: 2px solid
+    rgba(255, 255, 255, 0.4);
+
+  border-top-color: #ffffff;
+
+  border-radius: 50%;
+
+  animation: walletBtnSpin 0.7s linear infinite;
+}
+
+@keyframes walletBtnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.admin-wallet-loading {
+  min-height: 400px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.admin-wallet-spinner {
+  width: 38px;
+  height: 38px;
+
+  border: 3px solid #dbeafe;
+
+  border-top-color: #2563eb;
+
+  border-radius: 50%;
+
+  animation: walletBtnSpin 0.8s linear infinite;
+
+  margin-bottom: 14px;
+}
+
+.admin-wallet-loading h3 {
+  margin: 0;
+
+  color: #334155;
+
+  font-size: 15px;
+}
+
+.admin-wallet-loading p {
+  margin: 5px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.admin-wallet-error {
+  max-width: 500px;
+
+  margin: 70px auto;
+
+  padding: 35px 25px;
+
+  text-align: center;
+
+  background: #ffffff;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 16px;
+}
+
+.admin-wallet-error-icon {
+  font-size: 35px;
+
+  margin-bottom: 10px;
+}
+
+.admin-wallet-error h3 {
+  margin: 0;
+
+  color: #991b1b;
+
+  font-size: 17px;
+}
+
+.admin-wallet-error p {
+  margin: 7px 0 15px;
+
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+.admin-wallet-error button {
+  height: 40px;
+
+  padding: 0 16px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #dc2626;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .admin-wallet-user-card {
+    grid-template-columns:
+      minmax(220px, 1fr)
+      140px
+      80px;
+
+    gap: 12px;
+
+    padding: 13px;
+  }
+
+  .admin-wallet-heading h1 {
+    font-size: 21px;
+  }
+
+}
+
+@media (max-width: 700px) {
+
+  .admin-wallet-page {
+    padding: 15px;
+  }
+
+  .admin-wallet-header {
+    align-items: flex-start;
+  }
+
+  .admin-wallet-heading {
+    gap: 11px;
+  }
+
+  .admin-wallet-icon {
+    width: 46px;
+    height: 46px;
+
+    border-radius: 13px;
+
+    font-size: 22px;
+  }
+
+  .admin-wallet-heading h1 {
+    font-size: 18px;
+  }
+
+  .admin-wallet-heading p {
+    font-size: 11px;
+  }
+
+  .admin-wallet-refresh {
+    width: 42px;
+    min-width: 42px;
+
+    padding: 0;
+
+    font-size: 0;
+  }
+
+  .admin-wallet-refresh span {
+    font-size: 19px;
+  }
+
+  .admin-wallet-user-card {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
+
+    gap: 12px;
+  }
+
+  .admin-wallet-hidden-balance {
+    display: none;
+  }
+
+  .admin-wallet-user-action {
+    grid-column: 2;
+    grid-row: 1;
+
+    align-self: center;
+  }
+
+  .admin-wallet-see-btn {
+    min-width: 65px;
+  }
+
+  .admin-wallet-user-info {
+    grid-column: 1;
+  }
+
+  .admin-wallet-modal {
+    padding: 18px;
+
+    max-height: calc(
+      100vh - 20px
+    );
+
+    border-radius: 17px;
+  }
+
+  .admin-wallet-add-modal {
+    padding: 21px;
+
+    border-radius: 17px;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .admin-wallet-page {
+    padding: 10px;
+  }
+
+  .admin-wallet-header {
+    margin-bottom: 15px;
+  }
+
+  .admin-wallet-heading h1 {
+    font-size: 17px;
+  }
+
+  .admin-wallet-heading p {
+    font-size: 10px;
+
+    line-height: 1.4;
+  }
+
+  .admin-wallet-search-box {
+    min-height: 48px;
+
+    border-radius: 11px;
+  }
+
+  .admin-wallet-search-box input {
+    height: 46px;
+
+    font-size: 12px;
+  }
+
+  .admin-wallet-search-icon {
+    width: 42px;
+
+    font-size: 19px;
+  }
+
+  .admin-wallet-result-bar {
+    font-size: 10px;
+  }
+
+  .admin-wallet-user-card {
+    padding: 11px;
+
+    border-radius: 12px;
+  }
+
+  .admin-wallet-avatar {
+    width: 39px;
+    height: 39px;
+
+    border-radius: 11px;
+
+    font-size: 14px;
+  }
+
+  .admin-wallet-user-details strong {
+    font-size: 12px;
+  }
+
+  .admin-wallet-user-details span {
+    font-size: 10px;
+  }
+
+  .admin-wallet-user-details small {
+    font-size: 8px;
+  }
+
+  .admin-wallet-see-btn {
+    min-width: 58px;
+    height: 34px;
+
+    font-size: 10px;
+  }
+
+  .admin-wallet-overlay {
+    padding: 8px;
+  }
+
+  .admin-wallet-modal {
+    padding: 15px;
+
+    border-radius: 15px;
+  }
+
+  .admin-wallet-modal-user h2 {
+    font-size: 16px;
+  }
+
+  .admin-wallet-modal-user p {
+    font-size: 10px;
+  }
+
+  .admin-wallet-user-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-wallet-balance-card {
+    padding: 15px;
+  }
+
+  .admin-wallet-balance-value strong {
+    font-size: 25px;
+  }
+
+  .admin-wallet-eye-btn {
+    min-width: 68px;
+
+    font-size: 10px;
+  }
+
+  .admin-wallet-add-modal {
+    padding: 18px;
+  }
+
+  .admin-wallet-add-modal h2 {
+    font-size: 17px;
+  }
+
+}

@@ -1,13 +1,21 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState
+} from "react";
+
 import {
   collection,
   getDocs,
+  getDoc,
+  doc,
   orderBy,
   query,
   where
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
+
 import "./AdminPayments.css";
 
 export default function AdminPayments() {
@@ -15,6 +23,7 @@ export default function AdminPayments() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -32,6 +41,10 @@ export default function AdminPayments() {
 
       setError("");
 
+      // =======================================================
+      // LOAD PAYMENT TRANSACTIONS
+      // =======================================================
+
       const paymentsQuery = query(
         collection(db, "walletTransactions"),
         where("type", "in", [
@@ -44,23 +57,135 @@ export default function AdminPayments() {
 
       const snapshot = await getDocs(paymentsQuery);
 
-      const data = snapshot.docs.map((item) => ({
+      const rawPayments = snapshot.docs.map((item) => ({
         id: item.id,
         ...item.data()
       }));
 
+      // =======================================================
+      // GET UNIQUE USER IDS
+      // =======================================================
+
+      const userIds = [
+        ...new Set(
+          rawPayments
+            .map(
+              (payment) =>
+                payment.userId ||
+                payment.uid
+            )
+            .filter(Boolean)
+        )
+      ];
+
+      // =======================================================
+      // LOAD USER PROFILES
+      // =======================================================
+
+      const userMap = new Map();
+
+      await Promise.all(
+        userIds.map(async (uid) => {
+          try {
+            const userRef = doc(
+              db,
+              "users",
+              uid
+            );
+
+            const userSnap =
+              await getDoc(userRef);
+
+            if (userSnap.exists()) {
+              userMap.set(
+                uid,
+                userSnap.data()
+              );
+            }
+          } catch (userError) {
+            console.error(
+              `User profile load failed for ${uid}:`,
+              userError
+            );
+          }
+        })
+      );
+
+      // =======================================================
+      // MERGE USER PROFILE WITH PAYMENT
+      // =======================================================
+
+      const data = rawPayments.map(
+        (payment) => {
+          const uid =
+            payment.userId ||
+            payment.uid ||
+            "";
+
+          const userData =
+            userMap.get(uid) || {};
+
+          return {
+            ...payment,
+
+            // -------------------------------------------------
+            // USER NAME
+            // -------------------------------------------------
+
+            userName:
+              payment.userName ||
+              payment.name ||
+              payment.displayName ||
+              userData.userName ||
+              userData.name ||
+              userData.displayName ||
+              userData.fullName ||
+              "ग्राहक",
+
+            // -------------------------------------------------
+            // USER EMAIL
+            // -------------------------------------------------
+
+            userEmail:
+              payment.userEmail ||
+              payment.email ||
+              userData.email ||
+              "Email उपलब्ध नाही",
+
+            // -------------------------------------------------
+            // USER ID
+            // -------------------------------------------------
+
+            userId:
+              payment.userId ||
+              payment.uid ||
+              uid ||
+              ""
+          };
+        }
+      );
+
       setPayments(data);
+
     } catch (err) {
-      console.error("Admin payments loading error:", err);
+      console.error(
+        "Admin payments loading error:",
+        err
+      );
 
       setError(
         "Payments माहिती load करताना काहीतरी चूक झाली."
       );
+
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
+
+  // =========================================================
+  // INITIAL LOAD
+  // =========================================================
 
   useEffect(() => {
     loadPayments();
@@ -74,51 +199,80 @@ export default function AdminPayments() {
     if (!value) return null;
 
     try {
-      if (typeof value.toDate === "function") {
+      // Firestore Timestamp
+      if (
+        typeof value.toDate ===
+        "function"
+      ) {
         return value.toDate();
       }
 
-      if (typeof value.toMillis === "function") {
-        return new Date(value.toMillis());
+      // Firestore Timestamp millis
+      if (
+        typeof value.toMillis ===
+        "function"
+      ) {
+        return new Date(
+          value.toMillis()
+        );
       }
 
-      if (value.seconds) {
-        return new Date(value.seconds * 1000);
+      // Firestore timestamp object
+      if (
+        value.seconds !== undefined
+      ) {
+        return new Date(
+          value.seconds * 1000
+        );
       }
 
+      // Normal date / string
       const date = new Date(value);
 
-      if (Number.isNaN(date.getTime())) {
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
         return null;
       }
 
       return date;
+
     } catch {
       return null;
     }
   };
 
   const formatDate = (value) => {
-    const date = getDateObject(value);
+    const date =
+      getDateObject(value);
 
     if (!date) return "—";
 
-    return date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
+    return date.toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }
+    );
   };
 
   const formatTime = (value) => {
-    const date = getDateObject(value);
+    const date =
+      getDateObject(value);
 
     if (!date) return "";
 
-    return date.toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+    return date.toLocaleTimeString(
+      "en-IN",
+      {
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+    );
   };
 
   // =========================================================
@@ -127,7 +281,8 @@ export default function AdminPayments() {
 
   const getStatus = (payment) => {
     const status = String(
-      payment.status || "success"
+      payment.status ||
+        "success"
     ).toLowerCase();
 
     if (
@@ -141,7 +296,9 @@ export default function AdminPayments() {
       };
     }
 
-    if (status === "pending") {
+    if (
+      status === "pending"
+    ) {
       return {
         text: "प्रलंबित",
         className: "pending"
@@ -169,42 +326,63 @@ export default function AdminPayments() {
   // =========================================================
 
   const filteredPayments = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-
-    return payments.filter((payment) => {
-      const status = getStatus(payment);
-
-      const matchesStatus =
-        statusFilter === "all" ||
-        status.className === statusFilter;
-
-      if (!matchesStatus) {
-        return false;
-      }
-
-      if (!keyword) {
-        return true;
-      }
-
-      const searchableText = [
-        payment.userId,
-        payment.userName,
-        payment.name,
-        payment.email,
-        payment.userEmail,
-        payment.referenceId,
-        payment.transactionId,
-        payment.razorpayPaymentId,
-        payment.razorpayOrderId,
-        payment.description
-      ]
-        .filter(Boolean)
-        .join(" ")
+    const keyword =
+      search
+        .trim()
         .toLowerCase();
 
-      return searchableText.includes(keyword);
-    });
-  }, [payments, search, statusFilter]);
+    return payments.filter(
+      (payment) => {
+        const status =
+          getStatus(payment);
+
+        // ---------------------------------------------------
+        // STATUS FILTER
+        // ---------------------------------------------------
+
+        const matchesStatus =
+          statusFilter === "all" ||
+          status.className ===
+            statusFilter;
+
+        if (!matchesStatus) {
+          return false;
+        }
+
+        // ---------------------------------------------------
+        // SEARCH
+        // ---------------------------------------------------
+
+        if (!keyword) {
+          return true;
+        }
+
+        const searchableText = [
+          payment.userId,
+          payment.userName,
+          payment.name,
+          payment.email,
+          payment.userEmail,
+          payment.referenceId,
+          payment.transactionId,
+          payment.razorpayPaymentId,
+          payment.razorpayOrderId,
+          payment.description
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(
+          keyword
+        );
+      }
+    );
+  }, [
+    payments,
+    search,
+    statusFilter
+  ]);
 
   // =========================================================
   // STATISTICS
@@ -216,23 +394,38 @@ export default function AdminPayments() {
     let pending = 0;
     let failed = 0;
 
-    payments.forEach((payment) => {
-      const amount = Number(payment.amount || 0);
-      const status = getStatus(payment);
+    payments.forEach(
+      (payment) => {
+        const amount = Number(
+          payment.amount || 0
+        );
 
-      if (status.className === "success") {
-        total += amount;
-        successful += 1;
-      }
+        const status =
+          getStatus(payment);
 
-      if (status.className === "pending") {
-        pending += 1;
-      }
+        if (
+          status.className ===
+          "success"
+        ) {
+          total += amount;
+          successful += 1;
+        }
 
-      if (status.className === "failed") {
-        failed += 1;
+        if (
+          status.className ===
+          "pending"
+        ) {
+          pending += 1;
+        }
+
+        if (
+          status.className ===
+          "failed"
+        ) {
+          failed += 1;
+        }
       }
-    });
+    );
 
     return {
       total,
@@ -251,8 +444,14 @@ export default function AdminPayments() {
       <div className="admin-payments-page">
         <div className="admin-payments-loading">
           <div className="admin-payment-spinner"></div>
-          <h3>Payments load होत आहेत...</h3>
-          <p>कृपया थोडा वेळ प्रतीक्षा करा.</p>
+
+          <h3>
+            Payments load होत आहेत...
+          </h3>
+
+          <p>
+            कृपया थोडा वेळ प्रतीक्षा करा.
+          </p>
         </div>
       </div>
     );
@@ -266,20 +465,28 @@ export default function AdminPayments() {
     return (
       <div className="admin-payments-page">
         <div className="admin-payments-error">
+
           <div className="admin-payment-error-icon">
             ⚠️
           </div>
 
-          <h3>Payments load झाले नाहीत</h3>
+          <h3>
+            Payments load झाले नाहीत
+          </h3>
 
-          <p>{error}</p>
+          <p>
+            {error}
+          </p>
 
           <button
             type="button"
-            onClick={() => loadPayments()}
+            onClick={() =>
+              loadPayments()
+            }
           >
             पुन्हा प्रयत्न करा
           </button>
+
         </div>
       </div>
     );
@@ -307,6 +514,7 @@ export default function AdminPayments() {
             </div>
 
             <div>
+
               <span className="admin-payments-overline">
                 ONLINEWALAA
               </span>
@@ -319,6 +527,7 @@ export default function AdminPayments() {
                 ग्राहकांनी OnlineWalaa ला केलेल्या
                 सर्व payments येथे पहा.
               </p>
+
             </div>
 
           </div>
@@ -326,9 +535,12 @@ export default function AdminPayments() {
           <button
             type="button"
             className="admin-payments-refresh"
-            onClick={() => loadPayments(true)}
+            onClick={() =>
+              loadPayments(true)
+            }
             disabled={refreshing}
           >
+
             <span
               className={
                 refreshing
@@ -342,6 +554,7 @@ export default function AdminPayments() {
             {refreshing
               ? "Refresh होत आहे..."
               : "Refresh"}
+
           </button>
 
         </div>
@@ -359,6 +572,7 @@ export default function AdminPayments() {
             </div>
 
             <div>
+
               <span>
                 एकूण प्राप्त रक्कम
               </span>
@@ -369,6 +583,7 @@ export default function AdminPayments() {
                   "en-IN"
                 )}
               </strong>
+
             </div>
 
           </div>
@@ -380,6 +595,7 @@ export default function AdminPayments() {
             </div>
 
             <div>
+
               <span>
                 यशस्वी Payments
               </span>
@@ -387,6 +603,7 @@ export default function AdminPayments() {
               <strong>
                 {statistics.successful}
               </strong>
+
             </div>
 
           </div>
@@ -398,6 +615,7 @@ export default function AdminPayments() {
             </div>
 
             <div>
+
               <span>
                 प्रलंबित
               </span>
@@ -405,6 +623,7 @@ export default function AdminPayments() {
               <strong>
                 {statistics.pending}
               </strong>
+
             </div>
 
           </div>
@@ -416,6 +635,7 @@ export default function AdminPayments() {
             </div>
 
             <div>
+
               <span>
                 अयशस्वी
               </span>
@@ -423,6 +643,7 @@ export default function AdminPayments() {
               <strong>
                 {statistics.failed}
               </strong>
+
             </div>
 
           </div>
@@ -437,21 +658,27 @@ export default function AdminPayments() {
 
           <div className="payment-search">
 
-            <span>⌕</span>
+            <span>
+              ⌕
+            </span>
 
             <input
               type="text"
               placeholder="User, Email, Transaction ID शोधा..."
               value={search}
               onChange={(e) =>
-                setSearch(e.target.value)
+                setSearch(
+                  e.target.value
+                )
               }
             />
 
             {search && (
               <button
                 type="button"
-                onClick={() => setSearch("")}
+                onClick={() =>
+                  setSearch("")
+                }
               >
                 ×
               </button>
@@ -464,12 +691,15 @@ export default function AdminPayments() {
             <button
               type="button"
               className={
-                statusFilter === "all"
+                statusFilter ===
+                "all"
                   ? "active"
                   : ""
               }
               onClick={() =>
-                setStatusFilter("all")
+                setStatusFilter(
+                  "all"
+                )
               }
             >
               सर्व
@@ -478,12 +708,15 @@ export default function AdminPayments() {
             <button
               type="button"
               className={
-                statusFilter === "success"
+                statusFilter ===
+                "success"
                   ? "active success-filter"
                   : ""
               }
               onClick={() =>
-                setStatusFilter("success")
+                setStatusFilter(
+                  "success"
+                )
               }
             >
               यशस्वी
@@ -492,12 +725,15 @@ export default function AdminPayments() {
             <button
               type="button"
               className={
-                statusFilter === "pending"
+                statusFilter ===
+                "pending"
                   ? "active pending-filter"
                   : ""
               }
               onClick={() =>
-                setStatusFilter("pending")
+                setStatusFilter(
+                  "pending"
+                )
               }
             >
               प्रलंबित
@@ -506,12 +742,15 @@ export default function AdminPayments() {
             <button
               type="button"
               className={
-                statusFilter === "failed"
+                statusFilter ===
+                "failed"
                   ? "active failed-filter"
                   : ""
               }
               onClick={() =>
-                setStatusFilter("failed")
+                setStatusFilter(
+                  "failed"
+                )
               }
             >
               अयशस्वी
@@ -530,6 +769,7 @@ export default function AdminPayments() {
           <div className="admin-payment-list-header">
 
             <div>
+
               <span>
                 PAYMENT HISTORY
               </span>
@@ -537,6 +777,7 @@ export default function AdminPayments() {
               <h2>
                 Payment Transactions
               </h2>
+
             </div>
 
             <strong>
@@ -545,7 +786,8 @@ export default function AdminPayments() {
 
           </div>
 
-          {filteredPayments.length === 0 ? (
+          {filteredPayments.length ===
+          0 ? (
 
             <div className="admin-payments-empty">
 
@@ -568,105 +810,125 @@ export default function AdminPayments() {
 
             <div className="admin-payment-list">
 
-              {filteredPayments.map((payment) => {
+              {filteredPayments.map(
+                (payment) => {
 
-                const status =
-                  getStatus(payment);
+                  const status =
+                    getStatus(payment);
 
-                const amount =
-                  Number(payment.amount || 0);
+                  const amount =
+                    Number(
+                      payment.amount ||
+                        0
+                    );
 
-                return (
-                  <div
-                    className="admin-payment-row"
-                    key={payment.id}
-                  >
+                  return (
+                    <div
+                      className="admin-payment-row"
+                      key={
+                        payment.id
+                      }
+                    >
 
-                    {/* ICON */}
+                      {/* =================================================
+                          ICON
+                      ================================================= */}
 
-                    <div className="admin-payment-row-icon">
-                      💰
-                    </div>
+                      <div className="admin-payment-row-icon">
+                        💰
+                      </div>
 
-                    {/* USER */}
+                      {/* =================================================
+                          USER
+                      ================================================= */}
 
-                    <div className="admin-payment-user">
+                      <div className="admin-payment-user">
 
-                      <strong>
-                        {payment.userName ||
-                          payment.name ||
-                          "ग्राहक"}
-                      </strong>
+                        <strong>
+                          {payment.userName ||
+                            payment.name ||
+                            "ग्राहक"}
+                        </strong>
 
-                      <span>
-                        {payment.userEmail ||
-                          payment.email ||
-                          "Email उपलब्ध नाही"}
-                      </span>
+                        <span>
+                          {payment.userEmail ||
+                            payment.email ||
+                            "Email उपलब्ध नाही"}
+                        </span>
 
-                      <small>
-                        User ID:{" "}
-                        {payment.userId || "—"}
-                      </small>
-
-                    </div>
-
-                    {/* PAYMENT INFO */}
-
-                    <div className="admin-payment-info">
-
-                      <strong>
-                        OnlineWalaa Payment
-                      </strong>
-
-                      <span>
-                        {formatDate(
-                          payment.createdAt
-                        )}
-
-                        {formatTime(
-                          payment.createdAt
-                        ) && (
-                          <>
-                            {" • "}
-                            {formatTime(
-                              payment.createdAt
-                            )}
-                          </>
-                        )}
-                      </span>
-
-                      {payment.referenceId && (
                         <small>
-                          Ref:{" "}
-                          {payment.referenceId}
+                          User ID:{" "}
+                          {payment.userId ||
+                            "—"}
                         </small>
-                      )}
 
-                    </div>
+                      </div>
 
-                    {/* AMOUNT */}
+                      {/* =================================================
+                          PAYMENT INFO
+                      ================================================= */}
 
-                    <div className="admin-payment-amount">
+                      <div className="admin-payment-info">
 
-                      <strong>
-                        +₹
-                        {amount.toLocaleString(
-                          "en-IN"
+                        <strong>
+                          OnlineWalaa Payment
+                        </strong>
+
+                        <span>
+
+                          {formatDate(
+                            payment.createdAt
+                          )}
+
+                          {formatTime(
+                            payment.createdAt
+                          ) && (
+                            <>
+                              {" • "}
+                              {formatTime(
+                                payment.createdAt
+                              )}
+                            </>
+                          )}
+
+                        </span>
+
+                        {payment.referenceId && (
+                          <small>
+                            Ref:{" "}
+                            {
+                              payment.referenceId
+                            }
+                          </small>
                         )}
-                      </strong>
 
-                      <span
-                        className={`admin-payment-status ${status.className}`}
-                      >
-                        {status.text}
-                      </span>
+                      </div>
+
+                      {/* =================================================
+                          AMOUNT
+                      ================================================= */}
+
+                      <div className="admin-payment-amount">
+
+                        <strong>
+                          +₹
+                          {amount.toLocaleString(
+                            "en-IN"
+                          )}
+                        </strong>
+
+                        <span
+                          className={`admin-payment-status ${status.className}`}
+                        >
+                          {status.text}
+                        </span>
+
+                      </div>
 
                     </div>
-
-                  </div>
-                );
-              })}
+                  );
+                }
+              )}
 
             </div>
 

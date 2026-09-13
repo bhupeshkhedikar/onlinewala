@@ -5119,3 +5119,1954 @@ exports.checkLlPassStatus = onCall(
     };
   }
 );
+
+exports.instantRcPdfWithoutChip = onCall(
+  {
+    region: "asia-south1",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 120,
+    memory: "256MiB",
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया आधी Login करा."
+      );
+    }
+
+    const uid = request.auth.uid;
+
+    const rcno = String(
+      request.data?.rcno || ""
+    )
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+    if (!rcno) {
+      throw new HttpsError(
+        "invalid-argument",
+        "RC Number टाका."
+      );
+    }
+
+    // Basic RC validation
+    if (!/^[A-Z]{2}[0-9]{1,2}[A-Z]{0,3}[0-9]{1,4}$/i.test(rcno)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Valid RC Number टाका."
+      );
+    }
+
+    const SERVICE_CHARGE = 40;
+
+    // ----------------------------------------------------------
+    // Check wallet
+    // ----------------------------------------------------------
+
+    const userRef = db.collection("users").doc(uid);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "User account सापडले नाही."
+      );
+    }
+
+    const userData = userSnap.data() || {};
+
+    const currentBalance = Number(
+      userData.walletBalance || 0
+    );
+
+    if (currentBalance < SERVICE_CHARGE) {
+      throw new HttpsError(
+        "failed-precondition",
+        `Wallet मध्ये किमान ₹${SERVICE_CHARGE} असणे आवश्यक आहे.`
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Provider API
+    // ----------------------------------------------------------
+
+    const apiKey = PARIPRINT_API_KEY.value();
+
+    if (!apiKey) {
+      console.error(
+        "PARIPRINT_API_KEY is not configured."
+      );
+
+      throw new HttpsError(
+        "failed-precondition",
+        "Service configuration error."
+      );
+    }
+
+    const apiUrl =
+      "https://pariprint.in/api-proxy.php" +
+      "?slug=instant-rc-pdf-without-chip" +
+      `&rcno=${encodeURIComponent(rcno)}` +
+      `&api_key=${encodeURIComponent(apiKey)}`;
+
+    let providerResponse;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      const rawText = await response.text();
+
+      console.log(
+        "Instant RC Without Chip HTTP:",
+        response.status
+      );
+
+      console.log(
+        "Instant RC Without Chip Response:",
+        rawText.substring(0, 1000)
+      );
+
+      try {
+        providerResponse = JSON.parse(rawText);
+      } catch (parseError) {
+        console.error(
+          "Provider JSON parse error:",
+          parseError
+        );
+
+        throw new HttpsError(
+          "internal",
+          "Provider कडून invalid response मिळाला."
+        );
+      }
+
+      // --------------------------------------------------------
+      // Provider success check
+      // --------------------------------------------------------
+
+      const providerStatus =
+        providerResponse?.status;
+
+      const isSuccess =
+        providerStatus === true ||
+        providerStatus === "true" ||
+        providerStatus === "TRUE" ||
+        providerStatus === "success" ||
+        providerStatus === "SUCCESS";
+
+      const pdfBase64 =
+        providerResponse?.pdf ||
+        providerResponse?.data?.pdf ||
+        providerResponse?.data?.a4_base64 ||
+        "";
+
+      if (!isSuccess || !pdfBase64) {
+        console.error(
+          "RC PDF generation failed:",
+          providerResponse
+        );
+
+        throw new HttpsError(
+          "failed-precondition",
+          providerResponse?.message ||
+            "RC PDF तयार होऊ शकला नाही."
+        );
+      }
+
+      // --------------------------------------------------------
+      // Clean Base64
+      // --------------------------------------------------------
+
+      const cleanPdfBase64 = String(pdfBase64)
+        .replace(
+          /^data:application\/pdf;base64,/i,
+          ""
+        )
+        .replace(/\s/g, "");
+
+      if (!cleanPdfBase64) {
+        throw new HttpsError(
+          "failed-precondition",
+          "PDF data रिकामा आहे."
+        );
+      }
+
+      // Verify it actually looks like a PDF
+      let pdfBuffer;
+
+      try {
+        pdfBuffer = Buffer.from(
+          cleanPdfBase64,
+          "base64"
+        );
+      } catch (error) {
+        console.error(
+          "PDF Base64 decode error:",
+          error
+        );
+
+        throw new HttpsError(
+          "internal",
+          "PDF decode करण्यात अडचण आली."
+        );
+      }
+
+      if (
+        pdfBuffer.length < 100 ||
+        pdfBuffer.subarray(0, 4).toString() !== "%PDF"
+      ) {
+        throw new HttpsError(
+          "failed-precondition",
+          "Provider कडून valid PDF मिळाला नाही."
+        );
+      }
+
+      const providerOrderId =
+        providerResponse?.order_id ||
+        providerResponse?.request_id ||
+        null;
+
+      // --------------------------------------------------------
+      // Atomic wallet debit
+      // --------------------------------------------------------
+
+      let transactionId = null;
+      let remainingBalance = null;
+
+      await db.runTransaction(async (transaction) => {
+        const freshUserSnap =
+          await transaction.get(userRef);
+
+        if (!freshUserSnap.exists) {
+          throw new HttpsError(
+            "not-found",
+            "User account सापडले नाही."
+          );
+        }
+
+        const freshData =
+          freshUserSnap.data() || {};
+
+        const balance = Number(
+          freshData.walletBalance || 0
+        );
+
+        if (balance < SERVICE_CHARGE) {
+          throw new HttpsError(
+            "failed-precondition",
+            "Wallet balance कमी आहे."
+          );
+        }
+
+        remainingBalance =
+          balance - SERVICE_CHARGE;
+
+        transaction.update(userRef, {
+          walletBalance: remainingBalance,
+          updatedAt:
+            admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const walletTransactionRef =
+          db.collection("walletTransactions").doc();
+
+        transactionId =
+          walletTransactionRef.id;
+
+        transaction.set(
+          walletTransactionRef,
+          {
+            uid,
+
+            type: "DEBIT",
+
+            service:
+              "INSTANT_RC_PDF_WITHOUT_CHIP",
+
+            serviceName:
+              "Instant RC PDF Without Chip",
+ description:
+                "Instant RC PDF Without Chip",
+            amount: SERVICE_CHARGE,
+
+            rcNumber: rcno,
+
+            providerOrderId,
+
+            balanceBefore: balance,
+
+            balanceAfter:
+              remainingBalance,
+
+            status: "SUCCESS",
+
+            createdAt:
+              admin.firestore.FieldValue.serverTimestamp(),
+          }
+        );
+      });
+
+      // --------------------------------------------------------
+      // Save request history
+      // --------------------------------------------------------
+
+      const requestRef =
+        db.collection("rcPdfWithoutChipRequests").doc();
+
+      await requestRef.set({
+        uid,
+
+        rcNumber: rcno,
+
+        providerOrderId,
+
+        transactionId,
+
+        amount: SERVICE_CHARGE,
+
+        status: "SUCCESS",
+
+        providerMessage:
+          providerResponse?.message || null,
+
+        filename:
+          providerResponse?.filename ||
+          `RC_${rcno}.pdf`,
+
+        createdAt:
+          admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // --------------------------------------------------------
+      // Return PDF
+      // --------------------------------------------------------
+
+      return {
+        success: true,
+
+        message:
+          providerResponse?.message ||
+          "RC PDF तयार आहे.",
+
+        rcNumber: rcno,
+
+        orderId: providerOrderId,
+
+        filename:
+          providerResponse?.filename ||
+          `RC_${rcno}.pdf`,
+
+        pdf: cleanPdfBase64,
+
+        amount: SERVICE_CHARGE,
+
+        transactionId,
+
+        requestId: requestRef.id,
+
+        remainingBalance,
+      };
+    } catch (error) {
+      console.error(
+        "instantRcPdfWithoutChip error:",
+        error
+      );
+
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+
+      throw new HttpsError(
+        "internal",
+        "RC PDF तयार करताना server error आला."
+      );
+    }
+  }
+);
+
+exports.instantNumberLinkWithVoter = onCall(
+  {
+    region: "asia-south1",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 120,
+    memory: "256MiB",
+  },
+  async (request) => {
+    // ----------------------------------------------------------
+    // Authentication
+    // ----------------------------------------------------------
+
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया आधी Login करा."
+      );
+    }
+
+    const uid = request.auth.uid;
+
+    // ----------------------------------------------------------
+    // Input
+    // ----------------------------------------------------------
+
+    const epic = String(
+      request.data?.epic || ""
+    )
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+    const mobile = String(
+      request.data?.mobile || ""
+    )
+      .trim()
+      .replace(/\D/g, "");
+
+    // ----------------------------------------------------------
+    // Validate EPIC
+    // ----------------------------------------------------------
+
+    if (!epic) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Voter Number (EPIC) टाका."
+      );
+    }
+
+    if (epic.length < 5 || epic.length > 20) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Valid Voter Number टाका."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Validate Mobile
+    // ----------------------------------------------------------
+
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Valid 10 digit Mobile Number टाका."
+      );
+    }
+
+    const SERVICE_CHARGE = 40;
+
+    // ----------------------------------------------------------
+    // User / Wallet
+    // ----------------------------------------------------------
+
+    const userRef = db
+      .collection("users")
+      .doc(uid);
+
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "User account सापडले नाही."
+      );
+    }
+
+    const userData =
+      userSnap.data() || {};
+
+    const currentBalance = Number(
+      userData.walletBalance || 0
+    );
+
+    if (currentBalance < SERVICE_CHARGE) {
+      throw new HttpsError(
+        "failed-precondition",
+        `Wallet मध्ये किमान ₹${SERVICE_CHARGE} असणे आवश्यक आहे.`
+      );
+    }
+
+    // ----------------------------------------------------------
+    // API Key
+    // ----------------------------------------------------------
+
+    const apiKey =
+      PARIPRINT_API_KEY.value();
+
+    if (!apiKey) {
+      console.error(
+        "PARIPRINT_API_KEY is not configured."
+      );
+
+      throw new HttpsError(
+        "failed-precondition",
+        "Service configuration error."
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Provider API
+    // ----------------------------------------------------------
+
+    const apiUrl =
+      "https://pariprint.in/api-proxy.php" +
+      "?slug=instant-number-link-with-voter" +
+      `&epic=${encodeURIComponent(epic)}` +
+      `&mobile=${encodeURIComponent(mobile)}` +
+      `&api_key=${encodeURIComponent(apiKey)}`;
+
+    let providerData;
+
+    try {
+      const response = await fetch(
+        apiUrl,
+        {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        }
+      );
+
+      const rawText =
+        await response.text();
+
+      console.log(
+        "Voter Link HTTP:",
+        response.status
+      );
+
+      console.log(
+        "Voter Link Response:",
+        rawText.substring(0, 2000)
+      );
+
+      try {
+        providerData =
+          JSON.parse(rawText);
+      } catch (parseError) {
+        console.error(
+          "Provider JSON parse error:",
+          parseError
+        );
+
+        throw new HttpsError(
+          "internal",
+          "Provider कडून invalid response मिळाला."
+        );
+      }
+
+      // --------------------------------------------------------
+      // Provider Success
+      // --------------------------------------------------------
+
+      const providerStatus =
+        providerData?.status;
+
+      const isSuccess =
+        providerStatus === true ||
+        providerStatus === "true" ||
+        providerStatus === "TRUE" ||
+        providerStatus === "success" ||
+        providerStatus === "SUCCESS";
+
+      if (!isSuccess) {
+        console.error(
+          "Voter mobile linking failed:",
+          providerData
+        );
+
+        throw new HttpsError(
+          "failed-precondition",
+          providerData?.message ||
+            "Voter Mobile Link Request Failed."
+        );
+      }
+
+      // --------------------------------------------------------
+      // Result / Request ID
+      // --------------------------------------------------------
+
+      const result =
+        providerData?.result ??
+        providerData?.request_id ??
+        providerData?.requestId ??
+        providerData?.order_id ??
+        providerData?.orderId ??
+        null;
+
+      // --------------------------------------------------------
+      // Atomic Wallet Debit
+      // --------------------------------------------------------
+
+      let transactionId = null;
+      let remainingBalance = null;
+
+      await db.runTransaction(
+        async (transaction) => {
+          const freshUserSnap =
+            await transaction.get(
+              userRef
+            );
+
+          if (!freshUserSnap.exists) {
+            throw new HttpsError(
+              "not-found",
+              "User account सापडले नाही."
+            );
+          }
+
+          const freshData =
+            freshUserSnap.data() || {};
+
+          const balance = Number(
+            freshData.walletBalance || 0
+          );
+
+          if (
+            balance <
+            SERVICE_CHARGE
+          ) {
+            throw new HttpsError(
+              "failed-precondition",
+              "Wallet balance कमी आहे."
+            );
+          }
+
+          remainingBalance =
+            balance -
+            SERVICE_CHARGE;
+
+          transaction.update(
+            userRef,
+            {
+              walletBalance:
+                remainingBalance,
+
+              updatedAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+            }
+          );
+
+          // Wallet transaction
+          const walletTransactionRef =
+            db
+              .collection(
+                "walletTransactions"
+              )
+              .doc();
+
+          transactionId =
+            walletTransactionRef.id;
+
+          transaction.set(
+            walletTransactionRef,
+            {
+              uid,
+
+              type: "DEBIT",
+
+              service:
+                "INSTANT_NUMBER_LINK_WITH_VOTER",
+
+              serviceName:
+                "Instant Number Link with Voter",
+
+              amount:
+                SERVICE_CHARGE,
+
+              epic,
+
+              mobile,
+
+              providerResult:
+                result,
+
+              balanceBefore:
+                balance,
+
+              balanceAfter:
+                remainingBalance,
+
+              status:
+                "SUCCESS",
+
+              createdAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+            }
+          );
+        }
+      );
+
+      // --------------------------------------------------------
+      // Save Request
+      // --------------------------------------------------------
+
+      const requestRef =
+        db
+          .collection(
+            "numberLinkWithVoterRequests"
+          )
+          .doc();
+
+      await requestRef.set({
+        uid,
+
+        epic,
+
+        mobile,
+
+        providerResult:
+          result,
+
+        transactionId,
+
+        amount:
+          SERVICE_CHARGE,
+
+        status:
+          "SUCCESS",
+
+        providerMessage:
+          providerData?.message ||
+          null,
+
+        createdAt:
+          admin.firestore.FieldValue.serverTimestamp(),
+
+        updatedAt:
+          admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // --------------------------------------------------------
+      // Return
+      // --------------------------------------------------------
+
+      return {
+        success: true,
+
+        message:
+          providerData?.message ||
+          "Request successful.",
+
+        epic,
+
+        mobile,
+
+        result,
+
+        amount:
+          SERVICE_CHARGE,
+
+        transactionId,
+
+        requestId:
+          requestRef.id,
+
+        remainingBalance,
+      };
+    } catch (error) {
+      console.error(
+        "instantNumberLinkWithVoter error:",
+        error
+      );
+
+      if (
+        error instanceof HttpsError
+      ) {
+        throw error;
+      }
+
+      throw new HttpsError(
+        "internal",
+        "Voter Mobile Link करताना server error आला."
+      );
+    }
+  }
+);
+
+exports.adminCreateUdhari = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    timeoutSeconds: 60,
+    memory: "256MiB",
+  },
+  async (request) => {
+
+    // EXISTING ADMIN AUTH
+    checkAdmin(request);
+
+    const uid = String(
+      request.data?.uid || ""
+    ).trim();
+
+    const amount = Number(
+      request.data?.amount || 0
+    );
+
+    const service = String(
+      request.data?.service || ""
+    ).trim();
+
+    const description = String(
+      request.data?.description || ""
+    ).trim();
+
+    const dueDate = String(
+      request.data?.dueDate || ""
+    ).trim();
+
+    const note = String(
+      request.data?.note || ""
+    ).trim();
+
+
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
+
+    if (!uid) {
+      throw new HttpsError(
+        "invalid-argument",
+        "User ID is required."
+      );
+    }
+
+
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Invalid udhari amount."
+      );
+    }
+
+
+    if (!dueDate) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Due date is required."
+      );
+    }
+
+
+    /* =====================================================
+       USER
+    ===================================================== */
+
+    const userRef = db
+      .collection("users")
+      .doc(uid);
+
+    const userSnap =
+      await userRef.get();
+
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "User account not found."
+      );
+    }
+
+
+    const userData =
+      userSnap.data();
+
+
+    /* =====================================================
+       CREATE UDHARI
+    ===================================================== */
+
+    const udhariRef =
+      db.collection("udhari").doc();
+
+
+    const now =
+      admin.firestore.FieldValue
+        .serverTimestamp();
+
+
+    const udhariData = {
+
+      uid,
+
+      userName:
+        userData.name ||
+        "",
+
+      userEmail:
+        userData.email ||
+        "",
+
+      userMobile:
+        userData.mobile ||
+        "",
+
+
+      totalAmount:
+        amount,
+
+      paidAmount:
+        0,
+
+      remainingAmount:
+        amount,
+
+      paymentCount:
+        0,
+
+
+      service:
+        service ||
+        "उधारी",
+
+      description:
+        description ||
+        "",
+
+      note:
+        note ||
+        "",
+
+      dueDate,
+
+
+      status:
+        "PENDING",
+
+
+      createdBy:
+        request.auth.uid,
+
+      createdByEmail:
+        request.auth.token?.email ||
+        "",
+
+      updatedBy:
+        request.auth.uid,
+
+      updatedByEmail:
+        request.auth.token?.email ||
+        "",
+
+
+      createdAt:
+        now,
+
+      updatedAt:
+        now,
+
+    };
+
+
+    await udhariRef.set(
+      udhariData
+    );
+
+
+    return {
+
+      success:
+        true,
+
+      udhariId:
+        udhariRef.id,
+
+      message:
+        "Udhari successfully created.",
+
+    };
+
+  }
+);
+
+exports.adminAddUdhariPayment = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    timeoutSeconds: 60,
+    memory: "256MiB",
+  },
+  async (request) => {
+
+    // EXISTING ADMIN AUTH
+    checkAdmin(request);
+
+
+    /* =====================================================
+       INPUT
+    ===================================================== */
+
+    const udhariId =
+      String(
+        request.data?.udhariId ||
+        ""
+      ).trim();
+
+
+    const amount =
+      Number(
+        request.data?.amount ||
+        0
+      );
+
+
+    const paymentDate =
+      request.data?.paymentDate
+        ? String(
+            request.data.paymentDate
+          ).trim()
+        : null;
+
+
+    const note =
+      String(
+        request.data?.note ||
+        ""
+      ).trim();
+
+
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
+
+    if (!udhariId) {
+
+      throw new HttpsError(
+        "invalid-argument",
+        "Udhari ID is required."
+      );
+
+    }
+
+
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+
+      throw new HttpsError(
+        "invalid-argument",
+        "Invalid payment amount."
+      );
+
+    }
+
+
+    /* =====================================================
+       REFERENCES
+    ===================================================== */
+
+    const udhariRef =
+      db
+        .collection("udhari")
+        .doc(udhariId);
+
+
+    const paymentRef =
+      udhariRef
+        .collection("payments")
+        .doc();
+
+
+    let result;
+
+
+    /* =====================================================
+       TRANSACTION
+    ===================================================== */
+
+    try {
+
+      result =
+        await db.runTransaction(
+          async (transaction) => {
+
+            const udhariSnap =
+              await transaction.get(
+                udhariRef
+              );
+
+
+            if (
+              !udhariSnap.exists
+            ) {
+
+              throw new HttpsError(
+                "not-found",
+                "Udhari account not found."
+              );
+
+            }
+
+
+            const data =
+              udhariSnap.data();
+
+
+            const totalAmount =
+              Number(
+                data.totalAmount ||
+                0
+              );
+
+
+            const paidAmount =
+              Number(
+                data.paidAmount ||
+                0
+              );
+
+
+            const remainingAmount =
+              Number(
+                data.remainingAmount ??
+                (
+                  totalAmount -
+                  paidAmount
+                )
+              );
+
+
+            /* =================================================
+               ALREADY PAID
+            ================================================= */
+
+            if (
+              remainingAmount <= 0
+            ) {
+
+              throw new HttpsError(
+                "failed-precondition",
+                "This udhari is already fully paid."
+              );
+
+            }
+
+
+            /* =================================================
+               PAYMENT CANNOT EXCEED REMAINING
+            ================================================= */
+
+            if (
+              amount >
+              remainingAmount
+            ) {
+
+              throw new HttpsError(
+                "invalid-argument",
+                `Payment cannot exceed remaining amount. Remaining: ₹${remainingAmount}`
+              );
+
+            }
+
+
+            /* =================================================
+               NEW TOTALS
+            ================================================= */
+
+            const newPaidAmount =
+              paidAmount +
+              amount;
+
+
+            const newRemainingAmount =
+              Math.max(
+                0,
+                totalAmount -
+                  newPaidAmount
+              );
+
+
+            /* =================================================
+               STATUS
+            ================================================= */
+
+            let newStatus =
+              "PENDING";
+
+
+            if (
+              newRemainingAmount <= 0
+            ) {
+
+              newStatus =
+                "PAID";
+
+            } else if (
+              newPaidAmount > 0
+            ) {
+
+              newStatus =
+                "PARTIAL";
+
+            }
+
+
+            /* =================================================
+               PAYMENT COUNT
+            ================================================= */
+
+            const currentPaymentCount =
+              Number(
+                data.paymentCount ||
+                0
+              );
+
+
+            const newPaymentCount =
+              currentPaymentCount +
+              1;
+
+
+            /* =================================================
+               PAYMENT DOCUMENT
+            ================================================= */
+
+            const paymentData = {
+
+              amount,
+
+              paymentDate:
+                paymentDate ||
+                null,
+
+              note:
+                note ||
+                "",
+
+              createdAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+
+              createdBy:
+                request.auth.uid,
+
+              createdByEmail:
+                request.auth.token?.email ||
+                "",
+
+            };
+
+
+            /* =================================================
+               UPDATE UDHARI
+            ================================================= */
+
+            transaction.update(
+              udhariRef,
+              {
+
+                paidAmount:
+                  newPaidAmount,
+
+                remainingAmount:
+                  newRemainingAmount,
+
+                paymentCount:
+                  newPaymentCount,
+
+                status:
+                  newStatus,
+
+                lastPaymentAmount:
+                  amount,
+
+                lastPaymentDate:
+                  paymentDate ||
+                  null,
+
+                updatedBy:
+                  request.auth.uid,
+
+                updatedByEmail:
+                  request.auth.token?.email ||
+                  "",
+
+                updatedAt:
+                  admin.firestore
+                    .FieldValue
+                    .serverTimestamp(),
+
+              }
+            );
+
+
+            /* =================================================
+               CREATE PAYMENT HISTORY
+            ================================================= */
+
+            transaction.set(
+              paymentRef,
+              paymentData
+            );
+
+
+            return {
+
+              paymentId:
+                paymentRef.id,
+
+              totalAmount,
+
+              paidAmount:
+                newPaidAmount,
+
+              remainingAmount:
+                newRemainingAmount,
+
+              paymentCount:
+                newPaymentCount,
+
+              status:
+                newStatus,
+
+            };
+
+          }
+        );
+
+
+    } catch (error) {
+
+      console.error(
+        "Admin add udhari payment error:",
+        error
+      );
+
+
+      if (
+        error instanceof
+        HttpsError
+      ) {
+
+        throw error;
+
+      }
+
+
+      throw new HttpsError(
+        "internal",
+        "Could not add udhari payment."
+      );
+
+    }
+
+
+    /* =====================================================
+       RESPONSE
+    ===================================================== */
+
+    return {
+
+      success:
+        true,
+
+      ...result,
+
+      message:
+        result.status ===
+        "PAID"
+
+          ? "पूर्ण payment जमा झाले. Udhari PAID झाली."
+
+          : "Payment successfully added.",
+
+    };
+
+  }
+);
+
+// =========================================================
+// ADMIN ADD MONEY TO USER WALLET
+// =========================================================
+
+exports.adminAddWalletMoney = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    timeoutSeconds: 60,
+    memory: "256MiB"
+  },
+  async (request) => {
+    // IMPORTANT:
+    // Use the same admin authorization used
+    // by existing admin functions.
+    checkAdmin(request);
+
+    const {
+      uid,
+      amount,
+      note
+    } = request.data || {};
+
+    // -------------------------------------------------------
+    // VALIDATION
+    // -------------------------------------------------------
+
+    if (
+      !uid ||
+      typeof uid !== "string"
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Invalid user ID."
+      );
+    }
+
+    const numericAmount =
+      Number(amount);
+
+    if (
+      !Number.isFinite(
+        numericAmount
+      ) ||
+      numericAmount <= 0
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Invalid amount."
+      );
+    }
+
+    if (
+      !Number.isInteger(
+        numericAmount
+      )
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Amount must be a whole number."
+      );
+    }
+
+    if (
+      numericAmount > 500000
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Maximum ₹5,00,000 can be added at once."
+      );
+    }
+
+    // -------------------------------------------------------
+    // USER
+    // -------------------------------------------------------
+
+    const userRef = db
+      .collection("users")
+      .doc(uid);
+
+    // -------------------------------------------------------
+    // ATOMIC WALLET UPDATE
+    // -------------------------------------------------------
+
+    const result =
+      await db.runTransaction(
+        async (transaction) => {
+          const userSnap =
+            await transaction.get(
+              userRef
+            );
+
+          if (!userSnap.exists) {
+            throw new HttpsError(
+              "not-found",
+              "User not found."
+            );
+          }
+
+          const userData =
+            userSnap.data() || {};
+
+          const oldWalletBalance =
+            Number(
+              userData.walletBalance ||
+                0
+            );
+
+          const oldAvailableBalance =
+            Number(
+              userData.availableBalance ??
+                oldWalletBalance
+            );
+
+          const newWalletBalance =
+            oldWalletBalance +
+            numericAmount;
+
+          const newAvailableBalance =
+            oldAvailableBalance +
+            numericAmount;
+
+          // ---------------------------------------------------
+          // USER PROFILE UPDATE
+          // ---------------------------------------------------
+
+          transaction.update(
+            userRef,
+            {
+              walletBalance:
+                newWalletBalance,
+
+              availableBalance:
+                newAvailableBalance,
+
+              updatedAt:
+                admin.firestore.FieldValue.serverTimestamp()
+            }
+          );
+
+          // ---------------------------------------------------
+          // WALLET TRANSACTION
+          // ---------------------------------------------------
+
+          const transactionRef =
+            db
+              .collection(
+                "walletTransactions"
+              )
+              .doc();
+
+          transaction.set(
+            transactionRef,
+            {
+              uid,
+
+              userId: uid,
+
+              type:
+                "ADMIN_WALLET_CREDIT",
+
+              service:
+                "ADMIN_WALLET_CREDIT",
+
+              serviceName:
+                "Admin Wallet Credit",
+
+              description:
+                note?.trim()
+                  ? note.trim()
+                  : "Admin ने wallet मध्ये पैसे जमा केले",
+
+              amount:
+                numericAmount,
+
+              isCredit:
+                true,
+
+              status:
+                "success",
+
+              balanceBefore:
+                oldWalletBalance,
+
+              balanceAfter:
+                newWalletBalance,
+
+              availableBalanceBefore:
+                oldAvailableBalance,
+
+              availableBalanceAfter:
+                newAvailableBalance,
+
+              createdAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+
+              createdBy:
+                request.auth.uid,
+
+              createdByEmail:
+                request.auth.token?.email ||
+                null
+            }
+          );
+
+          return {
+            walletBalance:
+              newWalletBalance,
+
+            availableBalance:
+              newAvailableBalance,
+
+            transactionId:
+              transactionRef.id
+          };
+        }
+      );
+
+    return {
+      success: true,
+
+      message:
+        "Wallet money added successfully.",
+
+      walletBalance:
+        result.walletBalance,
+
+      availableBalance:
+        result.availableBalance,
+
+      transactionId:
+        result.transactionId
+    };
+  }
+);
+
+exports.payUdhariFromWallet = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    timeoutSeconds: 60,
+    memory: "256MiB",
+  },
+  async (request) => {
+
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया Login करा."
+      );
+    }
+
+    const uid =
+      request.auth.uid;
+
+    const {
+      udhariId,
+      amount
+    } = request.data || {};
+
+    const paymentAmount =
+      Number(amount);
+
+    if (
+      !udhariId ||
+      !Number.isFinite(paymentAmount) ||
+      paymentAmount <= 0
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Invalid payment details."
+      );
+    }
+
+    const userRef =
+      db.collection("users").doc(uid);
+
+    const udhariRef =
+      db.collection("udhari").doc(udhariId);
+
+    const paymentRef =
+      udhariRef
+        .collection("payments")
+        .doc();
+
+    const walletTransactionRef =
+      db
+        .collection("walletTransactions")
+        .doc();
+
+    const result =
+      await db.runTransaction(
+        async (transaction) => {
+
+          const [
+            userSnap,
+            udhariSnap
+          ] = await Promise.all([
+            transaction.get(userRef),
+            transaction.get(udhariRef)
+          ]);
+
+          if (!userSnap.exists) {
+            throw new HttpsError(
+              "not-found",
+              "User account not found."
+            );
+          }
+
+          if (!udhariSnap.exists) {
+            throw new HttpsError(
+              "not-found",
+              "Udhari record not found."
+            );
+          }
+
+          const userData =
+            userSnap.data() || {};
+
+          const udhariData =
+            udhariSnap.data() || {};
+
+          if (
+            udhariData.uid !== uid
+          ) {
+            throw new HttpsError(
+              "permission-denied",
+              "ही उधारी तुमच्या खात्याची नाही."
+            );
+          }
+
+          const walletBalance =
+            Number(
+              userData.walletBalance ??
+              userData.wallet ??
+              0
+            );
+
+          const availableBalance =
+            Number(
+              userData.availableBalance ??
+              walletBalance
+            );
+
+          const paidAmount =
+            Number(
+              udhariData.paidAmount || 0
+            );
+
+          const totalAmount =
+            Number(
+              udhariData.totalAmount || 0
+            );
+
+          const remainingAmount =
+            Number(
+              udhariData.remainingAmount ??
+              (
+                totalAmount -
+                paidAmount
+              )
+            );
+
+          if (
+            remainingAmount <= 0
+          ) {
+            throw new HttpsError(
+              "failed-precondition",
+              "ही उधारी आधीच पूर्ण भरलेली आहे."
+            );
+          }
+
+          if (
+            paymentAmount >
+            remainingAmount
+          ) {
+            throw new HttpsError(
+              "failed-precondition",
+              `जास्तीत जास्त ₹${remainingAmount} भरता येतील.`
+            );
+          }
+
+          if (
+            paymentAmount >
+            availableBalance
+          ) {
+            throw new HttpsError(
+              "failed-precondition",
+              `Wallet मध्ये पुरेशी रक्कम नाही. उपलब्ध Balance ₹${availableBalance}.`
+            );
+          }
+
+          const newWalletBalance =
+            walletBalance -
+            paymentAmount;
+
+          const newAvailableBalance =
+            availableBalance -
+            paymentAmount;
+
+          const newPaidAmount =
+            paidAmount +
+            paymentAmount;
+
+          const newRemainingAmount =
+            Math.max(
+              0,
+              remainingAmount -
+              paymentAmount
+            );
+
+          const newPaymentCount =
+            Number(
+              udhariData.paymentCount ||
+              0
+            ) + 1;
+
+          const newStatus =
+            newRemainingAmount <= 0
+              ? "PAID"
+              : "PARTIAL";
+
+
+          /* USER WALLET */
+
+          transaction.update(
+            userRef,
+            {
+              walletBalance:
+                newWalletBalance,
+
+              availableBalance:
+                newAvailableBalance,
+
+              updatedAt:
+                admin.firestore.FieldValue
+                  .serverTimestamp()
+            }
+          );
+
+
+          /* UDHARI */
+
+          transaction.update(
+            udhariRef,
+            {
+              paidAmount:
+                newPaidAmount,
+
+              remainingAmount:
+                newRemainingAmount,
+
+              paymentCount:
+                newPaymentCount,
+
+              status:
+                newStatus,
+
+              lastPaymentAmount:
+                paymentAmount,
+
+              lastPaymentDate:
+                admin.firestore.FieldValue
+                  .serverTimestamp(),
+
+              updatedAt:
+                admin.firestore.FieldValue
+                  .serverTimestamp(),
+
+              updatedBy:
+                uid
+            }
+          );
+
+
+          /* PAYMENT HISTORY */
+
+          transaction.set(
+            paymentRef,
+            {
+              amount:
+                paymentAmount,
+
+              paymentDate:
+                admin.firestore.FieldValue
+                  .serverTimestamp(),
+
+              note:
+                "Wallet मधून Udhari Payment",
+
+              paymentMethod:
+                "WALLET",
+
+              createdAt:
+                admin.firestore.FieldValue
+                  .serverTimestamp(),
+
+              createdBy:
+                uid
+            }
+          );
+
+
+          /* WALLET TRANSACTION */
+
+          transaction.set(
+            walletTransactionRef,
+            {
+              uid,
+
+              userId:
+                uid,
+
+              type:
+                "DEBIT",
+
+              service:
+                "UDHARI_PAYMENT",
+
+              amount:
+                paymentAmount,
+
+              isCredit:
+                false,
+
+              udhariId,
+
+              description:
+                "Udhari payment from wallet",
+
+              balanceBefore:
+                walletBalance,
+
+              balanceAfter:
+                newWalletBalance,
+
+              availableBalanceBefore:
+                availableBalance,
+
+              availableBalanceAfter:
+                newAvailableBalance,
+
+              createdAt:
+                admin.firestore.FieldValue
+                  .serverTimestamp()
+            }
+          );
+
+
+          return {
+
+            walletBalance:
+              newWalletBalance,
+
+            availableBalance:
+              newAvailableBalance,
+
+            paidAmount:
+              newPaidAmount,
+
+            remainingAmount:
+              newRemainingAmount,
+
+            paymentCount:
+              newPaymentCount,
+
+            status:
+              newStatus
+
+          };
+
+        }
+      );
+
+
+    return {
+      success: true,
+      ...result
+    };
+
+  }
+);

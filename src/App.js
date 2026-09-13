@@ -38,10 +38,18 @@ import InstantRCPdf from "./components/InstantRCPdf";
 import InstantLLPdf from "./components/InstantLLPdf";
 import InstantDlPdf from "./components/InstantDlPdf";
 import InstantLlPass from "./components/InstantLlPass";
+import InstantRcPdfWithoutChip from "./components/InstantRcPdfWithoutChip";
+import InstantNumberLinkWithVoter from "./components/InstantNumberLinkWithVoter";
+import AdminUdhari from "./components/admin/AdminUdhari";
+import AdminWalletManager from "./components/admin/AdminWalletManager";
 
 const Home = ({ authUser, userData }) => (
   <>
     <div className="hero-wrapper">
+      {/* <AdminWalletManager/>
+      <AdminUdhari/>
+      <InstantNumberLinkWithVoter/>
+      <InstantRcPdfWithoutChip /> */}
       {/* <InstantLlPass/>
       <InstantDlPdf/>
       <InstantLLPdf/>

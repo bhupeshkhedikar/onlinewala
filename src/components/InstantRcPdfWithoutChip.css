@@ -1,0 +1,771 @@
+/* ============================================================
+   INSTANT RC PDF WITHOUT CHIP
+   ============================================================ */
+
+.rc-without-chip-page {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 40px 20px;
+
+  box-sizing: border-box;
+
+  background: #f6f8f7;
+}
+
+
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
+
+.rc-without-chip-card {
+  width: 100%;
+  max-width: 500px;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  padding: 32px;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.08);
+}
+
+
+.rc-without-chip-icon {
+  width: 64px;
+  height: 64px;
+
+  margin: 0 auto 16px;
+
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+
+  background: #ecfdf5;
+}
+
+
+.rc-without-chip-card h1 {
+  margin: 0;
+
+  text-align: center;
+
+  font-size: 26px;
+  font-weight: 800;
+
+  color: #111827;
+}
+
+
+.rc-without-chip-subtitle {
+  margin: 8px 0 28px;
+
+  text-align: center;
+
+  color: #6b7280;
+
+  font-size: 14px;
+}
+
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.rc-without-chip-form {
+  width: 100%;
+}
+
+
+.rc-without-chip-form label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  color: #374151;
+}
+
+
+.rc-without-chip-form input {
+  width: 100%;
+
+  height: 52px;
+
+  padding: 0 15px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 11px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+
+  transition: 0.2s ease;
+}
+
+
+.rc-without-chip-form input:focus {
+  border-color: #15803d;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 128, 61, 0.10);
+}
+
+
+.rc-without-chip-form input:disabled {
+  background: #f3f4f6;
+
+  cursor: not-allowed;
+}
+
+
+.rc-input-hint {
+  margin: 7px 0 16px;
+
+  font-size: 12px;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.rc-error {
+  padding: 11px 13px;
+
+  margin-bottom: 15px;
+
+  border-radius: 9px;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  color: #b91c1c;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   GENERATE BUTTON
+   ============================================================ */
+
+.rc-generate-btn {
+  width: 100%;
+
+  min-height: 52px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background: #166534;
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  transition: 0.2s ease;
+}
+
+
+.rc-generate-btn:hover {
+  background: #14532d;
+
+  transform: translateY(-1px);
+}
+
+
+.rc-generate-btn:disabled {
+  opacity: 0.7;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+
+.rc-spinner {
+  width: 18px;
+  height: 18px;
+
+  border: 2px solid rgba(255, 255, 255, 0.35);
+
+  border-top-color: #ffffff;
+
+  border-radius: 50%;
+
+  animation: rcSpin 0.7s linear infinite;
+}
+
+
+@keyframes rcSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ============================================================
+   PRICE
+   ============================================================ */
+
+.rc-price-box {
+  margin-top: 18px;
+
+  padding: 13px 15px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  border-radius: 10px;
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+}
+
+
+.rc-price-box span {
+  font-size: 13px;
+
+  color: #166534;
+}
+
+
+.rc-price-box strong {
+  font-size: 18px;
+
+  color: #14532d;
+}
+
+
+.rc-secure-text {
+  margin: 17px 0 0;
+
+  text-align: center;
+
+  font-size: 12px;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   PDF POPUP OVERLAY
+   ============================================================ */
+
+.rc-pdf-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 999999;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  backdrop-filter: blur(3px);
+
+  animation:
+    rcOverlayIn 0.2s ease;
+}
+
+
+@keyframes rcOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+/* ============================================================
+   PDF MODAL
+   ============================================================ */
+
+.rc-pdf-modal {
+  width: min(900px, 100%);
+
+  height: min(90vh, 850px);
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  display: flex;
+
+  flex-direction: column;
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.35);
+
+  animation:
+    rcModalIn 0.25s ease;
+}
+
+
+@keyframes rcModalIn {
+  from {
+    opacity: 0;
+
+    transform:
+      scale(0.94)
+      translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0);
+  }
+}
+
+
+/* ============================================================
+   MODAL HEADER
+   ============================================================ */
+
+.rc-pdf-modal-header {
+  min-height: 72px;
+
+  padding: 12px 18px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  background: #ffffff;
+}
+
+
+.rc-pdf-title-area {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  min-width: 0;
+}
+
+
+.rc-pdf-success-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #dcfce7;
+
+  color: #15803d;
+
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+
+.rc-pdf-modal-header h2 {
+  margin: 0;
+
+  font-size: 17px;
+
+  font-weight: 750;
+
+  color: #111827;
+}
+
+
+.rc-pdf-modal-header p {
+  margin: 3px 0 0;
+
+  font-size: 12px;
+
+  color: #6b7280;
+
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   CLOSE X
+   ============================================================ */
+
+.rc-pdf-x-btn {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f3f4f6;
+
+  color: #374151;
+
+  font-size: 27px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s ease;
+}
+
+
+.rc-pdf-x-btn:hover {
+  background: #e5e7eb;
+
+  transform: rotate(90deg);
+}
+
+
+/* ============================================================
+   PDF VIEWER
+   ============================================================ */
+
+.rc-pdf-viewer {
+  flex: 1;
+
+  min-height: 0;
+
+  background: #525659;
+
+  overflow: hidden;
+}
+
+
+.rc-pdf-frame {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  border: none;
+
+  background: #525659;
+}
+
+
+/* ============================================================
+   MODAL FOOTER
+   ============================================================ */
+
+.rc-pdf-modal-footer {
+  min-height: 70px;
+
+  padding: 12px 18px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background: #ffffff;
+}
+
+
+.rc-pdf-download {
+  min-height: 44px;
+
+  padding: 0 20px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #166534;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.rc-pdf-download:hover {
+  background: #14532d;
+
+  transform: translateY(-1px);
+}
+
+
+.rc-pdf-close {
+  min-height: 44px;
+
+  padding: 0 20px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #374151;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.rc-pdf-close:hover {
+  background: #f3f4f6;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  .rc-without-chip-page {
+    padding: 25px 14px;
+  }
+
+  .rc-without-chip-card {
+    padding: 25px 20px;
+  }
+
+  .rc-pdf-modal-overlay {
+    padding: 12px;
+  }
+
+  .rc-pdf-modal {
+    width: 100%;
+
+    height: 92vh;
+
+    border-radius: 14px;
+  }
+
+  .rc-pdf-modal-header {
+    min-height: 64px;
+
+    padding: 10px 14px;
+  }
+
+  .rc-pdf-modal-footer {
+    padding: 10px 14px;
+  }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+  .rc-without-chip-page {
+    min-height: auto;
+
+    padding:
+      18px 10px 30px;
+  }
+
+  .rc-without-chip-card {
+    padding: 23px 17px;
+
+    border-radius: 16px;
+  }
+
+  .rc-without-chip-card h1 {
+    font-size: 22px;
+  }
+
+  .rc-without-chip-icon {
+    width: 55px;
+    height: 55px;
+
+    font-size: 27px;
+  }
+
+
+  /* Modal */
+
+  .rc-pdf-modal-overlay {
+    padding: 7px;
+  }
+
+  .rc-pdf-modal {
+    width: calc(100% - 4px);
+
+    height: 95vh;
+
+    border-radius: 12px;
+  }
+
+  .rc-pdf-modal-header {
+    min-height: 58px;
+
+    padding:
+      8px 10px;
+  }
+
+  .rc-pdf-success-icon {
+    width: 32px;
+    height: 32px;
+
+    font-size: 17px;
+  }
+
+  .rc-pdf-modal-header h2 {
+    font-size: 14px;
+  }
+
+  .rc-pdf-modal-header p {
+    font-size: 11px;
+  }
+
+  .rc-pdf-x-btn {
+    width: 33px;
+    height: 33px;
+
+    font-size: 23px;
+  }
+
+  .rc-pdf-modal-footer {
+    min-height: auto;
+
+    padding: 9px;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 7px;
+  }
+
+  .rc-pdf-download,
+  .rc-pdf-close {
+    width: 100%;
+
+    min-height: 42px;
+
+    padding: 0 8px;
+
+    font-size: 12px;
+  }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 360px) {
+
+  .rc-pdf-modal-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .rc-pdf-download,
+  .rc-pdf-close {
+    min-height: 40px;
+  }
+}

@@ -1276,3 +1276,134 @@
     font-size: 7px;
   }
 }
+/* =========================================================
+   UDHARI ADMIN SECTION
+========================================================= */
+
+.udhari-admin-section {
+  position: relative;
+}
+
+.udhari-admin-header {
+  border-color: #dbeafe;
+}
+
+.udhari-admin-header > div:first-child > span {
+  color: #2563eb;
+}
+
+.udhari-admin-header-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    #eff6ff,
+    #dbeafe
+  );
+
+  border: 1px solid #bfdbfe;
+
+  font-size: 28px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   SIDEBAR UDHARI
+========================================================= */
+
+.admin-menu-item {
+  position: relative;
+}
+
+.udhari-menu-dot {
+  margin-left: auto;
+
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   MOBILE UDHARI BUTTON
+========================================================= */
+
+.admin-mobile-udhari-btn {
+  position: relative;
+}
+
+.admin-mobile-udhari-btn span {
+  font-size: 17px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .udhari-admin-section {
+    padding-bottom: 90px;
+  }
+
+  .udhari-admin-header {
+    padding: 18px;
+  }
+
+  .udhari-admin-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    font-size: 23px;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .udhari-admin-header {
+    gap: 12px;
+  }
+
+  .udhari-admin-header h2 {
+    font-size: 19px;
+  }
+
+  .udhari-admin-header p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .udhari-admin-header-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
+
+}

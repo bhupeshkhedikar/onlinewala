@@ -1,0 +1,1265 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.admin-udhari-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #f6f8fb;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.admin-udhari-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.admin-udhari-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 24px 28px;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 18px;
+}
+
+.admin-udhari-header span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #2563eb;
+}
+
+.admin-udhari-header h1 {
+  margin: 5px 0;
+  font-size: 28px;
+  color: #111827;
+}
+
+.admin-udhari-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.admin-udhari-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  font-size: 28px;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.admin-udhari-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-summary-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.admin-summary-card span {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.admin-summary-card strong {
+  font-size: 24px;
+  color: #111827;
+}
+
+.admin-summary-card.paid-summary strong {
+  color: #059669;
+}
+
+.admin-summary-card.remaining-summary strong {
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.admin-udhari-search {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  box-sizing: border-box;
+}
+
+.admin-udhari-search:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .08);
+}
+
+.admin-udhari-search input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  font-size: 14px;
+  background: transparent;
+}
+
+
+/* =========================================================
+   USER LIST
+========================================================= */
+
+.admin-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.admin-user-card {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-user-avatar {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.admin-user-info h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #111827;
+}
+
+.admin-user-info p {
+  margin: 2px 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.admin-user-debt {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  text-align: right;
+}
+
+.admin-user-debt span {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 3px;
+}
+
+.admin-user-debt strong {
+  font-size: 18px;
+  color: #dc2626;
+}
+
+.user-paid-small strong {
+  color: #059669;
+}
+
+.admin-add-debt-btn {
+  height: 40px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-add-debt-btn:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================================================
+   ACTIVE UDHARI
+========================================================= */
+
+.admin-active-udhari {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 17px;
+  padding: 20px;
+}
+
+.admin-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-section-title span {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: #2563eb;
+}
+
+.admin-section-title h2 {
+  margin: 4px 0 0;
+  font-size: 21px;
+  color: #111827;
+}
+
+.admin-section-title > strong {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================================================
+   DEBT CARD
+========================================================= */
+
+.admin-debt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-debt-card {
+  display: grid;
+  grid-template-columns: 1.6fr .8fr .8fr .8fr .9fr .6fr auto;
+  align-items: center;
+  gap: 13px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #edf0f3;
+  border-radius: 12px;
+}
+
+.debt-user-column h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #111827;
+}
+
+.debt-user-column p {
+  margin: 0 0 7px;
+  font-size: 11px;
+  color: #6b7280;
+  word-break: break-word;
+}
+
+.debt-user-column span {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.debt-money small {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.debt-money strong {
+  font-size: 15px;
+  color: #111827;
+}
+
+.debt-green {
+  color: #059669 !important;
+}
+
+.debt-red {
+  color: #dc2626 !important;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.admin-debt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-payment-btn,
+.admin-history-btn {
+  border: 0;
+  border-radius: 8px;
+  height: 34px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-payment-btn {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.admin-payment-btn:hover {
+  background: #d1fae5;
+}
+
+.admin-history-btn {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.admin-history-btn:hover {
+  background: #dbeafe;
+}
+
+.admin-no-debt {
+  padding: 35px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.admin-udhari-loading {
+  min-height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.admin-udhari-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, .58);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.admin-udhari-modal {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, .2);
+}
+
+.admin-modal-close {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 9px;
+  background: #f3f4f6;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.modal-debt-icon {
+  width: 55px;
+  height: 55px;
+  margin: 0 auto 13px;
+  border-radius: 15px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 27px;
+}
+
+.payment-icon {
+  background: #ecfdf5;
+}
+
+.history-icon {
+  background: #eff6ff;
+}
+
+.admin-udhari-modal h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 22px;
+  color: #111827;
+}
+
+.admin-udhari-modal > p {
+  margin: 6px 0 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.admin-udhari-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-udhari-modal form label {
+  margin-top: 7px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #374151;
+}
+
+.admin-udhari-modal form input,
+.admin-udhari-modal form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.admin-udhari-modal form input {
+  height: 44px;
+  padding: 0 12px;
+}
+
+.admin-udhari-modal form textarea {
+  min-height: 80px;
+  padding: 11px 12px;
+  resize: vertical;
+}
+
+.admin-udhari-modal form input:focus,
+.admin-udhari-modal form textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .08);
+}
+
+.optional-text {
+  margin-left: 6px;
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+
+/* =========================================================
+   SAVE BUTTON
+========================================================= */
+
+.admin-save-debt-btn {
+  width: 100%;
+  height: 46px;
+  margin-top: 15px;
+  border: 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-save-debt-btn:hover {
+  background: #1d4ed8;
+}
+
+.payment-save-btn {
+  background: #059669;
+}
+
+.payment-save-btn:hover {
+  background: #047857;
+}
+
+
+/* =========================================================
+   PAYMENT REMAINING
+========================================================= */
+
+.payment-remaining-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff7f7;
+  border: 1px solid #fee2e2;
+  border-radius: 10px;
+  padding: 13px 15px;
+  margin-bottom: 14px;
+}
+
+.payment-remaining-box span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.payment-remaining-box strong {
+  font-size: 20px;
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+.history-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.history-summary > div {
+  padding: 11px 8px;
+  border-radius: 9px;
+  background: #f9fafb;
+  text-align: center;
+}
+
+.history-summary span {
+  display: block;
+  font-size: 10px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.history-summary strong {
+  font-size: 14px;
+  color: #111827;
+}
+
+.history-paid {
+  color: #059669 !important;
+}
+
+.history-remaining {
+  color: #dc2626 !important;
+}
+
+.payment-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.payment-history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.payment-history-number {
+  width: 27px;
+  height: 27px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.payment-history-main {
+  min-width: 0;
+}
+
+.payment-history-main > strong {
+  display: block;
+  font-size: 16px;
+  color: #059669;
+  margin-bottom: 3px;
+}
+
+.payment-history-meta {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.payment-history-note {
+  margin-top: 5px;
+  font-size: 11px;
+  color: #374151;
+  word-break: break-word;
+}
+
+.history-loading,
+.history-empty {
+  padding: 30px 10px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .admin-debt-card {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .debt-user-column {
+    grid-column: span 3;
+  }
+
+  .admin-debt-actions {
+    grid-column: span 3;
+    flex-direction: row;
+  }
+
+  .admin-payment-btn,
+  .admin-history-btn {
+    flex: 1;
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .admin-udhari-page {
+    padding: 12px;
+  }
+
+  .admin-udhari-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-user-debt {
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .admin-add-debt-btn {
+    width: 100%;
+  }
+
+  .admin-udhari-header {
+    padding: 18px;
+  }
+
+  .admin-udhari-header h1 {
+    font-size: 22px;
+  }
+
+  .admin-udhari-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+  }
+
+  .admin-active-udhari {
+    padding: 14px;
+  }
+
+  .admin-debt-card {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .debt-user-column {
+    grid-column: span 2;
+  }
+
+  .admin-debt-actions {
+    grid-column: span 2;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .admin-udhari-modal-overlay {
+    padding: 10px;
+  }
+
+  .admin-udhari-modal {
+    padding: 21px 16px;
+    border-radius: 17px;
+  }
+
+  .admin-user-debt {
+    gap: 15px;
+  }
+
+  .history-summary {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .history-summary > div {
+    padding: 9px 4px;
+  }
+
+  .history-summary strong {
+    font-size: 12px;
+  }
+
+}
+/* =========================================================
+   COMPLETED UDHARI
+========================================================= */
+
+.admin-completed-udhari {
+  margin-top: 36px;
+}
+
+.completed-section-title {
+  border-bottom-color: #bbf7d0 !important;
+}
+
+.completed-section-title > div span {
+  color: #16a34a !important;
+}
+
+.completed-section-title > strong {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+
+/* =========================================================
+   COMPLETED SUMMARY
+========================================================= */
+
+.completed-udhari-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.completed-udhari-summary > div {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.completed-udhari-summary span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.completed-udhari-summary strong {
+  color: #15803d;
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   COMPLETED LIST
+========================================================= */
+
+.admin-completed-debt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+/* =========================================================
+   EMPTY COMPLETED
+========================================================= */
+
+.admin-no-completed-debt {
+  padding: 35px 20px;
+  text-align: center;
+  border: 1px dashed #bbf7d0;
+  border-radius: 16px;
+  background: #f0fdf4;
+}
+
+.admin-no-completed-debt > div {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #dcfce7;
+  color: #16a34a;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.admin-no-completed-debt h3 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  color: #166534;
+}
+
+.admin-no-completed-debt p {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   COMPLETED CARD
+========================================================= */
+
+.admin-completed-debt-card {
+  display: grid;
+
+  grid-template-columns:
+    minmax(220px, 1.8fr)
+    minmax(100px, 0.8fr)
+    minmax(100px, 0.8fr)
+    minmax(100px, 0.8fr)
+    minmax(90px, 0.7fr)
+    minmax(80px, 0.6fr)
+    auto;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 18px;
+
+  background: linear-gradient(
+    135deg,
+    #f0fdf4,
+    #ffffff
+  );
+
+  border: 1px solid #bbf7d0;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 4px 14px
+    rgba(
+      22,
+      163,
+      74,
+      0.06
+    );
+}
+
+
+/* =========================================================
+   COMPLETED USER
+========================================================= */
+
+.completed-debt-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.completed-user-avatar {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: #dcfce7;
+
+  color: #15803d;
+
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.completed-debt-user h3 {
+  margin: 0 0 3px;
+
+  font-size: 14px;
+
+  color: #0f172a;
+}
+
+.completed-debt-user p {
+  margin: 0 0 3px;
+
+  font-size: 11px;
+
+  color: #64748b;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.completed-debt-user span {
+  font-size: 10px;
+
+  color: #16a34a;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   COMPLETED MONEY
+========================================================= */
+
+.completed-money {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.completed-money small {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.completed-money strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.completed-money .completed-paid {
+  color: #16a34a;
+}
+
+.completed-money .completed-remaining {
+  color: #16a34a;
+}
+
+
+/* =========================================================
+   COMPLETED STATUS
+========================================================= */
+
+.completed-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  width: fit-content;
+
+  padding: 7px 10px;
+
+  border-radius: 999px;
+
+  background: #dcfce7;
+
+  border: 1px solid #bbf7d0;
+
+  color: #15803d;
+}
+
+.completed-status span {
+  width: 19px;
+  height: 19px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #16a34a;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.completed-status strong {
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   COMPLETED ACTION
+========================================================= */
+
+.completed-debt-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+/* =========================================================
+   HISTORY COMPLETED BADGE
+========================================================= */
+
+.history-completed-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 14px 0;
+
+  padding: 11px 13px;
+
+  border-radius: 11px;
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+
+  color: #15803d;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.history-completed-badge > span:first-child {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+/* 
+  border-radius: 50%; */
+/* 
+  background: #16a34a; */
+
+  color: rgb(6, 202, 71);
+}
+
+
+/* =========================================================
+   PAYMENT METHOD
+========================================================= */
+
+.payment-history-method {
+  margin-top: 4px;
+
+  font-size: 11px;
+
+  color: #2563eb;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   USER COMPLETED SMALL
+========================================================= */
+
+.user-completed-small {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.user-completed-small span {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.user-completed-small strong {
+  font-size: 14px;
+  color: #16a34a;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .admin-completed-debt-card {
+    grid-template-columns:
+      1.5fr
+      1fr
+      1fr
+      1fr;
+
+    gap: 15px;
+  }
+
+  .completed-debt-user {
+    grid-column: span 2;
+  }
+
+  .completed-debt-actions {
+    grid-column: span 2;
+
+    justify-content: flex-start;
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .admin-completed-debt-card {
+    grid-template-columns:
+      1fr
+      1fr;
+
+    padding: 15px;
+
+    gap: 12px;
+  }
+
+  .completed-debt-user {
+    grid-column: 1 / -1;
+  }
+
+  .completed-money {
+    padding: 9px;
+
+    background: #ffffff;
+
+    border: 1px solid #dcfce7;
+
+    border-radius: 10px;
+  }
+
+  .completed-status {
+    justify-self: start;
+  }
+
+  .completed-debt-actions {
+    grid-column: 1 / -1;
+  }
+
+  .completed-debt-actions button {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .completed-udhari-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-completed-debt-card {
+    grid-template-columns: 1fr;
+  }
+
+  .completed-money {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+}

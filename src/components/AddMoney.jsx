@@ -58,7 +58,7 @@ export default function AddMoney({
   ========================================================= */
 
   const presetAmounts = [
-    100,
+    120,
     200,
     500,
     1000,
@@ -181,11 +181,11 @@ export default function AddMoney({
 
 
       if (
-        numericAmount < 10
+        numericAmount < 120
       ) {
 
         setError(
-          "Minimum ₹10 add करू शकता."
+          "Minimum ₹120 add करू शकता."
         );
 
         return false;
@@ -918,7 +918,7 @@ export default function AddMoney({
 
 
           <small>
-            Minimum ₹10 • Maximum ₹50,000
+            Minimum ₹120 • Maximum ₹50,000
           </small>
 
         </div>

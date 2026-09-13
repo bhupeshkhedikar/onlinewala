@@ -1,0 +1,725 @@
+/* ============================================================
+   INSTANT NUMBER LINK WITH VOTER
+   ============================================================ */
+
+.voter-link-page {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 40px 20px;
+
+  box-sizing: border-box;
+
+  background: #f6f8f7;
+}
+
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.voter-link-card {
+  width: 100%;
+  max-width: 500px;
+
+  padding: 32px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.08);
+}
+
+
+.voter-link-icon {
+  width: 64px;
+  height: 64px;
+
+  margin: 0 auto 16px;
+
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+
+  background: #eff6ff;
+}
+
+
+.voter-link-card h1 {
+  margin: 0;
+
+  text-align: center;
+
+  font-size: 26px;
+
+  font-weight: 800;
+
+  color: #111827;
+}
+
+
+.voter-link-subtitle {
+  margin: 8px 0 28px;
+
+  text-align: center;
+
+  font-size: 14px;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.voter-link-form {
+  width: 100%;
+}
+
+
+.voter-field {
+  margin-bottom: 18px;
+}
+
+
+.voter-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  color: #374151;
+}
+
+
+.voter-field input {
+  width: 100%;
+
+  height: 52px;
+
+  padding: 0 15px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 11px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  transition: 0.2s ease;
+}
+
+
+.voter-field input:focus {
+  border-color: #166534;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(22, 101, 52, 0.1);
+}
+
+
+.voter-field input:disabled {
+  background: #f3f4f6;
+
+  cursor: not-allowed;
+}
+
+
+.voter-field span {
+  display: block;
+
+  margin-top: 6px;
+
+  font-size: 12px;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.voter-link-error {
+  margin-bottom: 15px;
+
+  padding: 11px 13px;
+
+  border-radius: 9px;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  color: #b91c1c;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   SUBMIT BUTTON
+   ============================================================ */
+
+.voter-link-submit {
+  width: 100%;
+
+  min-height: 52px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background: #166534;
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  transition: 0.2s ease;
+}
+
+
+.voter-link-submit:hover {
+  background: #14532d;
+
+  transform: translateY(-1px);
+}
+
+
+.voter-link-submit:disabled {
+  opacity: 0.7;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+
+.voter-link-spinner {
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+
+  border: 2px solid
+    rgba(255, 255, 255, 0.35);
+
+  border-top-color: #ffffff;
+
+  animation:
+    voterSpinner 0.7s linear infinite;
+}
+
+
+@keyframes voterSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ============================================================
+   PRICE
+   ============================================================ */
+
+.voter-link-price {
+  margin-top: 18px;
+
+  padding: 13px 15px;
+
+  border-radius: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+}
+
+
+.voter-link-price span {
+  font-size: 13px;
+
+  color: #166534;
+}
+
+
+.voter-link-price strong {
+  font-size: 18px;
+
+  color: #14532d;
+}
+
+
+.voter-link-secure {
+  margin: 17px 0 0;
+
+  text-align: center;
+
+  font-size: 12px;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   SUCCESS POPUP OVERLAY
+   ============================================================ */
+
+.voter-popup-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 999999;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  backdrop-filter: blur(3px);
+
+  animation:
+    voterOverlayIn 0.2s ease;
+}
+
+
+@keyframes voterOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+/* ============================================================
+   SUCCESS POPUP
+   ============================================================ */
+
+.voter-success-popup {
+  position: relative;
+
+  width: min(440px, 100%);
+
+  padding: 32px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  text-align: center;
+
+  box-shadow:
+    0 30px 90px
+    rgba(0, 0, 0, 0.35);
+
+  animation:
+    voterPopupIn 0.25s ease;
+}
+
+
+@keyframes voterPopupIn {
+  from {
+    opacity: 0;
+
+    transform:
+      scale(0.92)
+      translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0);
+  }
+}
+
+
+/* ============================================================
+   CLOSE
+   ============================================================ */
+
+.voter-popup-close {
+  position: absolute;
+
+  top: 13px;
+  right: 13px;
+
+  width: 36px;
+  height: 36px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f3f4f6;
+
+  color: #374151;
+
+  font-size: 25px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s ease;
+}
+
+
+.voter-popup-close:hover {
+  background: #e5e7eb;
+
+  transform: rotate(90deg);
+}
+
+
+/* ============================================================
+   SUCCESS ICON
+   ============================================================ */
+
+.voter-success-icon {
+  width: 70px;
+  height: 70px;
+
+  margin: 0 auto 18px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #dcfce7;
+
+  color: #15803d;
+
+  font-size: 38px;
+
+  font-weight: 800;
+
+  animation:
+    voterSuccessPop 0.35s ease;
+}
+
+
+@keyframes voterSuccessPop {
+  from {
+    transform: scale(0.5);
+
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+
+    opacity: 1;
+  }
+}
+
+
+.voter-success-popup h2 {
+  margin: 0;
+
+  font-size: 22px;
+
+  font-weight: 800;
+
+  color: #111827;
+}
+
+
+.voter-success-message {
+  margin: 8px 0 22px;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   RESULT BOX
+   ============================================================ */
+
+.voter-result-box {
+  padding: 5px 14px;
+
+  border-radius: 12px;
+
+  background: #f9fafb;
+
+  border: 1px solid #e5e7eb;
+
+  text-align: left;
+}
+
+
+.voter-result-row {
+  min-height: 48px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+.voter-result-row:last-child {
+  border-bottom: none;
+}
+
+
+.voter-result-row span {
+  font-size: 13px;
+
+  color: #6b7280;
+}
+
+
+.voter-result-row strong {
+  max-width: 55%;
+
+  text-align: right;
+
+  word-break: break-word;
+
+  font-size: 13px;
+
+  color: #111827;
+}
+
+
+/* ============================================================
+   DONE
+   ============================================================ */
+
+.voter-popup-done {
+  width: 100%;
+
+  min-height: 48px;
+
+  margin-top: 20px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #166534;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.voter-popup-done:hover {
+  background: #14532d;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  .voter-link-page {
+    padding: 25px 14px;
+  }
+
+  .voter-link-card {
+    padding: 26px 20px;
+  }
+
+  .voter-popup-overlay {
+    padding: 14px;
+  }
+
+  .voter-success-popup {
+    padding: 28px 22px;
+  }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+  .voter-link-page {
+    min-height: auto;
+
+    padding:
+      18px 10px 30px;
+  }
+
+  .voter-link-card {
+    padding: 23px 17px;
+
+    border-radius: 16px;
+  }
+
+  .voter-link-card h1 {
+    font-size: 22px;
+  }
+
+  .voter-link-icon {
+    width: 55px;
+    height: 55px;
+
+    font-size: 27px;
+  }
+
+
+  /* Popup */
+
+  .voter-popup-overlay {
+    padding: 10px;
+  }
+
+  .voter-success-popup {
+    width: 100%;
+
+    padding:
+      28px 16px 20px;
+
+    border-radius: 16px;
+  }
+
+  .voter-success-icon {
+    width: 60px;
+    height: 60px;
+
+    font-size: 32px;
+  }
+
+  .voter-success-popup h2 {
+    font-size: 19px;
+  }
+
+  .voter-success-message {
+    font-size: 13px;
+  }
+
+  .voter-result-row {
+    min-height: 45px;
+
+    gap: 10px;
+  }
+
+  .voter-result-row span,
+  .voter-result-row strong {
+    font-size: 12px;
+  }
+
+  .voter-result-row strong {
+    max-width: 58%;
+  }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 360px) {
+
+  .voter-link-card {
+    padding: 20px 14px;
+  }
+
+  .voter-success-popup {
+    padding:
+      25px 12px 17px;
+  }
+
+  .voter-result-box {
+    padding: 4px 10px;
+  }
+}

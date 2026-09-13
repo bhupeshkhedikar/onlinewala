@@ -20,362 +20,248 @@ import "./Wallet.css";
 import AddMoney from "./AddMoney";
 import Withdraw from "./Withdraw";
 
-
 export default function Wallet() {
-
   const [wallet, setWallet] = useState({
     walletBalance: 0,
     availableBalance: 0,
     pendingReferralAmount: 0
   });
 
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [transactions, setTransactions] =
-    useState([]);
+  const [showAddMoney, setShowAddMoney] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-
-  const [showAddMoney, setShowAddMoney] =
-    useState(false);
-
-  const [showWithdraw, setShowWithdraw] =
-    useState(false);
-
-
-  /* =====================================================
-     ONLINEWALAA PAYMENT
-  ===================================================== */
-
-  const [showPayment, setShowPayment] =
-    useState(false);
-
-  const [paymentAmount, setPaymentAmount] =
-    useState("");
-
-  const [paymentLoading, setPaymentLoading] =
-    useState(false);
-
-  const [paymentMessage, setPaymentMessage] =
-    useState("");
-
-  const [paymentError, setPaymentError] =
-    useState("");
-
-  const [paymentSuccess, setPaymentSuccess] =
-    useState(false);
-
-
-  /* =====================================================
-     LOAD WALLET
-  ===================================================== */
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     loadWallet();
   }, []);
 
-
-  /* =====================================================
-     TIME HELPER
-  ===================================================== */
-
   const getTime = (value) => {
-
     if (!value) return 0;
 
-    if (
-      typeof value.toMillis ===
-      "function"
-    ) {
+    if (typeof value.toMillis === "function") {
       return value.toMillis();
     }
 
-    if (
-      typeof value.toDate ===
-      "function"
-    ) {
+    if (typeof value.toDate === "function") {
       return value.toDate().getTime();
     }
 
-    const time =
-      new Date(value).getTime();
+    const time = new Date(value).getTime();
 
-    return Number.isNaN(time)
-      ? 0
-      : time;
+    return Number.isNaN(time) ? 0 : time;
   };
 
-
-  /* =====================================================
-     LOAD WALLET
-  ===================================================== */
-
   const loadWallet = async () => {
-
     try {
-
       setLoading(true);
       setError("");
 
-      const currentUser =
-        auth.currentUser;
-
+      const currentUser = auth.currentUser;
 
       if (!currentUser) {
-
-        setError(
-          "कृपया आधी लॉगिन करा."
-        );
-
+        setError("कृपया आधी लॉगिन करा.");
         return;
       }
 
+      const userRef = doc(
+        db,
+        "users",
+        currentUser.uid
+      );
 
-      const userRef =
-        doc(
-          db,
-          "users",
-          currentUser.uid
-        );
-
-
-      const userSnap =
-        await getDoc(userRef);
-
+      const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
-
-        setError(
-          "Wallet profile सापडला नाही."
-        );
-
+        setError("Wallet profile सापडला नाही.");
         return;
       }
 
-
-      const userData =
-        userSnap.data();
-
+      const userData = userSnap.data();
 
       setWallet({
-
-        walletBalance:
-          Number(
-            userData.walletBalance || 0
-          ),
-
-        availableBalance:
-          Number(
-            userData.availableBalance || 0
-          ),
-
-        pendingReferralAmount:
-          Number(
-            userData.pendingReferralAmount ||
-            0
-          )
-
+        walletBalance: Number(
+          userData.walletBalance || 0
+        ),
+        availableBalance: Number(
+          userData.availableBalance || 0
+        ),
+        pendingReferralAmount: Number(
+          userData.pendingReferralAmount || 0
+        )
       });
-
 
       const allTransactions = [];
 
-
-      /* -----------------------------------------------
+      /* =====================================================
          WALLET TRANSACTIONS
-      ----------------------------------------------- */
+         OLD: userId
+         NEW API SERVICES: uid
+      ===================================================== */
 
       try {
-
-        const walletQuery =
-          query(
-            collection(
-              db,
-              "walletTransactions"
-            ),
-            where(
-              "userId",
-              "==",
-              currentUser.uid
-            )
-          );
-
-
-        const walletSnapshot =
-          await getDocs(
-            walletQuery
-          );
-
-
-        walletSnapshot.forEach(
-          (item) => {
-
-            allTransactions.push({
-
-              id:
-                item.id,
-
-              source:
-                "wallet",
-
-              ...item.data()
-
-            });
-
-          }
+        const walletTransactionsRef = collection(
+          db,
+          "walletTransactions"
         );
 
-      } catch (err) {
+        const oldWalletQuery = query(
+          walletTransactionsRef,
+          where(
+            "userId",
+            "==",
+            currentUser.uid
+          )
+        );
 
+        const newWalletQuery = query(
+          walletTransactionsRef,
+          where(
+            "uid",
+            "==",
+            currentUser.uid
+          )
+        );
+
+        const [
+          oldSnapshot,
+          newSnapshot
+        ] = await Promise.all([
+          getDocs(oldWalletQuery),
+          getDocs(newWalletQuery)
+        ]);
+
+        const transactionMap = new Map();
+
+        oldSnapshot.forEach((item) => {
+          transactionMap.set(
+            item.id,
+            {
+              id: item.id,
+              source: "wallet",
+              ...item.data()
+            }
+          );
+        });
+
+        newSnapshot.forEach((item) => {
+          transactionMap.set(
+            item.id,
+            {
+              id: item.id,
+              source: "wallet",
+              ...item.data()
+            }
+          );
+        });
+
+        transactionMap.forEach((transaction) => {
+          allTransactions.push(transaction);
+        });
+
+      } catch (err) {
         console.error(
           "walletTransactions error:",
           err
         );
-
       }
 
-
-      /* -----------------------------------------------
+      /* =====================================================
          WITHDRAWALS
-      ----------------------------------------------- */
+      ===================================================== */
 
       try {
-
-        const withdrawalQuery =
-          query(
-            collection(
-              db,
-              "withdrawals"
-            ),
-            where(
-              "userId",
-              "==",
-              currentUser.uid
-            )
-          );
-
-
-        const withdrawalSnapshot =
-          await getDocs(
-            withdrawalQuery
-          );
-
-
-        withdrawalSnapshot.forEach(
-          (item) => {
-
-            const data =
-              item.data();
-
-
-            allTransactions.push({
-
-              id:
-                `withdrawal_${item.id}`,
-
-              withdrawalId:
-                item.id,
-
-              source:
-                "withdrawal",
-
-              type:
-                "WITHDRAWAL",
-
-              amount:
-                Number(
-                  data.amount || 0
-                ),
-
-              status:
-                data.status ||
-                "pending",
-
-              description:
-                "Withdrawal",
-
-              isCredit:
-                false,
-
-              ...data
-
-            });
-
-          }
+        const withdrawalQuery = query(
+          collection(
+            db,
+            "withdrawals"
+          ),
+          where(
+            "userId",
+            "==",
+            currentUser.uid
+          )
         );
 
-      } catch (err) {
+        const withdrawalSnapshot =
+          await getDocs(withdrawalQuery);
 
+        withdrawalSnapshot.forEach((item) => {
+          const data = item.data();
+
+          allTransactions.push({
+            id: `withdrawal_${item.id}`,
+            withdrawalId: item.id,
+            source: "withdrawal",
+            type: "WITHDRAWAL",
+            amount: Number(
+              data.amount || 0
+            ),
+            status:
+              data.status || "pending",
+            description: "Withdrawal",
+            isCredit: false,
+            ...data
+          });
+        });
+
+      } catch (err) {
         console.error(
           "withdrawals error:",
           err
         );
-
       }
 
-
-      /* -----------------------------------------------
-         SORT
-      ----------------------------------------------- */
+      /* =====================================================
+         SORT NEWEST FIRST
+      ===================================================== */
 
       allTransactions.sort(
         (a, b) =>
-          getTime(
-            b.createdAt
-          ) -
-          getTime(
-            a.createdAt
-          )
+          getTime(b.createdAt) -
+          getTime(a.createdAt)
       );
-
 
       setTransactions(
         allTransactions
       );
 
     } catch (err) {
-
       console.error(
         "Wallet loading error:",
         err
       );
-
 
       setError(
         "Wallet माहिती load करताना error आला."
       );
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
-
 
   /* =====================================================
      DATE
   ===================================================== */
 
-  const formatDate = (
-    timestamp
-  ) => {
-
+  const formatDate = (timestamp) => {
     if (!timestamp) return "—";
 
     try {
-
       const date =
-        typeof timestamp.toDate ===
-        "function"
+        typeof timestamp.toDate === "function"
           ? timestamp.toDate()
           : new Date(timestamp);
-
 
       if (
         Number.isNaN(
@@ -384,7 +270,6 @@ export default function Wallet() {
       ) {
         return "—";
       }
-
 
       return date.toLocaleDateString(
         "mr-IN",
@@ -396,32 +281,22 @@ export default function Wallet() {
       );
 
     } catch {
-
       return "—";
-
     }
-
   };
-
 
   /* =====================================================
      TIME
   ===================================================== */
 
-  const formatTime = (
-    timestamp
-  ) => {
-
+  const formatTime = (timestamp) => {
     if (!timestamp) return "";
 
     try {
-
       const date =
-        typeof timestamp.toDate ===
-        "function"
+        typeof timestamp.toDate === "function"
           ? timestamp.toDate()
           : new Date(timestamp);
-
 
       if (
         Number.isNaN(
@@ -430,7 +305,6 @@ export default function Wallet() {
       ) {
         return "";
       }
-
 
       return date.toLocaleTimeString(
         "mr-IN",
@@ -441,165 +315,276 @@ export default function Wallet() {
       );
 
     } catch {
-
       return "";
-
     }
-
   };
-
 
   /* =====================================================
      WITHDRAWAL CHECK
   ===================================================== */
 
-  const isWithdrawal = (
-    transaction
-  ) => {
-
+  const isWithdrawal = (transaction) => {
     return (
-      transaction.source ===
-        "withdrawal" ||
-
+      transaction.source === "withdrawal" ||
       String(
         transaction.type || ""
-      ).toUpperCase() ===
-        "WITHDRAWAL"
+      ).toUpperCase() === "WITHDRAWAL"
     );
-
   };
-
 
   /* =====================================================
      CREDIT CHECK
   ===================================================== */
 
-  const isCredit = (
-    transaction
-  ) => {
-
+  const isCredit = (transaction) => {
     if (
       isWithdrawal(transaction)
     ) {
       return false;
     }
 
-
-    const type =
-      String(
-        transaction.type || ""
-      ).toUpperCase();
-
+    const type = String(
+      transaction.type || ""
+    ).toUpperCase();
 
     return (
-
       transaction.isCredit === true ||
-
       type === "CREDIT" ||
-
       type === "REFERRAL" ||
-
-      type ===
-        "REFERRAL_REWARD" ||
-
+      type === "REFERRAL_REWARD" ||
       type === "RECHARGE" ||
-
       type === "CASHBACK" ||
-
       type === "REFUND"
-
     );
-
   };
-
 
   /* =====================================================
      ICON
   ===================================================== */
 
-  const getIcon = (
-    transaction
-  ) => {
-
+  const getIcon = (transaction) => {
     if (
       isWithdrawal(transaction)
     ) {
       return "↘";
     }
 
-
     return isCredit(transaction)
       ? "↗"
       : "↘";
-
   };
-
 
   /* =====================================================
      TITLE
   ===================================================== */
 
-  const getTitle = (
-    transaction
-  ) => {
+  const getTitle = (transaction) => {
+
+    /* -------------------------------------------------
+       WITHDRAWAL
+    ------------------------------------------------- */
 
     if (
       isWithdrawal(transaction)
     ) {
+      const status = String(
+        transaction.status || ""
+      ).toLowerCase();
 
-      const status =
-        String(
-          transaction.status || ""
-        ).toLowerCase();
-
-
-      if (
-        status === "pending"
-      ) {
+      if (status === "pending") {
         return "पैसे काढण्याची विनंती";
       }
 
-
-      if (
-        status === "approved"
-      ) {
+      if (status === "approved") {
         return "पैसे काढणे मंजूर";
       }
 
-
-      if (
-        status === "paid"
-      ) {
+      if (status === "paid") {
         return "पैसे काढले";
       }
 
-
-      if (
-        status === "rejected"
-      ) {
+      if (status === "rejected") {
         return "पैसे काढण्याची विनंती नाकारली";
       }
 
-
       return "पैसे काढणे";
-
     }
 
+    const service = String(
+      transaction.service || ""
+    ).toUpperCase();
+
+    /* -------------------------------------------------
+       INSTANT PAN FIND
+    ------------------------------------------------- */
+
+    if (
+      service === "INSTANT_PAN_FIND"
+    ) {
+      return "Instant PAN Find";
+    }
+
+    /* -------------------------------------------------
+       INSTANT RC PDF
+    ------------------------------------------------- */
+
+    if (
+      service === "INSTANT_RC_PDF"
+    ) {
+      const rc =
+        transaction.rcNumber ||
+        transaction.rcno ||
+        "";
+
+      return rc
+        ? `Instant RC PDF - ${rc}`
+        : "Instant RC PDF";
+    }
+
+    /* -------------------------------------------------
+       INSTANT RC PDF WITHOUT CHIP
+    ------------------------------------------------- */
+
+    if (
+      service ===
+      "INSTANT_RC_PDF_WITHOUT_CHIP"
+    ) {
+      const rc =
+        transaction.rcNumber ||
+        transaction.rcno ||
+        "";
+
+      return rc
+        ? `Instant RC PDF Without Chip - ${rc}`
+        : "Instant RC PDF Without Chip";
+    }
+
+    /* -------------------------------------------------
+       INSTANT LL PDF
+    ------------------------------------------------- */
+
+    if (
+      service === "INSTANT_LL_PDF"
+    ) {
+      const application =
+        transaction.applicationNumber ||
+        transaction.applicationNo ||
+        transaction.appNo ||
+        "";
+
+      return application
+        ? `Instant LL PDF - ${application}`
+        : "Instant LL PDF";
+    }
+
+    /* -------------------------------------------------
+       INSTANT DL PDF
+    ------------------------------------------------- */
+
+    if (
+      service === "INSTANT_DL_PDF"
+    ) {
+      const dl =
+        transaction.dlNumber ||
+        transaction.dl ||
+        "";
+
+      return dl
+        ? `Instant DL PDF - ${dl}`
+        : "Instant DL PDF";
+    }
+
+    /* -------------------------------------------------
+       INSTANT LL PASS
+    ------------------------------------------------- */
+
+    if (
+      service === "INSTANT_LL_PASS"
+    ) {
+      const application =
+        transaction.applicationNumber ||
+        transaction.applicationNo ||
+        "";
+
+      return application
+        ? `Instant LL Pass - ${application}`
+        : "Instant LL Pass";
+    }
+
+    /* -------------------------------------------------
+       NUMBER LINK WITH VOTER
+    ------------------------------------------------- */
+
+    if (
+      service ===
+      "INSTANT_NUMBER_LINK_WITH_VOTER"
+    ) {
+      const epic =
+        transaction.epic ||
+        transaction.EPIC ||
+        "";
+
+      return epic
+        ? `Instant Number Link With Voter - ${epic}`
+        : "Instant Number Link With Voter";
+    }
+
+    /* -------------------------------------------------
+       GENERIC SERVICE NAME
+    ------------------------------------------------- */
+
+    if (
+      transaction.serviceName
+    ) {
+      let title = String(
+        transaction.serviceName
+      );
+
+      if (
+        transaction.rcNumber
+      ) {
+        title +=
+          ` - ${transaction.rcNumber}`;
+
+      } else if (
+        transaction.applicationNumber
+      ) {
+        title +=
+          ` - ${transaction.applicationNumber}`;
+
+      } else if (
+        transaction.dlNumber
+      ) {
+        title +=
+          ` - ${transaction.dlNumber}`;
+
+      } else if (
+        transaction.epic
+      ) {
+        title +=
+          ` - ${transaction.epic}`;
+      }
+
+      return title;
+    }
+
+    /* -------------------------------------------------
+       DESCRIPTION
+    ------------------------------------------------- */
 
     if (
       transaction.description
     ) {
-
       return transaction.description;
-
     }
 
+    /* -------------------------------------------------
+       TYPE FALLBACK
+    ------------------------------------------------- */
 
-    const type =
-      String(
-        transaction.type || ""
-      ).toUpperCase();
-
+    const type = String(
+      transaction.type || ""
+    ).toUpperCase();
 
     switch (type) {
 
@@ -607,142 +592,106 @@ export default function Wallet() {
       case "REFERRAL_REWARD":
         return "रेफरल बक्षीस";
 
-
       case "RECHARGE":
         return "वॉलेटमध्ये पैसे जमा";
-
 
       case "CASHBACK":
         return "कॅशबॅक";
 
-
       case "REFUND":
         return "परतावा";
-
 
       case "ONLINEWALAA_PAYMENT":
       case "SERVICE_PAYMENT":
       case "PAYMENT":
         return "OnlineWalaa ला पेमेंट";
 
-
       case "DEBIT":
         return "वॉलेटमधून पैसे वजा";
-
 
       case "CREDIT":
         return "वॉलेटमध्ये पैसे जमा";
 
-
       default:
         return "वॉलेट व्यवहार";
-
     }
-
   };
-
 
   /* =====================================================
      STATUS
   ===================================================== */
 
-  const getStatus = (
-    transaction
-  ) => {
-
-    const status =
-      String(
-        transaction.status || ""
-      ).toLowerCase();
-
+  const getStatus = (transaction) => {
+    const status = String(
+      transaction.status || ""
+    ).toLowerCase();
 
     if (
       status === "pending"
     ) {
-
       return {
         text: "प्रलंबित",
         className: "pending"
       };
-
     }
-
 
     if (
       status === "rejected" ||
       status === "failed"
     ) {
-
       return {
         text: "अयशस्वी",
         className: "failed"
       };
-
     }
-
 
     if (
       status === "approved"
     ) {
-
       return {
         text: "मंजूर",
         className: "success"
       };
-
     }
-
 
     if (
       status === "paid"
     ) {
-
       return {
         text: "पूर्ण",
         className: "success"
       };
-
     }
-
 
     return {
       text: "यशस्वी",
       className: "success"
     };
-
   };
-
 
   /* =====================================================
      OPEN PAYMENT
   ===================================================== */
 
   const openPayment = () => {
-
     setPaymentAmount("");
     setPaymentError("");
     setPaymentMessage("");
     setPaymentSuccess(false);
-
     setShowPayment(true);
-
   };
-
 
   /* =====================================================
      CLOSE PAYMENT
   ===================================================== */
 
   const closePayment = () => {
-
     if (paymentLoading) {
       return;
     }
 
     setShowPayment(false);
-
   };
-
 
   /* =====================================================
      PAY ONLINEWALAA
@@ -754,86 +703,61 @@ export default function Wallet() {
       setPaymentError("");
       setPaymentMessage("");
 
-
       const amount =
-        Number(
-          paymentAmount
-        );
-
+        Number(paymentAmount);
 
       if (
         !paymentAmount ||
         !Number.isFinite(amount)
       ) {
-
         setPaymentError(
           "कृपया पेमेंटची रक्कम भरा."
         );
-
         return;
-
       }
-
 
       if (
         amount <= 0
       ) {
-
         setPaymentError(
           "रक्कम ₹1 पेक्षा जास्त असावी."
         );
-
         return;
-
       }
-
 
       if (
         !Number.isInteger(amount)
       ) {
-
         setPaymentError(
           "रक्कम पूर्ण अंकात असावी."
         );
-
         return;
-
       }
-
 
       if (
         amount >
         wallet.availableBalance
       ) {
-
         setPaymentError(
           `तुमच्या वॉलेटमध्ये फक्त ₹${wallet.availableBalance.toLocaleString(
             "en-IN"
           )} उपलब्ध आहेत.`
         );
-
         return;
-
       }
-
 
       if (
         amount > 50000
       ) {
-
         setPaymentError(
           "एका पेमेंटची कमाल मर्यादा ₹50,000 आहे."
         );
-
         return;
-
       }
-
 
       try {
 
         setPaymentLoading(true);
-
 
         const functions =
           getFunctions(
@@ -841,39 +765,31 @@ export default function Wallet() {
             "asia-south1"
           );
 
-
         const payOnlineWalaa =
           httpsCallable(
             functions,
             "payOnlineWalaaFromWallet"
           );
 
-
         const result =
           await payOnlineWalaa({
             amount
           });
 
-
         const data =
           result.data;
-
 
         if (
           !data?.success
         ) {
-
           throw new Error(
             "पेमेंट पूर्ण झाले नाही."
           );
-
         }
-
 
         setPaymentSuccess(
           true
         );
-
 
         setPaymentMessage(
           `🎉 ₹${amount.toLocaleString(
@@ -881,21 +797,15 @@ export default function Wallet() {
           )} चे पेमेंट OnlineWalaa ला यशस्वी झाले.`
         );
 
-
         setPaymentAmount("");
-
 
         await loadWallet();
 
-
         setTimeout(() => {
-
           setShowPayment(false);
           setPaymentSuccess(false);
           setPaymentMessage("");
-
         }, 1800);
-
 
       } catch (err) {
 
@@ -904,12 +814,10 @@ export default function Wallet() {
           err
         );
 
-
         const message =
           err?.message ||
           err?.details ||
           "पेमेंट करताना काहीतरी चूक झाली.";
-
 
         setPaymentError(
           message
@@ -920,47 +828,33 @@ export default function Wallet() {
         setPaymentLoading(false);
 
       }
-
     };
-
 
   /* =====================================================
      LOADING
   ===================================================== */
 
   if (loading) {
-
     return (
-
       <div className="wallet-page">
-
         <div className="wallet-loading">
-
           <div className="wallet-spinner"></div>
 
           <p>
             वॉलेट लोड होत आहे...
           </p>
-
         </div>
-
       </div>
-
     );
-
   }
-
 
   /* =====================================================
      ERROR
   ===================================================== */
 
   if (error) {
-
     return (
-
       <div className="wallet-page">
-
         <div className="wallet-error-box">
 
           <div className="wallet-error-icon">
@@ -983,28 +877,20 @@ export default function Wallet() {
           </button>
 
         </div>
-
       </div>
-
     );
-
   }
-
 
   /* =====================================================
      RETURN
   ===================================================== */
 
   return (
-
     <div className="wallet-page">
 
       <div className="wallet-container">
 
-
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <div className="wallet-page-header">
 
@@ -1030,10 +916,7 @@ export default function Wallet() {
 
         </div>
 
-
-        {/* =================================================
-            MAIN WALLET
-        ================================================= */}
+        {/* MAIN WALLET */}
 
         <section className="main-wallet-card">
 
@@ -1060,7 +943,6 @@ export default function Wallet() {
 
           </div>
 
-
           <div className="wallet-balance-info">
 
             <div className="balance-info-item">
@@ -1082,9 +964,7 @@ export default function Wallet() {
 
             </div>
 
-
             <div className="balance-divider"></div>
-
 
             <div className="balance-info-item pending-balance">
 
@@ -1109,13 +989,9 @@ export default function Wallet() {
 
         </section>
 
-
-        {/* =================================================
-            PENDING REFERRAL
-        ================================================= */}
+        {/* PENDING REFERRAL */}
 
         {wallet.pendingReferralAmount > 0 && (
-
           <section className="pending-wallet-notice">
 
             <div className="pending-notice-icon">
@@ -1144,13 +1020,9 @@ export default function Wallet() {
             </div>
 
           </section>
-
         )}
 
-
-        {/* =================================================
-            BREAKDOWN
-        ================================================= */}
+        {/* BREAKDOWN */}
 
         <section className="wallet-breakdown">
 
@@ -1177,7 +1049,6 @@ export default function Wallet() {
 
           </div>
 
-
           <div className="wallet-breakdown-card">
 
             <div className="breakdown-icon pending">
@@ -1200,7 +1071,6 @@ export default function Wallet() {
             </div>
 
           </div>
-
 
           <div className="wallet-breakdown-card">
 
@@ -1227,10 +1097,7 @@ export default function Wallet() {
 
         </section>
 
-
-        {/* =================================================
-            ADD MONEY
-        ================================================= */}
+        {/* ADD MONEY */}
 
         <section className="wallet-action-card">
 
@@ -1263,10 +1130,7 @@ export default function Wallet() {
 
         </section>
 
-
-        {/* =================================================
-            ONLINEWALAA PAYMENT
-        ================================================= */}
+        {/* ONLINEWALAA PAYMENT */}
 
         <section className="wallet-action-card onlinewalaa-payment-card">
 
@@ -1300,10 +1164,7 @@ export default function Wallet() {
 
         </section>
 
-
-        {/* =================================================
-            WITHDRAW
-        ================================================= */}
+        {/* WITHDRAW */}
 
         <section className="wallet-action-card">
 
@@ -1339,67 +1200,41 @@ export default function Wallet() {
 
         </section>
 
-
-        {/* =================================================
-            ADD MONEY MODAL
-        ================================================= */}
+        {/* ADD MONEY MODAL */}
 
         {showAddMoney && (
-
           <AddMoney
             onClose={() =>
               setShowAddMoney(false)
             }
-
             onSuccess={async () => {
-
               setShowAddMoney(false);
-
               await loadWallet();
-
             }}
-
           />
-
         )}
 
-
-        {/* =================================================
-            WITHDRAW MODAL
-        ================================================= */}
+        {/* WITHDRAW MODAL */}
 
         {showWithdraw && (
-
           <Withdraw
             user={auth.currentUser}
-
             availableBalance={
               wallet.availableBalance
             }
-
             onClose={() =>
               setShowWithdraw(false)
             }
-
             onSuccess={async () => {
-
               setShowWithdraw(false);
-
               await loadWallet();
-
             }}
-
           />
-
         )}
 
-
-        {/* =================================================
-            ONLINEWALAA PAYMENT MODAL
-        ================================================= */}
+        {/* ONLINEWALAA PAYMENT MODAL */}
 
         {showPayment && (
-
           <div
             className="wallet-payment-overlay"
             onClick={closePayment}
@@ -1421,25 +1256,20 @@ export default function Wallet() {
                 ×
               </button>
 
-
               {!paymentSuccess ? (
-
                 <>
 
                   <div className="wallet-payment-icon">
                     💳
                   </div>
 
-
                   <h2>
                     OnlineWalaa ला पेमेंट
                   </h2>
 
-
                   <p className="wallet-payment-subtitle">
                     तुमच्या वॉलेटमधून पेमेंट करा
                   </p>
-
 
                   <div className="wallet-payment-balance">
 
@@ -1456,14 +1286,12 @@ export default function Wallet() {
 
                   </div>
 
-
                   <label
                     className="wallet-payment-label"
                     htmlFor="onlinewalaa-payment-amount"
                   >
                     पेमेंटची रक्कम
                   </label>
-
 
                   <div className="wallet-payment-input-wrapper">
 
@@ -1479,9 +1307,7 @@ export default function Wallet() {
                       step="1"
                       inputMode="numeric"
                       placeholder="उदा. 100"
-                      value={
-                        paymentAmount
-                      }
+                      value={paymentAmount}
                       onChange={(e) =>
                         setPaymentAmount(
                           e.target.value
@@ -1494,32 +1320,22 @@ export default function Wallet() {
 
                   </div>
 
-
                   {paymentError && (
-
                     <div className="wallet-payment-error">
                       ⚠️ {paymentError}
                     </div>
-
                   )}
 
-
                   {paymentMessage && (
-
                     <div className="wallet-payment-message">
                       {paymentMessage}
                     </div>
-
                   )}
 
-
                   <div className="wallet-payment-warning">
-
                     🔐 हे पेमेंट तुमच्या वॉलेटमधून
                     थेट OnlineWalaa कडे जमा होईल.
-
                   </div>
-
 
                   <button
                     type="button"
@@ -1532,17 +1348,13 @@ export default function Wallet() {
                       !paymentAmount
                     }
                   >
-
                     {paymentLoading
                       ? "पेमेंट होत आहे..."
                       : "पेमेंट निश्चित करा"}
-
                   </button>
 
                 </>
-
               ) : (
-
                 <div className="wallet-payment-success">
 
                   <div className="payment-success-icon">
@@ -1558,15 +1370,12 @@ export default function Wallet() {
                   </p>
 
                 </div>
-
               )}
 
             </div>
 
           </div>
-
         )}
-
 
         {/* =================================================
             TRANSACTIONS
@@ -1588,7 +1397,6 @@ export default function Wallet() {
 
             </div>
 
-
             <button
               type="button"
               onClick={loadWallet}
@@ -1599,7 +1407,6 @@ export default function Wallet() {
             </button>
 
           </div>
-
 
           {transactions.length === 0 ? (
 
@@ -1632,15 +1439,12 @@ export default function Wallet() {
                       transaction
                     );
 
-
                   const status =
                     getStatus(
                       transaction
                     );
 
-
                   return (
-
                     <div
                       className="transaction-item"
                       key={
@@ -1660,7 +1464,6 @@ export default function Wallet() {
                         )}
                       </div>
 
-
                       <div className="transaction-details">
 
                         <strong>
@@ -1668,7 +1471,6 @@ export default function Wallet() {
                             transaction
                           )}
                         </strong>
-
 
                         <span>
 
@@ -1679,70 +1481,54 @@ export default function Wallet() {
                           {formatTime(
                             transaction.createdAt
                           ) && (
-
                             <>
                               {" • "}
 
                               {formatTime(
                                 transaction.createdAt
                               )}
-
                             </>
-
                           )}
 
                         </span>
 
-
                         {transaction.referenceId && (
-
                           <small>
                             संदर्भ:{" "}
                             {
                               transaction.referenceId
                             }
                           </small>
-
                         )}
 
-
                         {transaction.upiId && (
-
                           <small>
                             UPI:{" "}
                             {
                               transaction.upiId
                             }
                           </small>
-
                         )}
 
-
                         {transaction.withdrawalId && (
-
                           <small>
                             विनंती:{" "}
                             {
                               transaction.withdrawalId
                             }
                           </small>
-
                         )}
 
-
                         {transaction.rejectionReason && (
-
                           <small>
                             कारण:{" "}
                             {
                               transaction.rejectionReason
                             }
                           </small>
-
                         )}
 
                       </div>
-
 
                       <div className="transaction-amount">
 
@@ -1753,20 +1539,16 @@ export default function Wallet() {
                               : "debit-text"
                           }
                         >
-
                           {credit
                             ? "+"
                             : "-"}₹
-
                           {Number(
                             transaction.amount ||
                             0
                           ).toLocaleString(
                             "en-IN"
                           )}
-
                         </strong>
-
 
                         <span
                           className={`transaction-status ${status.className}`}
@@ -1777,9 +1559,7 @@ export default function Wallet() {
                       </div>
 
                     </div>
-
                   );
-
                 }
               )}
 
@@ -1789,10 +1569,7 @@ export default function Wallet() {
 
         </section>
 
-
-        {/* =================================================
-            WALLET INFORMATION
-        ================================================= */}
+        {/* WALLET INFORMATION */}
 
         <section className="wallet-rules">
 
@@ -1832,12 +1609,8 @@ export default function Wallet() {
 
         </section>
 
-
       </div>
 
     </div>
-
   );
-
 }
-
