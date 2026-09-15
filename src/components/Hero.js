@@ -17,6 +17,7 @@ export default function Hero() {
 
   /* =========================================================
      LOAD HERO SLIDES
+     Only visible banners are shown to users
   ========================================================= */
 
   useEffect(() => {
@@ -28,13 +29,26 @@ export default function Hero() {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const slideData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const slideData = snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          .filter((slide) => slide.visible !== false);
 
         setSlides(slideData);
         setLoading(false);
+
+        // Prevent invalid index after admin hides/deletes a banner
+        setIndex((currentIndex) => {
+          if (slideData.length === 0) return 0;
+
+          if (currentIndex >= slideData.length) {
+            return 0;
+          }
+
+          return currentIndex;
+        });
       },
       (error) => {
         console.error("Hero slides error:", error);
@@ -44,7 +58,6 @@ export default function Hero() {
 
     return () => unsubscribe();
   }, []);
-
 
   /* =========================================================
      AUTO SLIDE
@@ -60,28 +73,29 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [slides.length]);
 
-
   /* =========================================================
-     NEXT / PREVIOUS
+     NEXT
   ========================================================= */
 
   const nextSlide = () => {
     if (slides.length <= 1) return;
 
-    setIndex((prev) =>
-      (prev + 1) % slides.length
-    );
+    setIndex((prev) => (prev + 1) % slides.length);
   };
 
+  /* =========================================================
+     PREVIOUS
+  ========================================================= */
 
   const prevSlide = () => {
     if (slides.length <= 1) return;
 
-    setIndex((prev) =>
-      (prev - 1 + slides.length) % slides.length
+    setIndex(
+      (prev) =>
+        (prev - 1 + slides.length) %
+        slides.length
     );
   };
-
 
   /* =========================================================
      TOUCH SWIPE
@@ -91,7 +105,6 @@ export default function Hero() {
     touchStart.current =
       e.touches[0].clientX;
   };
-
 
   const handleTouchEnd = (e) => {
     if (slides.length <= 1) return;
@@ -109,7 +122,6 @@ export default function Hero() {
     }
   };
 
-
   /* =========================================================
      LOADING
   ========================================================= */
@@ -124,7 +136,6 @@ export default function Hero() {
     );
   }
 
-
   /* =========================================================
      EMPTY
   ========================================================= */
@@ -133,13 +144,10 @@ export default function Hero() {
     return null;
   }
 
-
   /* =========================================================
      DESKTOP LOOP
-
+     
      Last slide ke baad first slide duplicate
-     kiya hai taaki desktop par last slide ke
-     saath first slide bhi dikhe.
   ========================================================= */
 
   const desktopSlides =
@@ -153,13 +161,11 @@ export default function Hero() {
         ]
       : slides;
 
-
   return (
     <div className="hero-wrapper">
 
       <div
         className="hero"
-
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -170,20 +176,17 @@ export default function Hero() {
 
         <div
           className="hero-slider"
-
           style={{
             transform: `translateX(-${
               index *
-              (window.innerWidth > 768 ? 50 : 100)
+              (window.innerWidth > 768
+                ? 50
+                : 100)
             }%)`
           }}
         >
 
           {desktopSlides.map((slide, i) => {
-
-            /*
-              Original index ko identify karna
-            */
 
             const originalIndex =
               i % slides.length;
@@ -221,7 +224,6 @@ export default function Hero() {
 
         </div>
 
-
         {/* =====================================================
             NAVIGATION BUTTONS
         ===================================================== */}
@@ -238,7 +240,6 @@ export default function Hero() {
               ‹
             </button>
 
-
             <button
               type="button"
               className="hero-nav next"
@@ -247,7 +248,6 @@ export default function Hero() {
             >
               ›
             </button>
-
 
             {/* =================================================
                 DOTS
@@ -276,10 +276,8 @@ export default function Hero() {
 
       </div>
 
-
       {/* =====================================================
           CTA
-          Kept untouched / commented
       ===================================================== */}
 
       {/*
@@ -300,4 +298,4 @@ export default function Hero() {
 
     </div>
   );
-} 
+}
