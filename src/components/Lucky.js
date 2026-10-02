@@ -8,8 +8,10 @@ import {
   addDoc,
   query,
   where,
-  getDocs
+  getDocs,
+  runTransaction
 } from "firebase/firestore";
+
 import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import "./Lucky.css";
@@ -30,6 +32,10 @@ export default function Lucky({ user }) {
   const [activeTab, setActiveTab] = useState("spin");
   const [winningsFilter, setWinningsFilter] = useState("all");
 
+  /* =========================================================
+     FETCH USER DATA
+  ========================================================= */
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (user && user.uid) {
@@ -39,6 +45,7 @@ export default function Lucky({ user }) {
 
           if (userSnap.exists()) {
             const fetchedTickets = userSnap.data().tickets || 0;
+
             setTickets(fetchedTickets < 0 ? 0 : fetchedTickets);
           }
 
@@ -53,6 +60,10 @@ export default function Lucky({ user }) {
 
     fetchUserData();
   }, [user]);
+
+  /* =========================================================
+     FETCH MY WINNINGS
+  ========================================================= */
 
   const fetchMyWinnings = async (uid) => {
     setLoadingWinnings(true);
@@ -88,50 +99,98 @@ export default function Lucky({ user }) {
     }
   };
 
+  /* =========================================================
+     PRIZES
+  ========================================================= */
+
   const prizes = [
+    {
+      name: "पोलीस भरती शूज – ₹४९९ फ्री",
+      type: "high",
+      image: "/shoes.png",
+      color: "linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)",
+      sliceColor: "#2563eb",
+      textCol: "#ffffff"
+    },
+
     {
       name: "५ पाने मोफत स्कॅन",
       type: "high",
-      color:
-        "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+      color: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+      sliceColor: "#ff9a9e",
       textCol: "#881337"
     },
+
     {
       name: "५ मोफत B&W प्रिंट्स",
       type: "mid",
-      color:
-        "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+      color: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+      sliceColor: "#a18cd1",
       textCol: "#4c1d95"
     },
+
+    {
+      name: "पोलीस भरती बुक – ₹४९९ फ्री",
+      type: "high",
+      image: "/policebhartibook.jpg",
+      color: "linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)",
+      sliceColor: "#7c3aed",
+      textCol: "#ffffff"
+    },
+
     {
       name: "५ मोफत कलर प्रिंट्स",
       type: "low",
-      color:
-        "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
+      color: "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
+      sliceColor: "#84fab0",
       textCol: "#065f46"
     },
+
     {
       name: "३० मिनिट फ्री WiFi",
       type: "mid",
-      color:
-        "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
+      color: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
+      sliceColor: "#f6d365",
       textCol: "#78350f"
     },
+
     {
       name: "पुन्हा प्रयत्न करा",
       type: "none",
-      color:
-        "linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)",
+      color: "linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)",
+      sliceColor: "#cfd9df",
       textCol: "#475569"
     },
+
     {
       name: "कोणत्याही फॉर्मवर १०% सूट",
       type: "low",
-      color:
-        "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+      color: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+      sliceColor: "#a8edea",
       textCol: "#1e3a8a"
     }
   ];
+
+  const sliceAngle = 360 / prizes.length;
+
+  /* =========================================================
+     WHEEL BACKGROUND
+  ========================================================= */
+
+  const wheelBackground = `conic-gradient(
+    #2563eb 0deg 45deg,
+    #ff9a9e 45deg 90deg,
+    #a18cd1 90deg 135deg,
+    #7c3aed 135deg 180deg,
+    #84fab0 180deg 225deg,
+    #f6d365 225deg 270deg,
+    #cfd9df 270deg 315deg,
+    #a8edea 315deg 360deg
+  )`;
+
+  /* =========================================================
+     HANDLE SPIN
+  ========================================================= */
 
   const handleSpin = async () => {
     if (!user) {
@@ -144,6 +203,10 @@ export default function Lucky({ user }) {
     setIsSpinning(true);
     setResult(null);
     setShowCelebration(false);
+
+    /* =======================================================
+       STEP 1 - DEDUCT USER TICKET
+    ======================================================= */
 
     setTickets((prev) => (prev > 0 ? prev - 1 : 0));
 
@@ -164,9 +227,94 @@ export default function Lucky({ user }) {
       return;
     }
 
-    const prizeIndex = Math.floor(Math.random() * prizes.length);
+    /* =======================================================
+       STEP 2 - GET GLOBAL SPIN NUMBER
 
-    const sliceAngle = 360 / prizes.length;
+       50 = BOOK
+       100 = SHOES
+       बाकी = NORMAL RANDOM PRIZE
+    ======================================================= */
+
+    let globalSpinNumber = 0;
+
+    try {
+      const luckyDrawRef = doc(db, "settings", "luckyDraw");
+
+      globalSpinNumber = await runTransaction(db, async (transaction) => {
+        const luckyDrawSnap = await transaction.get(luckyDrawRef);
+
+        let currentSpinCount = 0;
+
+        if (luckyDrawSnap.exists()) {
+          currentSpinCount = luckyDrawSnap.data().spinCount || 0;
+        }
+
+        const nextSpinNumber = currentSpinCount + 1;
+
+        transaction.set(
+          luckyDrawRef,
+          {
+            spinCount: nextSpinNumber,
+            updatedAt: new Date()
+          },
+          {
+            merge: true
+          }
+        );
+
+        return nextSpinNumber;
+      });
+
+      console.log("GLOBAL SPIN NUMBER:", globalSpinNumber);
+    } catch (error) {
+      console.error("Error updating global spin count:", error);
+
+      alert(
+        "स्पिन नंबर सेव करण्यात समस्या आली. कृपया पुन्हा प्रयत्न करा."
+      );
+
+      setTickets((prev) => prev + 1);
+      setIsSpinning(false);
+
+      return;
+    }
+
+    /* =======================================================
+       STEP 3 - SELECT PRIZE
+
+       INDEX:
+       0 = Shoes
+       3 = Book
+
+       NORMAL PRIZES:
+       1, 2, 4, 5, 6, 7
+
+       त्यामुळे Shoes आणि Book normal random मध्ये
+       कधीच येणार नाहीत.
+    ======================================================= */
+
+    let prizeIndex;
+
+    if (globalSpinNumber === 50) {
+      // 50th spin = Police Bharti Book
+      prizeIndex = 3;
+    } else if (globalSpinNumber === 100) {
+      // 100th spin = Police Bharti Shoes
+      prizeIndex = 0;
+    } else {
+      // Normal prizes only
+      const normalPrizeIndexes = [1, 2, 4, 5, 6, 7];
+
+      prizeIndex =
+        normalPrizeIndexes[
+          Math.floor(Math.random() * normalPrizeIndexes.length)
+        ];
+    }
+
+    /* =======================================================
+       STEP 4 - CALCULATE WHEEL ROTATION
+    ======================================================= */
+
     const offset = sliceAngle / 2;
 
     const targetAngle =
@@ -182,73 +330,100 @@ export default function Lucky({ user }) {
 
     setRotation(newRotation);
 
+    /* =======================================================
+       STEP 5 - SHOW RESULT AFTER WHEEL STOPS
+    ======================================================= */
+
     setTimeout(async () => {
       const wonPrize = prizes[prizeIndex];
 
       setResult(wonPrize);
       setIsSpinning(false);
 
-      /*
-       * 🎉 SHOW CELEBRATION
-       * Only actual winning prizes get celebration.
-       */
+      /* =====================================================
+         IMPORTANT:
+         POPUP SHOULD OPEN FOR EVERY WINNING PRIZE
+         NOT ONLY 50th / 100th.
+      ===================================================== */
+
       if (wonPrize.type !== "none") {
         setShowCelebration(true);
+      }
 
+      /* =====================================================
+         SAVE EVERY WINNING PRIZE TO WALLET
+
+         "पुन्हा प्रयत्न करा" wallet मध्ये save होणार नाही.
+      ===================================================== */
+
+      if (wonPrize.type !== "none") {
         try {
           const expiryDate = new Date();
 
-          expiryDate.setDate(
-            expiryDate.getDate() + 5
-          );
+          expiryDate.setDate(expiryDate.getDate() + 5);
 
           await addDoc(collection(db, "winnings"), {
             userId: user.uid,
+
             userName: user.name || "Customer",
+
             userMobile: user.mobile || "",
+
             prizeName: wonPrize.name,
+
+            prizeImage: wonPrize.image || null,
+
             status: "active",
+
             wonAt: new Date(),
-            expiresAt: expiryDate
+
+            expiresAt: expiryDate,
+
+            // Important for tracking 50th / 100th special wins
+            winningSpinNumber: globalSpinNumber
           });
 
-          fetchMyWinnings(user.uid);
+          await fetchMyWinnings(user.uid);
         } catch (error) {
-          console.error(
-            "Error saving winning:",
-            error
-          );
+          console.error("Error saving winning:", error);
         }
       }
     }, 4000);
   };
 
+  /* =========================================================
+     CLOSE CELEBRATION
+  ========================================================= */
+
   const closeCelebration = () => {
     setShowCelebration(false);
   };
+
+  /* =========================================================
+     VIEW MY WINNINGS
+  ========================================================= */
 
   const viewMyWinnings = () => {
     setShowCelebration(false);
     setActiveTab("winnings");
   };
 
+  /* =========================================================
+     HOW TO REDEEM
+  ========================================================= */
+
   const handleHowToRedeem = () => {
     alert(
       "ℹ️ कसे रिडीम करावे:\n\n" +
         "कृपया काउंटरवर तुमचा नोंदणीकृत मोबाईल नंबर सांगा " +
         "किंवा ही स्क्रीन कॅफे स्टाफला दाखवा. " +
-        "स्टाफ त्यांच्या सिस्टममधून हे रिडीम करून तुम्हाला सर्विस देतील!"
+        "स्टाफ त्यांच्या सिस्टममधून हे रिडीम करून तुम्हाला सर्विस किंवा बक्षीस देतील!"
     );
   };
 
-  const wheelBackground = `conic-gradient(
-    #ff9a9e 0deg 60deg,
-    #a18cd1 60deg 120deg,
-    #84fab0 120deg 180deg,
-    #f6d365 180deg 240deg,
-    #cfd9df 240deg 300deg,
-    #a8edea 300deg 360deg
-  )`;
+  /* =========================================================
+     FILTER WINNINGS
+  ========================================================= */
 
   const getFilteredWinnings = () => {
     const now = new Date();
@@ -264,74 +439,67 @@ export default function Lucky({ user }) {
         win.status === "expired" ||
         (win.status === "active" && diffTime < 0);
 
-      const isRedeemed =
-        win.status === "redeemed";
+      const isRedeemed = win.status === "redeemed";
 
       const isActive =
-        win.status === "active" &&
-        !isExpired;
+        win.status === "active" && !isExpired;
 
       const isExpiringSoon =
         isActive && diffDays <= 2;
 
-      if (winningsFilter === "active")
+      if (winningsFilter === "active") {
         return isActive;
+      }
 
-      if (winningsFilter === "expiring_soon")
+      if (winningsFilter === "expiring_soon") {
         return isExpiringSoon;
+      }
 
-      if (winningsFilter === "redeemed")
+      if (winningsFilter === "redeemed") {
         return isRedeemed;
+      }
 
-      if (winningsFilter === "expired")
+      if (winningsFilter === "expired") {
         return isExpired;
+      }
 
       return true;
     });
   };
 
-  const filteredWinnings =
-    getFilteredWinnings();
+  const filteredWinnings = getFilteredWinnings();
+
+  /* =========================================================
+     JSX
+  ========================================================= */
 
   return (
     <div className="lucky-wrapper">
       <div className="lucky-premium-card">
 
-        {/* =========================
+        {/* ===================================================
             TABS
-        ========================== */}
+        =================================================== */}
 
         <div className="lucky-tabs">
+
           <button
             className={`l-tab-btn ${
-              activeTab === "spin"
-                ? "active"
-                : ""
+              activeTab === "spin" ? "active" : ""
             }`}
-            onClick={() =>
-              setActiveTab("spin")
-            }
+            onClick={() => setActiveTab("spin")}
           >
-            <span className="icon">
-              🎡
-            </span>
-
+            <span className="icon">🎡</span>
             स्पिन आणि जिंका
           </button>
 
           <button
             className={`l-tab-btn ${
-              activeTab === "winnings"
-                ? "active"
-                : ""
+              activeTab === "winnings" ? "active" : ""
             }`}
-            onClick={() =>
-              setActiveTab("winnings")
-            }
+            onClick={() => setActiveTab("winnings")}
           >
-            <span className="icon">
-              🏆
-            </span>
+            <span className="icon">🏆</span>
 
             माझी बक्षिसे
 
@@ -341,33 +509,32 @@ export default function Lucky({ user }) {
               </span>
             )}
           </button>
+
         </div>
 
-        {/* =========================
+        {/* ===================================================
             SPIN TAB
-        ========================== */}
+        =================================================== */}
 
         {activeTab === "spin" && (
           <div className="lucky-spin-container fade-in">
 
+            {/* HEADER */}
+
             <div className="lucky-header-text">
-              <h2>
-                व्हील फिरवा
-              </h2>
+              <h2>व्हील फिरवा</h2>
 
               <p>
-                खास प्रिंटिंग आणि स्कॅनिंग
-                ऑफर्स जिंका!
+                खास प्रिंटिंग, स्कॅनिंग आणि मेगा बक्षिसे जिंका!
               </p>
             </div>
 
-            {/* Tickets */}
+            {/* TICKETS */}
 
             <div className="lucky-ticket-bar">
+
               <div className="ticket-info">
-                <span className="t-icon">
-                  🎟️
-                </span>
+                <span className="t-icon">🎟️</span>
 
                 <span className="t-text">
                   शिल्लक स्पिन्स
@@ -377,14 +544,14 @@ export default function Lucky({ user }) {
               <div className="ticket-value">
                 {loadingTickets
                   ? "..."
-                  : Math.max(
-                      0,
-                      tickets
-                    )}
+                  : Math.max(0, tickets)}
               </div>
+
             </div>
 
-            {/* Wheel */}
+            {/* =================================================
+                WHEEL
+            ================================================= */}
 
             <div className="wheel-main-container">
 
@@ -395,48 +562,64 @@ export default function Lucky({ user }) {
               <div
                 className="wheel-body"
                 style={{
-                  background:
-                    wheelBackground,
-                  transform:
-                    `rotate(${rotation}deg)`
+                  background: wheelBackground,
+                  transform: `rotate(${rotation}deg)`
                 }}
               >
-                {prizes.map(
-                  (prize, i) => {
-                    const angle =
-                      (i * 60 + 30) - 90;
 
-                    return (
-                      <div
-                        key={i}
-                        className="wheel-slice-text"
-                        style={{
-                          transform:
-                            `rotate(${angle}deg)`
-                        }}
-                      >
+                {prizes.map((prize, i) => {
+
+                  const angle =
+                    i * sliceAngle +
+                    sliceAngle / 2 -
+                    90;
+
+                  return (
+                    <div
+                      key={i}
+                      className="wheel-slice-text"
+                      style={{
+                        transform: `rotate(${angle}deg)`
+                      }}
+                    >
+
+                      <div className="wheel-slice-content">
+
+                        {prize.image && (
+                          <img
+                            src={prize.image}
+                            alt=""
+                            className="wheel-prize-img"
+                          />
+                        )}
+
                         <span
                           style={{
-                            color:
-                              prize.textCol
+                            color: prize.textCol
                           }}
                         >
                           {prize.name}
                         </span>
+
                       </div>
-                    );
-                  }
-                )}
+
+                    </div>
+                  );
+                })}
 
                 <div className="wheel-center-dot">
                   <div className="wheel-center-inner"></div>
                 </div>
+
               </div>
             </div>
 
-            {/* Small Result */}
+            {/* =================================================
+                SMALL RESULT
+            ================================================= */}
 
             <div className="lucky-result-area">
+
               {result && (
                 <div
                   className={`result-popup ${
@@ -445,167 +628,186 @@ export default function Lucky({ user }) {
                       : "win"
                   }`}
                 >
+
                   {result.type === "none" ? (
                     <>
-                      😔 अरेरे!
-                      पुढच्या वेळी
-                      नक्की प्रयत्न करा.
+                      😔 अरेरे! पुढच्या वेळी नक्की प्रयत्न करा.
                     </>
                   ) : (
                     <>
-                      🎉 अभिनंदन!
-                      तुम्ही{" "}
-                      <strong>
-                        {result.name}
-                      </strong>{" "}
+                      🎉 अभिनंदन! तुम्ही{" "}
+                      <strong>{result.name}</strong>{" "}
                       जिंकलात!
                     </>
                   )}
+
                 </div>
               )}
+
             </div>
 
-            {/* =========================
-                WIN CELEBRATION MODAL
-            ========================== */}
+            {/* =================================================
+                CELEBRATION MODAL
+            ================================================= */}
 
             {showCelebration &&
               result &&
               result.type !== "none" && (
+
+              <div
+                className="win-celebration-overlay"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Winning celebration"
+                onClick={closeCelebration}
+              >
+
                 <div
-                  className="win-celebration-overlay"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Winning celebration"
-                  onClick={
-                    closeCelebration
-                  }
+                  className="confetti-layer"
+                  aria-hidden="true"
                 >
 
-                  {/* CONFETTI */}
-
-                  <div
-                    className="confetti-layer"
-                    aria-hidden="true"
-                  >
-                    {Array.from({
-                      length: 40
-                    }).map((_, i) => (
+                  {Array.from({ length: 40 }).map(
+                    (_, i) => (
                       <span
                         key={i}
                         className="confetti-piece"
                         style={{
-                          "--x": `${
-                            (i * 29) % 100
-                          }%`,
+                          "--x": `${(i * 29) % 100}%`,
                           "--delay": `${
                             (i % 12) * 0.08
                           }s`,
                           "--drift": `${
-                            ((i * 17) % 160) -
-                            80
+                            ((i * 17) % 160) - 80
                           }px`,
                           "--rotate": `${
                             (i * 47) % 360
                           }deg`
                         }}
                       />
-                    ))}
+                    )
+                  )}
+
+                </div>
+
+                <div
+                  className="win-celebration-card"
+                  onClick={(e) =>
+                    e.stopPropagation()
+                  }
+                >
+
+                  {/* CLOSE */}
+
+                  <button
+                    className="celebration-close"
+                    onClick={closeCelebration}
+                    aria-label="Close"
+                  >
+                    ×
+                  </button>
+
+                  {/* CROWN */}
+
+                  <div className="celebration-crown">
+                    👑
                   </div>
 
-                  {/* CELEBRATION CARD */}
+                  {/* SPARKLES */}
 
-                  <div
-                    className="win-celebration-card"
-                    onClick={(e) =>
-                      e.stopPropagation()
-                    }
+                  <div className="celebration-sparkles">
+                    <span>✨</span>
+                    <span>⭐</span>
+                    <span>✨</span>
+                  </div>
+
+                  {/* TROPHY */}
+
+                  <div className="celebration-trophy">
+                    🏆
+                  </div>
+
+                  {/* TITLE */}
+
+                  <div className="celebration-small-title">
+                    CONGRATULATIONS
+                  </div>
+
+                  <h3
+                    style={{
+                      fontSize: "18px",
+                      margin: "15px"
+                    }}
                   >
+                    तुम्ही जिंकलात! 🎉
+                  </h3>
 
-                    <button
-                      className="celebration-close"
-                      onClick={
-                        closeCelebration
-                      }
-                      aria-label="Close"
-                    >
-                      ×
-                    </button>
+                  <p className="celebration-subtitle">
+                    तुमच्यासाठी खास बक्षीस!
+                  </p>
 
-                    <div className="celebration-crown">
-                      👑
-                    </div>
+                  {/* WINNING PRIZE */}
 
-                    <div className="celebration-sparkles">
-                      <span>✨</span>
-                      <span>⭐</span>
-                      <span>✨</span>
-                    </div>
+                  <div className="winning-prize-box">
 
-                    <div className="celebration-trophy">
-                      🏆
-                    </div>
-
-                    <div className="celebration-small-title">
-                      CONGRATULATIONS
-                    </div>
-
-                    <h3>
-                      तुम्ही जिंकलात! 🎉
-                    </h3>
-
-                    <p className="celebration-subtitle">
-                      तुमच्यासाठी खास बक्षीस!
-                    </p>
-
-                    {/* EXACT WINNING */}
-
-                    <div className="winning-prize-box">
-
+                    {result.image ? (
+                      <img
+                        src={result.image}
+                        alt={result.name}
+                        className="winning-prize-photo"
+                      />
+                    ) : (
                       <span className="winning-prize-icon">
                         🎁
                       </span>
+                    )}
 
-                      <strong>
-                        {result.name}
-                      </strong>
-
-                    </div>
-
-                    <div className="celebration-message">
-                      <span>🎊</span>
-
-                      <span>
-                        हे बक्षीस तुमच्या
-                        वॉलेटमध्ये सेव्ह झाले आहे.
-                      </span>
-
-                      <span>🎊</span>
-                    </div>
-
-                    <button
-                      className="celebration-redeem-btn"
-                      onClick={
-                        viewMyWinnings
-                      }
-                    >
-                      🏆 माझे बक्षीस पहा
-                    </button>
-
-                    <button
-                      className="celebration-continue-btn"
-                      onClick={
-                        closeCelebration
-                      }
-                    >
-                      नंतर पाहू
-                    </button>
+                    <strong>
+                      {result.name}
+                    </strong>
 
                   </div>
-                </div>
-              )}
 
-            {/* Spin Button */}
+                  {/* MESSAGE */}
+
+                  <div className="celebration-message">
+
+                    <span>🎊</span>
+
+                    <span>
+                      हे बक्षीस तुमच्या वॉलेटमध्ये सेव्ह झाले आहे.
+                    </span>
+
+                    <span>🎊</span>
+
+                  </div>
+
+                  {/* VIEW WINNINGS */}
+
+                  <button
+                    className="celebration-redeem-btn"
+                    onClick={viewMyWinnings}
+                  >
+                    🏆 माझे बक्षीस पहा
+                  </button>
+
+                  {/* CONTINUE */}
+
+                  <button
+                    className="celebration-continue-btn"
+                    onClick={closeCelebration}
+                  >
+                    नंतर पाहू
+                  </button>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* =================================================
+                SPIN BUTTON
+            ================================================= */}
 
             <button
               className={`btn-spin-now ${
@@ -622,6 +824,7 @@ export default function Lucky({ user }) {
                 loadingTickets
               }
             >
+
               <div className="btn-glow"></div>
 
               <span>
@@ -631,96 +834,118 @@ export default function Lucky({ user }) {
                   ? "फिरत आहे..."
                   : "आता स्पिन करा"}
               </span>
+
             </button>
+
+            {/* =================================================
+                TERMS & CONDITIONS
+            ================================================= */}
+
+            <div className="lucky-terms-text">
+              टी&सी लागू • पोलीस भरती शूज – ₹४९९ फ्री  आणि
+              पोलीस भरती बुक – ₹४९९ फ्री आमच्याकडे फॉर्म
+              भरल्यानंतरच मिळतील.
+            </div>
+
+            {/* NO TICKET */}
 
             {tickets <= 0 &&
               user &&
               !isSpinning && (
                 <p className="no-ticket-text">
-                  अधिक स्पिन्स मिळवण्यासाठी
-                  सर्विस बुक करा!
+                  अधिक स्पिन्स मिळवण्यासाठी सर्विस बुक करा!
                 </p>
               )}
+
           </div>
         )}
 
-        {/* =========================
+        {/* ===================================================
             MY WINNINGS TAB
-        ========================== */}
+        =================================================== */}
 
         {activeTab === "winnings" && (
           <div className="lucky-winnings-container fade-in">
 
+            {/* HEADER */}
+
             <div className="winnings-header">
 
               <div className="w-texts">
-                <h2>
-                  तुमचे वॉलेट
-                </h2>
+
+                <h2>तुमचे वॉलेट</h2>
 
                 <p>
-                  रिडीम करण्यासाठी
-                  काउंटरवर दाखवा
+                  रिडीम करण्यासाठी काउंटरवर दाखवा
                 </p>
+
               </div>
 
               {user &&
                 myWinnings.length > 0 && (
-                  <div className="w-filter-wrapper">
 
-                    <select
-                      className="w-filter"
-                      value={
-                        winningsFilter
-                      }
-                      onChange={(e) =>
-                        setWinningsFilter(
-                          e.target.value
-                        )
-                      }
-                    >
-                      <option value="all">
-                        सर्व बक्षिसे
-                      </option>
+                <div className="w-filter-wrapper">
 
-                      <option value="active">
-                        🟢 सक्रिय (Active)
-                      </option>
+                  <select
+                    className="w-filter"
+                    value={winningsFilter}
+                    onChange={(e) =>
+                      setWinningsFilter(
+                        e.target.value
+                      )
+                    }
+                  >
 
-                      <option value="expiring_soon">
-                        🟠 लवकरच कालबाह्य
-                      </option>
+                    <option value="all">
+                      सर्व बक्षिसे
+                    </option>
 
-                      <option value="redeemed">
-                        🔵 वापरलेले (Used)
-                      </option>
+                    <option value="active">
+                      🟢 सक्रिय (Active)
+                    </option>
 
-                      <option value="expired">
-                        🔴 कालबाह्य (Expired)
-                      </option>
-                    </select>
+                    <option value="expiring_soon">
+                      🟠 लवकरच कालबाह्य
+                    </option>
 
-                  </div>
-                )}
+                    <option value="redeemed">
+                      🔵 वापरलेले (Used)
+                    </option>
+
+                    <option value="expired">
+                      🔴 कालबाह्य (Expired)
+                    </option>
+
+                  </select>
+
+                </div>
+              )}
+
             </div>
+
+            {/* WINNINGS LIST */}
 
             <div className="winnings-list-area">
 
               {!user ? (
+
                 <div className="empty-state">
+
                   <span className="empty-icon">
                     🔒
                   </span>
 
                   <p>
-                    तुमचे वॉलेट पाहण्यासाठी
-                    कृपया लॉग इन करा.
+                    तुमचे वॉलेट पाहण्यासाठी कृपया
+                    लॉग इन करा.
                   </p>
+
                 </div>
 
               ) : myWinnings.length === 0 ? (
 
                 <div className="empty-state">
+
                   <span className="empty-icon">
                     🎁
                   </span>
@@ -728,135 +953,147 @@ export default function Lucky({ user }) {
                   <p>
                     तुमचे वॉलेट रिक्त आहे.
                     <br />
-                    बक्षिसे जिंकण्यासाठी
-                    व्हील फिरवा!
+                    बक्षिसे जिंकण्यासाठी व्हील फिरवा!
                   </p>
+
                 </div>
 
               ) : filteredWinnings.length === 0 ? (
 
                 <div className="empty-state">
+
                   <p>
-                    या फिल्टरसाठी
-                    कोणतीही बक्षिसे
+                    या फिल्टरसाठी कोणतीही बक्षिसे
                     आढळली नाहीत.
                   </p>
+
                 </div>
 
               ) : (
 
                 <div className="winnings-list">
 
-                  {filteredWinnings.map(
-                    (win) => {
+                  {filteredWinnings.map((win) => {
 
-                      const now =
-                        new Date();
+                    const now = new Date();
 
-                      const diffTime =
-                        win.expiresAt -
-                        now;
+                    const diffTime =
+                      win.expiresAt - now;
 
-                      const diffDays =
-                        Math.ceil(
-                          diffTime /
-                            (1000 *
-                              60 *
-                              60 *
-                              24)
-                        );
+                    const diffDays =
+                      Math.ceil(
+                        diffTime /
+                          (1000 * 60 * 60 * 24)
+                      );
 
-                      let isExpired =
-                        win.status ===
-                          "expired" ||
-                        (win.status ===
-                          "active" &&
-                          diffTime < 0);
+                    const isExpired =
+                      win.status === "expired" ||
+                      (win.status === "active" &&
+                        diffTime < 0);
 
-                      let isRedeemed =
-                        win.status ===
-                        "redeemed";
+                    const isRedeemed =
+                      win.status === "redeemed";
 
-                      let statusClass =
-                        "active";
+                    let statusClass = "active";
 
-                      let statusText =
-                        `${diffDays} दिवसांत कालबाह्य होईल`;
+                    let statusText =
+                      `${diffDays} दिवसांत कालबाह्य होईल`;
 
-                      if (isRedeemed) {
-                        statusClass =
-                          "redeemed";
+                    if (isRedeemed) {
 
-                        statusText =
-                          "वापरले";
-                      } else if (
-                        isExpired
-                      ) {
-                        statusClass =
-                          "expired";
+                      statusClass = "redeemed";
 
-                        statusText =
-                          "कालबाह्य झाले";
-                      } else if (
-                        diffDays <= 2
-                      ) {
-                        statusClass =
-                          "warning";
+                      statusText = "वापरले";
 
-                        statusText =
-                          `फक्त ${diffDays} दिवस बाकी!`;
-                      }
+                    } else if (isExpired) {
 
-                      return (
-                        <div
-                          key={win.id}
-                          className={`reward-card ${statusClass}`}
-                        >
+                      statusClass = "expired";
 
-                          <div className="r-icon">
-                            🎁
-                          </div>
+                      statusText = "कालबाह्य झाले";
 
-                          <div className="r-details">
+                    } else if (diffDays <= 2) {
 
-                            <h4>
-                              {win.prizeName}
-                            </h4>
+                      statusClass = "warning";
 
-                            <span
-                              className={`r-badge ${statusClass}`}
-                            >
-                              {statusText}
-                            </span>
+                      statusText =
+                        `फक्त ${diffDays} दिवस बाकी!`;
+                    }
 
-                            <span className="r-date">
-                              जिंकल्याची तारीख:{" "}
-                              {win.wonAt.toLocaleDateString()}
-                            </span>
+                    return (
+                      <div
+                        key={win.id}
+                        className={`reward-card ${statusClass}`}
+                      >
 
-                          </div>
+                        {/* ICON */}
 
-                          {!isRedeemed &&
-                            !isExpired && (
-                              <button
-                                className="r-redeem-btn"
-                                onClick={
-                                  handleHowToRedeem
-                                }
-                              >
-                                वापरा
-                              </button>
-                            )}
+                        <div className="r-icon">
+
+                          {win.prizeImage ? (
+                            <img
+                              src={win.prizeImage}
+                              alt=""
+                              className="r-custom-img"
+                            />
+                          ) : (
+                            "🎁"
+                          )}
 
                         </div>
-                      );
-                    }
-                  )}
+
+                        {/* DETAILS */}
+
+                        <div className="r-details">
+
+                          <h4>
+                            {win.prizeName}
+                          </h4>
+
+                          <span
+                            className={`r-badge ${statusClass}`}
+                          >
+                            {statusText}
+                          </span>
+
+                          <span className="r-date">
+                            जिंकल्याची तारीख:{" "}
+                            {win.wonAt.toLocaleDateString()}
+                          </span>
+
+                          {/* SPECIAL SPIN NUMBER */}
+
+                          {win.winningSpinNumber && (
+                            <span className="r-date">
+                              स्पिन क्रमांक:{" "}
+                              {win.winningSpinNumber}
+                            </span>
+                          )}
+
+                        </div>
+
+                        {/* REDEEM BUTTON */}
+
+                        {!isRedeemed &&
+                          !isExpired && (
+
+                          <button
+                            className="r-redeem-btn"
+                            onClick={handleHowToRedeem}
+                          >
+                            वापरा
+                          </button>
+
+                        )}
+
+                      </div>
+                    );
+                  })}
 
                 </div>
               )}
 
             </div>
+
           </div>
         )}
 
