@@ -34,6 +34,7 @@ export default function Signup({
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [referralCode, setReferralCode] = useState("");
+  const [referralFromURL, setReferralFromURL] = useState(false);
 
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -43,6 +44,37 @@ export default function Signup({
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
+
+
+  // =========================================================
+  // AUTO-FILL REFERRAL CODE FROM URL
+  // Example: /signup?ref=OWCD8UQZ
+  // =========================================================
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(
+        window.location.search
+      );
+
+      const refCode = params
+        .get("ref")
+        ?.trim()
+        .toUpperCase();
+
+      if (refCode) {
+        setReferralCode(refCode);
+        setReferralFromURL(true);
+      } else {
+        setReferralFromURL(false);
+      }
+    } catch (error) {
+      console.error(
+        "Referral URL error:",
+        error
+      );
+    }
+  }, []);
 
 
   // =========================================================
@@ -1178,11 +1210,22 @@ export default function Signup({
                   )
                 }
                 maxLength="10"
+                readOnly={referralFromURL}
+                style={
+                  referralFromURL
+                    ? {
+                        cursor: "not-allowed",
+                        opacity: 0.85,
+                      }
+                    : undefined
+                }
               />
 
 
               <small>
-                Refer केले असल्यास code टाका.
+                {referralFromURL
+                  ? "Referral link मधून code आपोआप भरला आहे."
+                  : "Refer केले असल्यास code टाका."}
               </small>
 
             </div>
