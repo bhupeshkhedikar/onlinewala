@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 
 import { auth, db } from "./firebase";
@@ -19,6 +20,10 @@ export default function Login({
   onLoginSuccess,
   onSwitchToSignup,
 }) {
+
+  /* =========================================================
+     STATES
+  ========================================================= */
 
   const [mobile, setMobile] =
     useState("");
@@ -45,11 +50,25 @@ export default function Login({
     useState(0);
 
 
-  /*
-  =========================================================
-  COUNTDOWN
-  =========================================================
-  */
+  /* =========================================================
+     ADMIN STATES
+  ========================================================= */
+
+  const [adminMode, setAdminMode] =
+    useState(false);
+
+  const [adminEmail, setAdminEmail] =
+    useState("");
+
+  const [adminPassword, setAdminPassword] =
+    useState("");
+
+  const ADMIN_SECRET_CODE = "1999";
+
+
+  /* =========================================================
+     COUNTDOWN
+  ========================================================= */
 
   useEffect(() => {
 
@@ -77,11 +96,9 @@ export default function Login({
   }, [countdown]);
 
 
-  /*
-  =========================================================
-  CLEANUP RECAPTCHA
-  =========================================================
-  */
+  /* =========================================================
+     CLEANUP RECAPTCHA
+  ========================================================= */
 
   useEffect(() => {
 
@@ -114,11 +131,9 @@ export default function Login({
   }, []);
 
 
-  /*
-  =========================================================
-  SETUP RECAPTCHA
-  =========================================================
-  */
+  /* =========================================================
+     SETUP RECAPTCHA
+  ========================================================= */
 
   const setupRecaptcha = () => {
 
@@ -141,9 +156,11 @@ export default function Login({
             size: "invisible",
 
             callback: () => {
+
               console.log(
                 "Login reCAPTCHA verified"
               );
+
             },
 
             "expired-callback": () => {
@@ -166,6 +183,7 @@ export default function Login({
               }
 
             },
+
           }
         );
 
@@ -186,195 +204,438 @@ export default function Login({
   };
 
 
-  /*
-  =========================================================
-  SEND OTP
-  =========================================================
-  */
+  /* =========================================================
+     MOBILE INPUT CHANGE
+     
+     1999 = ADMIN MODE
+     Anything else = NORMAL USER
+  ========================================================= */
 
-  const handleSendOTP = async () => {
+  const handleMobileChange = (e) => {
 
+    const value =
+      e.target.value
+        .replace(/\D/g, "");
+
+    setMobile(value);
     setError("");
 
+    /*
+      SECRET ADMIN CODE
+      =================
+      Exactly 1999 entered:
+      Show Admin Email/Password
+    */
 
-    const cleanMobile =
-      mobile
-        .replace(/\D/g, "")
-        .trim();
+    if (value === ADMIN_SECRET_CODE) {
 
-
-    if (
-      !/^[0-9]{10}$/.test(
-        cleanMobile
-      )
-    ) {
-
-      setError(
-        "कृपया 10 अंकी मोबाईल नंबर टाका."
-      );
-
-      return;
-
-    }
-
-
-    try {
-
-      setLoading(true);
-
+      setAdminMode(true);
 
       /*
-      -------------------------------------------------------
-      CHECK WHETHER USER EXISTS IN FIRESTORE
-      -------------------------------------------------------
+        Clear OTP related states
+        because this is admin mode.
       */
 
-      const usersQuery =
-        await import(
-          "firebase/firestore"
-        );
+      setOtpSent(false);
+      setConfirmationResult(null);
+      setOtp("");
 
+    } else {
 
-      const {
-        collection,
-        query,
-        where,
-        getDocs,
-      } = usersQuery;
-
-
-      const mobileQuery =
-        query(
-          collection(
-            db,
-            "users"
-          ),
-          where(
-            "mobile",
-            "==",
-            cleanMobile
-          )
-        );
-
-
-      const snapshot =
-        await getDocs(
-          mobileQuery
-        );
-
-
-      if (
-        snapshot.empty
-      ) {
-
-        setError(
-          "या मोबाईल नंबरवर खाते सापडले नाही. कृपया आधी साइन अप करा."
-        );
-
-        setLoading(false);
-
-        return;
-
-      }
-
-
-      /*
-      -------------------------------------------------------
-      SETUP RECAPTCHA
-      -------------------------------------------------------
-      */
-
-      const appVerifier =
-        setupRecaptcha();
-
-
-      /*
-      -------------------------------------------------------
-      SEND OTP
-      -------------------------------------------------------
-      */
-
-      const phoneNumber =
-        `+91${cleanMobile}`;
-
-
-      const confirmation =
-        await signInWithPhoneNumber(
-          auth,
-          phoneNumber,
-          appVerifier
-        );
-
-
-      setConfirmationResult(
-        confirmation
-      );
-
-      setOtpSent(true);
-
-      setCountdown(30);
-
-      setError("");
-
-
-    } catch (err) {
-
-      console.error(
-        "Send Login OTP Error:",
-        err
-      );
-
-
-      if (
-        err.code ===
-        "auth/invalid-phone-number"
-      ) {
-
-        setError(
-          "मोबाईल नंबर योग्य नाही."
-        );
-
-      } else if (
-        err.code ===
-        "auth/too-many-requests"
-      ) {
-
-        setError(
-          "खूप प्रयत्न झाले आहेत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
-        );
-
-      } else if (
-        err.code ===
-        "auth/quota-exceeded"
-      ) {
-
-        setError(
-          "OTP SMS quota संपली आहे. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
-        );
-
-      } else {
-
-        setError(
-          "OTP पाठवताना काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा."
-        );
-
-      }
-
-
-    } finally {
-
-      setLoading(false);
+      setAdminMode(false);
 
     }
 
   };
 
 
-  /*
-  =========================================================
-  VERIFY OTP
-  =========================================================
-  */
+  /* =========================================================
+     ADMIN LOGIN
+  ========================================================= */
+
+  const handleAdminLogin =
+    async (e) => {
+
+      e.preventDefault();
+
+      setError("");
+
+      if (!adminEmail.trim()) {
+
+        setError(
+          "कृपया Admin Email ID टाका."
+        );
+
+        return;
+
+      }
+
+      if (!adminPassword) {
+
+        setError(
+          "कृपया Admin Password टाका."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        setLoading(true);
+
+
+        /*
+          FIREBASE EMAIL/PASSWORD LOGIN
+        */
+
+        const result =
+          await signInWithEmailAndPassword(
+            auth,
+            adminEmail.trim(),
+            adminPassword
+          );
+
+
+        const adminUser =
+          result.user;
+
+
+        /*
+          CHECK FIRESTORE ADMIN ROLE
+          
+          users/{uid}
+          role: "admin"
+        */
+
+        const adminRef =
+          doc(
+            db,
+            "users",
+            adminUser.uid
+          );
+
+
+        const adminSnapshot =
+          await getDoc(
+            adminRef
+          );
+
+
+        if (
+          !adminSnapshot.exists()
+        ) {
+
+          await auth.signOut();
+
+          setError(
+            "Admin profile सापडले नाही."
+          );
+
+          return;
+
+        }
+
+
+        const adminData =
+          adminSnapshot.data();
+
+
+        if (
+          adminData.role !== "admin"
+        ) {
+
+          await auth.signOut();
+
+          setError(
+            "तुमच्याकडे Admin access नाही."
+          );
+
+          return;
+
+        }
+
+
+        console.log(
+          "Admin login successful:",
+          adminUser.uid
+        );
+
+
+        /*
+          LOGIN SUCCESS
+        */
+
+        if (
+          onLoginSuccess
+        ) {
+
+          onLoginSuccess(
+            adminUser
+          );
+
+        }
+
+      } catch (err) {
+
+        console.error(
+          "Admin Login Error:",
+          err
+        );
+
+
+        if (
+          err.code ===
+          "auth/invalid-credential"
+        ) {
+
+          setError(
+            "Email ID किंवा Password चुकीचा आहे."
+          );
+
+        } else if (
+          err.code ===
+          "auth/user-not-found"
+        ) {
+
+          setError(
+            "Admin account सापडले नाही."
+          );
+
+        } else if (
+          err.code ===
+          "auth/wrong-password"
+        ) {
+
+          setError(
+            "Password चुकीचा आहे."
+          );
+
+        } else if (
+          err.code ===
+          "auth/invalid-email"
+        ) {
+
+          setError(
+            "Email ID योग्य नाही."
+          );
+
+        } else {
+
+          setError(
+            "Admin login करताना काहीतरी चूक झाली."
+          );
+
+        }
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+
+  /* =========================================================
+     SEND OTP
+  ========================================================= */
+
+  const handleSendOTP =
+    async () => {
+
+      setError("");
+
+
+      const cleanMobile =
+        mobile
+          .replace(/\D/g, "")
+          .trim();
+
+
+      /*
+        ADMIN CODE ENTERED
+        ==================
+        Do NOT send OTP
+      */
+
+      if (
+        cleanMobile ===
+        ADMIN_SECRET_CODE
+      ) {
+
+        setAdminMode(true);
+
+        return;
+
+      }
+
+
+      if (
+        !/^[0-9]{10}$/.test(
+          cleanMobile
+        )
+      ) {
+
+        setError(
+          "कृपया 10 अंकी मोबाईल नंबर टाका."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        setLoading(true);
+
+
+        /*
+          CHECK WHETHER USER EXISTS
+          IN FIRESTORE
+        */
+
+        const usersQuery =
+          await import(
+            "firebase/firestore"
+          );
+
+
+        const {
+          collection,
+          query,
+          where,
+          getDocs,
+        } = usersQuery;
+
+
+        const mobileQuery =
+          query(
+            collection(
+              db,
+              "users"
+            ),
+            where(
+              "mobile",
+              "==",
+              cleanMobile
+            )
+          );
+
+
+        const snapshot =
+          await getDocs(
+            mobileQuery
+          );
+
+
+        if (
+          snapshot.empty
+        ) {
+
+          setError(
+            "या मोबाईल नंबरवर खाते सापडले नाही. कृपया आधी साइन अप करा."
+          );
+
+          setLoading(false);
+
+          return;
+
+        }
+
+
+        /*
+          SETUP RECAPTCHA
+        */
+
+        const appVerifier =
+          setupRecaptcha();
+
+
+        /*
+          SEND OTP
+        */
+
+        const phoneNumber =
+          `+91${cleanMobile}`;
+
+
+        const confirmation =
+          await signInWithPhoneNumber(
+            auth,
+            phoneNumber,
+            appVerifier
+          );
+
+
+        setConfirmationResult(
+          confirmation
+        );
+
+        setOtpSent(true);
+
+        setCountdown(30);
+
+        setError("");
+
+
+      } catch (err) {
+
+        console.error(
+          "Send Login OTP Error:",
+          err
+        );
+
+
+        if (
+          err.code ===
+          "auth/invalid-phone-number"
+        ) {
+
+          setError(
+            "मोबाईल नंबर योग्य नाही."
+          );
+
+        } else if (
+          err.code ===
+          "auth/too-many-requests"
+        ) {
+
+          setError(
+            "खूप प्रयत्न झाले आहेत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
+          );
+
+        } else if (
+          err.code ===
+          "auth/quota-exceeded"
+        ) {
+
+          setError(
+            "OTP SMS quota संपली आहे. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
+          );
+
+        } else {
+
+          setError(
+            "OTP पाठवताना काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा."
+          );
+
+        }
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+
+  /* =========================================================
+     VERIFY OTP
+  ========================================================= */
 
   const handleVerifyOTP =
     async (e) => {
@@ -422,9 +683,7 @@ export default function Login({
 
 
         /*
-        -------------------------------------------------------
-        VERIFY OTP
-        -------------------------------------------------------
+          VERIFY OTP
         */
 
         const result =
@@ -444,9 +703,7 @@ export default function Login({
 
 
         /*
-        -------------------------------------------------------
-        GET USER PROFILE
-        -------------------------------------------------------
+          GET USER PROFILE
         */
 
         const userRef =
@@ -477,9 +734,7 @@ export default function Login({
 
 
         /*
-        -------------------------------------------------------
-        LOGIN SUCCESS
-        -------------------------------------------------------
+          LOGIN SUCCESS
         */
 
         if (
@@ -527,7 +782,6 @@ export default function Login({
 
         }
 
-
       } finally {
 
         setLoading(false);
@@ -537,11 +791,9 @@ export default function Login({
     };
 
 
-  /*
-  =========================================================
-  RESEND OTP
-  =========================================================
-  */
+  /* =========================================================
+     RESEND OTP
+  ========================================================= */
 
   const handleResendOTP =
     async () => {
@@ -550,7 +802,9 @@ export default function Login({
         countdown > 0 ||
         resending
       ) {
+
         return;
+
       }
 
 
@@ -562,9 +816,7 @@ export default function Login({
       try {
 
         /*
-        -------------------------------------------------------
-        CLEAR OLD RECAPTCHA
-        -------------------------------------------------------
+          CLEAR OLD RECAPTCHA
         */
 
         if (
@@ -634,11 +886,9 @@ export default function Login({
     };
 
 
-  /*
-  =========================================================
-  CHANGE MOBILE
-  =========================================================
-  */
+  /* =========================================================
+     CHANGE MOBILE
+  ========================================================= */
 
   const handleChangeMobile =
     () => {
@@ -656,11 +906,9 @@ export default function Login({
     };
 
 
-  /*
-  =========================================================
-  UI
-  =========================================================
-  */
+  /* =========================================================
+     UI
+  ========================================================= */
 
   return (
 
@@ -674,7 +922,9 @@ export default function Login({
       <div className="auth-card fade-in">
 
 
-        {/* HEADER */}
+        {/* =================================================
+           HEADER
+        ================================================= */}
 
         <div className="auth-header">
 
@@ -696,7 +946,9 @@ export default function Login({
         </div>
 
 
-        {/* ERROR */}
+        {/* =================================================
+           ERROR
+        ================================================= */}
 
         {error && (
 
@@ -707,117 +959,115 @@ export default function Login({
         )}
 
 
-        {!otpSent ? (
+        {/* =================================================
+           ADMIN LOGIN
+        ================================================= */}
 
-          /* =================================================
-             MOBILE NUMBER
-          ================================================= */
-
-          <div className="auth-form">
-
-
-            <div className="auth-input-group">
-
-              <label htmlFor="login-mobile">
-                मोबाईल नंबर
-              </label>
-
-
-              <input
-                type="tel"
-                id="login-mobile"
-                placeholder="9876543210"
-                value={mobile}
-                onChange={(e) =>
-                  setMobile(
-                    e.target.value
-                      .replace(/\D/g, "")
-                  )
-                }
-                maxLength="10"
-                inputMode="numeric"
-                autoComplete="tel"
-                required
-              />
-
-            </div>
-
-
-            <button
-              type="button"
-              className="auth-btn"
-              onClick={
-                handleSendOTP
-              }
-              disabled={loading}
-            >
-
-              {loading
-                ? "OTP पाठवत आहे..."
-                : "OTP पाठवा"}
-
-            </button>
-
-
-            <div
-              id="login-recaptcha-container"
-            ></div>
-
-
-          </div>
-
-        ) : (
-
-          /* =================================================
-             OTP
-          ================================================= */
+        {adminMode ? (
 
           <form
-            onSubmit={
-              handleVerifyOTP
-            }
             className="auth-form"
+            onSubmit={
+              handleAdminLogin
+            }
           >
 
+            <div
+              style={{
+                textAlign: "center",
+                marginBottom: "20px",
+              }}
+            >
+
+              <div
+                style={{
+                  fontSize: "34px",
+                  marginBottom: "8px",
+                }}
+              >
+                🔐
+              </div>
+
+              <h3
+                style={{
+                  margin: "0",
+                  color: "#facc15",
+                }}
+              >
+                Admin Login
+              </h3>
+
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#94a3b8",
+                  marginTop: "6px",
+                }}
+              >
+                Admin account ने login करा
+              </p>
+
+            </div>
+
+
+            {/* ADMIN EMAIL */}
 
             <div className="auth-input-group">
 
-              <label htmlFor="login-otp">
-                OTP
+              <label htmlFor="admin-email">
+                Admin Email ID
               </label>
 
 
               <input
-                type="text"
-                id="login-otp"
-                placeholder="6 अंकी OTP"
-                value={otp}
-                onChange={(e) =>
-                  setOtp(
+                type="email"
+                id="admin-email"
+                placeholder="admin@example.com"
+                value={adminEmail}
+                onChange={(e) => {
+
+                  setAdminEmail(
                     e.target.value
-                      .replace(/\D/g, "")
-                  )
-                }
-                maxLength="6"
-                inputMode="numeric"
-                autoComplete="one-time-code"
+                  );
+
+                  setError("");
+
+                }}
+                autoComplete="username"
                 required
-                autoFocus
               />
 
             </div>
 
 
-            <p
-              style={{
-                textAlign: "center",
-                fontSize: "13px",
-                color: "#94a3b8",
-                marginBottom: "15px",
-              }}
-            >
-              +91 {mobile} वर OTP पाठवला आहे.
-            </p>
+            {/* ADMIN PASSWORD */}
+
+            <div className="auth-input-group">
+
+              <label htmlFor="admin-password">
+                Password
+              </label>
+
+
+              <input
+                type="password"
+                id="admin-password"
+                placeholder="Password"
+                value={adminPassword}
+                onChange={(e) => {
+
+                  setAdminPassword(
+                    e.target.value
+                  );
+
+                  setError("");
+
+                }}
+                autoComplete="current-password"
+                required
+              />
+
+            </div>
 
 
             <button
@@ -829,11 +1079,13 @@ export default function Login({
             >
 
               {loading
-                ? "तपासणी होत आहे..."
-                : "OTP Verify करा"}
+                ? "Login होत आहे..."
+                : "Admin Login"}
 
             </button>
 
+
+            {/* BACK TO USER LOGIN */}
 
             <div
               style={{
@@ -844,51 +1096,19 @@ export default function Login({
 
               <button
                 type="button"
-                onClick={
-                  handleResendOTP
-                }
-                disabled={
-                  countdown > 0 ||
-                  resending
-                }
-                style={{
-                  background: "none",
-                  border: "none",
-                  color:
-                    countdown > 0
-                      ? "#64748b"
-                      : "#facc15",
-                  cursor:
-                    countdown > 0
-                      ? "not-allowed"
-                      : "pointer",
-                  fontWeight: "600",
+                onClick={() => {
+
+                  setAdminMode(false);
+
+                  setMobile("");
+
+                  setAdminEmail("");
+
+                  setAdminPassword("");
+
+                  setError("");
+
                 }}
-              >
-
-                {resending
-                  ? "OTP पाठवत आहे..."
-                  : countdown > 0
-                  ? `पुन्हा OTP पाठवा (${countdown}s)`
-                  : "पुन्हा OTP पाठवा"}
-
-              </button>
-
-            </div>
-
-
-            <div
-              style={{
-                textAlign: "center",
-                marginTop: "10px",
-              }}
-            >
-
-              <button
-                type="button"
-                onClick={
-                  handleChangeMobile
-                }
                 style={{
                   background: "none",
                   border: "none",
@@ -898,35 +1118,247 @@ export default function Login({
                 }}
               >
 
-                ← मोबाईल नंबर बदला
+                ← User Login वर जा
 
               </button>
 
             </div>
 
-
           </form>
+
+        ) : (
+
+          /* =================================================
+             NORMAL USER LOGIN
+          ================================================= */
+
+          !otpSent ? (
+
+            <div className="auth-form">
+
+
+              <div className="auth-input-group">
+
+                <label htmlFor="login-mobile">
+                  मोबाईल नंबर
+                </label>
+
+
+                <input
+                  type="tel"
+                  id="login-mobile"
+                  placeholder="9876543210"
+                  value={mobile}
+                  onChange={
+                    handleMobileChange
+                  }
+                  maxLength="10"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  required
+                />
+
+              </div>
+
+
+              <button
+                type="button"
+                className="auth-btn"
+                onClick={
+                  handleSendOTP
+                }
+                disabled={
+                  loading
+                }
+              >
+
+                {loading
+                  ? "OTP पाठवत आहे..."
+                  : "OTP पाठवा"}
+
+              </button>
+
+
+              <div
+                id="login-recaptcha-container"
+              ></div>
+
+
+              {/* ADMIN HINT IS NOT SHOWN */}
+
+            </div>
+
+          ) : (
+
+            /* =================================================
+               OTP
+            ================================================= */
+
+            <form
+              onSubmit={
+                handleVerifyOTP
+              }
+              className="auth-form"
+            >
+
+
+              <div className="auth-input-group">
+
+                <label htmlFor="login-otp">
+                  OTP
+                </label>
+
+
+                <input
+                  type="text"
+                  id="login-otp"
+                  placeholder="6 अंकी OTP"
+                  value={otp}
+                  onChange={(e) =>
+                    setOtp(
+                      e.target.value
+                        .replace(/\D/g, "")
+                    )
+                  }
+                  maxLength="6"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  required
+                  autoFocus
+                />
+
+              </div>
+
+
+              <p
+                style={{
+                  textAlign: "center",
+                  fontSize: "13px",
+                  color: "#94a3b8",
+                  marginBottom: "15px",
+                }}
+              >
+                +91 {mobile} वर OTP पाठवला आहे.
+              </p>
+
+
+              <button
+                type="submit"
+                className="auth-btn"
+                disabled={
+                  loading
+                }
+              >
+
+                {loading
+                  ? "तपासणी होत आहे..."
+                  : "OTP Verify करा"}
+
+              </button>
+
+
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "15px",
+                }}
+              >
+
+                <button
+                  type="button"
+                  onClick={
+                    handleResendOTP
+                  }
+                  disabled={
+                    countdown > 0 ||
+                    resending
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color:
+                      countdown > 0
+                        ? "#64748b"
+                        : "#facc15",
+                    cursor:
+                      countdown > 0
+                        ? "not-allowed"
+                        : "pointer",
+                    fontWeight: "600",
+                  }}
+                >
+
+                  {resending
+                    ? "OTP पाठवत आहे..."
+                    : countdown > 0
+                    ? `पुन्हा OTP पाठवा (${countdown}s)`
+                    : "पुन्हा OTP पाठवा"}
+
+                </button>
+
+              </div>
+
+
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "10px",
+                }}
+              >
+
+                <button
+                  type="button"
+                  onClick={
+                    handleChangeMobile
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#94a3b8",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                  }}
+                >
+
+                  ← मोबाईल नंबर बदला
+
+                </button>
+
+              </div>
+
+
+            </form>
+
+          )
 
         )}
 
 
-        {/* FOOTER */}
+        {/* =================================================
+           FOOTER
+        ================================================= */}
 
-        <div className="auth-footer">
+        {!adminMode && !otpSent && (
 
-          तुमचे खाते नाही का?{" "}
+          <div className="auth-footer">
+
+            तुमचे खाते नाही का?{" "}
 
 
-          <span
-            onClick={
-              onSwitchToSignup
-            }
-            className="auth-link"
-          >
-            खाते तयार करा
-          </span>
+            <span
+              onClick={
+                onSwitchToSignup
+              }
+              className="auth-link"
+            >
 
-        </div>
+              खाते तयार करा
+
+            </span>
+
+          </div>
+
+        )}
 
 
       </div>
