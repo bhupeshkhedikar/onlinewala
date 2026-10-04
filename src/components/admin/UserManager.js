@@ -8,10 +8,98 @@ export default function UserManager({ users }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [liveUser, setLiveUser] = useState(null);
 
-  const filtered = users.filter((u) =>
-    u.name?.toLowerCase().includes(search.toLowerCase()) ||
-    u.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Registration date filters
+  // "all" = all registrations
+  // "today" = today's registrations
+  // "yesterday" = yesterday's registrations
+  // "date" = the date selected in the date picker
+  const [dateFilter, setDateFilter] = useState("today");
+  const [selectedDate, setSelectedDate] = useState("");
+
+  const getUserDate = (user) => {
+    const value = user?.createdAt || user?.created_at || user?.registeredAt;
+
+    if (!value) return null;
+
+    // Firestore Timestamp
+    if (typeof value?.toDate === "function") {
+      return value.toDate();
+    }
+
+    // Firestore timestamp-like object
+    if (typeof value?.seconds === "number") {
+      return new Date(value.seconds * 1000);
+    }
+
+    if (value instanceof Date) {
+      return value;
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+
+  const dateKey = (date) => {
+    if (!date) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayKey = dateKey(new Date());
+
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterdayKey = dateKey(yesterdayDate);
+
+  const matchesDateFilter = (user) => {
+    if (dateFilter === "all") return true;
+
+    const userDate = getUserDate(user);
+    if (!userDate) return false;
+
+    const userKey = dateKey(userDate);
+
+    if (dateFilter === "today") {
+      return userKey === todayKey;
+    }
+
+    if (dateFilter === "yesterday") {
+      return userKey === yesterdayKey;
+    }
+
+    if (dateFilter === "date") {
+      return selectedDate ? userKey === selectedDate : false;
+    }
+
+    return true;
+  };
+
+  const filtered = users
+    .filter(matchesDateFilter)
+    .filter((u) =>
+      u.name?.toLowerCase().includes(search.toLowerCase()) ||
+      u.email?.toLowerCase().includes(search.toLowerCase()) ||
+      u.mobile?.includes(search)
+    )
+    .sort((a, b) => {
+      const aDate = getUserDate(a)?.getTime() || 0;
+      const bDate = getUserDate(b)?.getTime() || 0;
+      return bDate - aDate;
+    });
+
+  const todayCount = users.filter((u) => {
+    const d = getUserDate(u);
+    return d && dateKey(d) === todayKey;
+  }).length;
+
+  const yesterdayCount = users.filter((u) => {
+    const d = getUserDate(u);
+    return d && dateKey(d) === yesterdayKey;
+  }).length;
 
   useEffect(() => {
     if (!selectedUser?.id) return;
@@ -150,7 +238,7 @@ export default function UserManager({ users }) {
               fontWeight: 900
             }}
           >
-            {users.length}
+            {filtered.length}
           </div>
         </div>
 
@@ -194,6 +282,188 @@ export default function UserManager({ users }) {
               transition: ".15s ease"
             }}
           />
+        </div>
+
+        {/* =========================================================
+            REGISTRATION DATE FILTER
+        ========================================================= */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "7px",
+            marginBottom: "13px"
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setDateFilter("today");
+              setSelectedDate("");
+            }}
+            style={{
+              height: "32px",
+              padding: "0 11px",
+              borderRadius: "9px",
+              border: dateFilter === "today"
+                ? "1px solid #2563eb"
+                : "1px solid #dbe2ea",
+              background: dateFilter === "today"
+                ? "#eff6ff"
+                : "#fff",
+              color: dateFilter === "today"
+                ? "#2563eb"
+                : "#64748b",
+              fontSize: "9px",
+              fontWeight: 800,
+              cursor: "pointer"
+            }}
+          >
+            Today ({todayCount})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setDateFilter("yesterday");
+              setSelectedDate("");
+            }}
+            style={{
+              height: "32px",
+              padding: "0 11px",
+              borderRadius: "9px",
+              border: dateFilter === "yesterday"
+                ? "1px solid #2563eb"
+                : "1px solid #dbe2ea",
+              background: dateFilter === "yesterday"
+                ? "#eff6ff"
+                : "#fff",
+              color: dateFilter === "yesterday"
+                ? "#2563eb"
+                : "#64748b",
+              fontSize: "9px",
+              fontWeight: 800,
+              cursor: "pointer"
+            }}
+          >
+            Yesterday ({yesterdayCount})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setDateFilter("all");
+              setSelectedDate("");
+            }}
+            style={{
+              height: "32px",
+              padding: "0 11px",
+              borderRadius: "9px",
+              border: dateFilter === "all"
+                ? "1px solid #2563eb"
+                : "1px solid #dbe2ea",
+              background: dateFilter === "all"
+                ? "#eff6ff"
+                : "#fff",
+              color: dateFilter === "all"
+                ? "#2563eb"
+                : "#64748b",
+              fontSize: "9px",
+              fontWeight: 800,
+              cursor: "pointer"
+            }}
+          >
+            All Registrations ({users.length})
+          </button>
+
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              height: "32px",
+              padding: "0 8px",
+              border: dateFilter === "date"
+                ? "1px solid #2563eb"
+                : "1px solid #dbe2ea",
+              borderRadius: "9px",
+              background: dateFilter === "date"
+                ? "#eff6ff"
+                : "#fff"
+            }}
+          >
+            <span
+              style={{
+                fontSize: "9px",
+                fontWeight: 800,
+                color: "#64748b",
+                whiteSpace: "nowrap"
+              }}
+            >
+              Select Date
+            </span>
+
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                setDateFilter("date");
+              }}
+              style={{
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                color: "#0f172a",
+                fontSize: "9px",
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            />
+          </label>
+        </div>
+
+        {/* CURRENT FILTER SUMMARY */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "10px",
+            padding: "8px 10px",
+            marginBottom: "10px",
+            borderRadius: "9px",
+            background: "#f8fafc",
+            border: "1px solid #eef2f7"
+          }}
+        >
+          <span
+            style={{
+              fontSize: "9px",
+              color: "#64748b",
+              fontWeight: 700
+            }}
+          >
+            {dateFilter === "today"
+              ? "Today's Registrations"
+              : dateFilter === "yesterday"
+              ? "Yesterday's Registrations"
+              : dateFilter === "date"
+              ? selectedDate
+                ? `Registrations on ${selectedDate}`
+                : "Select a registration date"
+              : "All Registrations"}
+          </span>
+
+          <strong
+            style={{
+              fontSize: "11px",
+              color: "#2563eb"
+            }}
+          >
+            {filtered.length} Users
+          </strong>
         </div>
 
         {filtered.length === 0 ? (
@@ -329,6 +599,28 @@ export default function UserManager({ users }) {
                       }}
                     >
                       {u.email || "No email"}
+                    </p>
+
+                    <p
+                      style={{
+                        margin: "3px 0 0",
+                        color: "#94a3b8",
+                        fontSize: "7px"
+                      }}
+                    >
+                      Registered:{" "}
+                      {(() => {
+                        const d = getUserDate(u);
+                        return d
+                          ? d.toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })
+                          : "Date unavailable";
+                      })()}
                     </p>
 
                     <div

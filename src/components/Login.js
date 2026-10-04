@@ -11,142 +11,100 @@ import { auth, db } from "./firebase";
 import {
   doc,
   getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 
 import "./Login.css";
-
 
 export default function Login({
   onLoginSuccess,
   onSwitchToSignup,
 }) {
-
   /* =========================================================
      STATES
   ========================================================= */
 
-  const [mobile, setMobile] =
-    useState("");
+  const [mobile, setMobile] = useState("");
 
-  const [otp, setOtp] =
-    useState("");
+  const [otp, setOtp] = useState("");
 
-  const [otpSent, setOtpSent] =
-    useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
   const [confirmationResult, setConfirmationResult] =
     useState(null);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [resending, setResending] =
-    useState(false);
+  const [resending, setResending] = useState(false);
 
-  const [countdown, setCountdown] =
-    useState(0);
-
+  const [countdown, setCountdown] = useState(0);
 
   /* =========================================================
      ADMIN STATES
   ========================================================= */
 
-  const [adminMode, setAdminMode] =
-    useState(false);
+  const [adminMode, setAdminMode] = useState(false);
 
-  const [adminEmail, setAdminEmail] =
-    useState("");
+  const [adminEmail, setAdminEmail] = useState("");
 
-  const [adminPassword, setAdminPassword] =
-    useState("");
+  const [adminPassword, setAdminPassword] = useState("");
 
   const ADMIN_SECRET_CODE = "1999";
-
 
   /* =========================================================
      COUNTDOWN
   ========================================================= */
 
   useEffect(() => {
-
     if (countdown <= 0) {
       return;
     }
 
-    const timer =
-      setInterval(() => {
-
-        setCountdown(
-          (prev) =>
-            prev > 0
-              ? prev - 1
-              : 0
-        );
-
-      }, 1000);
-
+    const timer = setInterval(() => {
+      setCountdown((prev) =>
+        prev > 0 ? prev - 1 : 0
+      );
+    }, 1000);
 
     return () => {
       clearInterval(timer);
     };
-
   }, [countdown]);
-
 
   /* =========================================================
      CLEANUP RECAPTCHA
   ========================================================= */
 
   useEffect(() => {
-
     return () => {
-
       try {
-
-        if (
-          window.recaptchaVerifier
-        ) {
-
+        if (window.recaptchaVerifier) {
           window.recaptchaVerifier.clear();
-
-          window.recaptchaVerifier =
-            null;
-
+          window.recaptchaVerifier = null;
         }
-
       } catch (error) {
-
         console.log(
           "Recaptcha cleanup error:",
           error
         );
-
       }
-
     };
-
   }, []);
-
 
   /* =========================================================
      SETUP RECAPTCHA
   ========================================================= */
 
   const setupRecaptcha = () => {
-
     try {
-
-      if (
-        window.recaptchaVerifier
-      ) {
-
+      if (window.recaptchaVerifier) {
         return window.recaptchaVerifier;
-
       }
-
 
       window.recaptchaVerifier =
         new RecaptchaVerifier(
@@ -156,53 +114,37 @@ export default function Login({
             size: "invisible",
 
             callback: () => {
-
               console.log(
                 "Login reCAPTCHA verified"
               );
-
             },
 
             "expired-callback": () => {
-
               console.log(
                 "Login reCAPTCHA expired"
               );
 
-              if (
-                window.recaptchaVerifier
-              ) {
-
+              if (window.recaptchaVerifier) {
                 try {
                   window.recaptchaVerifier.clear();
                 } catch (error) {}
 
-                window.recaptchaVerifier =
-                  null;
-
+                window.recaptchaVerifier = null;
               }
-
             },
-
           }
         );
 
-
       return window.recaptchaVerifier;
-
     } catch (error) {
-
       console.error(
         "Recaptcha setup error:",
         error
       );
 
       throw error;
-
     }
-
   };
-
 
   /* =========================================================
      MOBILE INPUT CHANGE
@@ -212,10 +154,7 @@ export default function Login({
   ========================================================= */
 
   const handleMobileChange = (e) => {
-
-    const value =
-      e.target.value
-        .replace(/\D/g, "");
+    const value = e.target.value.replace(/\D/g, "");
 
     setMobile(value);
     setError("");
@@ -228,7 +167,6 @@ export default function Login({
     */
 
     if (value === ADMIN_SECRET_CODE) {
-
       setAdminMode(true);
 
       /*
@@ -239,688 +177,717 @@ export default function Login({
       setOtpSent(false);
       setConfirmationResult(null);
       setOtp("");
-
     } else {
-
       setAdminMode(false);
-
     }
-
   };
-
 
   /* =========================================================
      ADMIN LOGIN
   ========================================================= */
 
-  const handleAdminLogin =
-    async (e) => {
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
 
-      e.preventDefault();
+    setError("");
 
-      setError("");
+    if (!adminEmail.trim()) {
+      setError(
+        "कृपया Admin Email ID टाका."
+      );
 
-      if (!adminEmail.trim()) {
+      return;
+    }
+
+    if (!adminPassword) {
+      setError(
+        "कृपया Admin Password टाका."
+      );
+
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      /*
+        FIREBASE EMAIL/PASSWORD LOGIN
+      */
+
+      const result =
+        await signInWithEmailAndPassword(
+          auth,
+          adminEmail.trim(),
+          adminPassword
+        );
+
+      const adminUser = result.user;
+
+      /*
+        CHECK FIRESTORE ADMIN ROLE
+
+        users/{uid}
+        role: "admin"
+      */
+
+      const adminRef = doc(
+        db,
+        "users",
+        adminUser.uid
+      );
+
+      const adminSnapshot =
+        await getDoc(adminRef);
+
+      if (!adminSnapshot.exists()) {
+        await auth.signOut();
 
         setError(
-          "कृपया Admin Email ID टाका."
+          "Admin profile सापडले नाही."
         );
 
         return;
-
       }
 
-      if (!adminPassword) {
+      const adminData =
+        adminSnapshot.data();
+
+      if (adminData.role !== "admin") {
+        await auth.signOut();
 
         setError(
-          "कृपया Admin Password टाका."
+          "तुमच्याकडे Admin access नाही."
         );
 
         return;
-
       }
 
+      console.log(
+        "Admin login successful:",
+        adminUser.uid
+      );
 
-      try {
+      /*
+        LOGIN SUCCESS
+      */
 
-        setLoading(true);
+      if (onLoginSuccess) {
+        onLoginSuccess(adminUser);
+      }
+    } catch (err) {
+      console.error(
+        "Admin Login Error:",
+        err
+      );
 
-
-        /*
-          FIREBASE EMAIL/PASSWORD LOGIN
-        */
-
-        const result =
-          await signInWithEmailAndPassword(
-            auth,
-            adminEmail.trim(),
-            adminPassword
-          );
-
-
-        const adminUser =
-          result.user;
-
-
-        /*
-          CHECK FIRESTORE ADMIN ROLE
-          
-          users/{uid}
-          role: "admin"
-        */
-
-        const adminRef =
-          doc(
-            db,
-            "users",
-            adminUser.uid
-          );
-
-
-        const adminSnapshot =
-          await getDoc(
-            adminRef
-          );
-
-
-        if (
-          !adminSnapshot.exists()
-        ) {
-
-          await auth.signOut();
-
-          setError(
-            "Admin profile सापडले नाही."
-          );
-
-          return;
-
-        }
-
-
-        const adminData =
-          adminSnapshot.data();
-
-
-        if (
-          adminData.role !== "admin"
-        ) {
-
-          await auth.signOut();
-
-          setError(
-            "तुमच्याकडे Admin access नाही."
-          );
-
-          return;
-
-        }
-
-
-        console.log(
-          "Admin login successful:",
-          adminUser.uid
+      if (
+        err.code ===
+        "auth/invalid-credential"
+      ) {
+        setError(
+          "Email ID किंवा Password चुकीचा आहे."
         );
-
-
-        /*
-          LOGIN SUCCESS
-        */
-
-        if (
-          onLoginSuccess
-        ) {
-
-          onLoginSuccess(
-            adminUser
-          );
-
-        }
-
-      } catch (err) {
-
-        console.error(
-          "Admin Login Error:",
-          err
+      } else if (
+        err.code ===
+        "auth/user-not-found"
+      ) {
+        setError(
+          "Admin account सापडले नाही."
         );
+      } else if (
+        err.code ===
+        "auth/wrong-password"
+      ) {
+        setError(
+          "Password चुकीचा आहे."
+        );
+      } else if (
+        err.code ===
+        "auth/invalid-email"
+      ) {
+        setError(
+          "Email ID योग्य नाही."
+        );
+      } else {
+        setError(
+          "Admin login करताना काहीतरी चूक झाली."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  /* =========================================================
+     CHECK USER BY MOBILE
+     
+     This is important because Admin-created users
+     may have a different Firebase Auth UID.
+  ========================================================= */
 
-        if (
-          err.code ===
-          "auth/invalid-credential"
-        ) {
+  const findUserByMobile = async (
+    cleanMobile
+  ) => {
+    try {
+      const usersRef = collection(
+        db,
+        "users"
+      );
 
-          setError(
-            "Email ID किंवा Password चुकीचा आहे."
-          );
+      /*
+        Primary search:
+        users.mobile == cleanMobile
+      */
 
-        } else if (
-          err.code ===
-          "auth/user-not-found"
-        ) {
+      const mobileQuery = query(
+        usersRef,
+        where(
+          "mobile",
+          "==",
+          cleanMobile
+        )
+      );
 
-          setError(
-            "Admin account सापडले नाही."
-          );
+      const snapshot =
+        await getDocs(mobileQuery);
 
-        } else if (
-          err.code ===
-          "auth/wrong-password"
-        ) {
+      if (!snapshot.empty) {
+        const userDoc =
+          snapshot.docs[0];
 
-          setError(
-            "Password चुकीचा आहे."
-          );
-
-        } else if (
-          err.code ===
-          "auth/invalid-email"
-        ) {
-
-          setError(
-            "Email ID योग्य नाही."
-          );
-
-        } else {
-
-          setError(
-            "Admin login करताना काहीतरी चूक झाली."
-          );
-
-        }
-
-      } finally {
-
-        setLoading(false);
-
+        return {
+          id: userDoc.id,
+          data: userDoc.data(),
+        };
       }
 
-    };
+      /*
+        Fallback:
+        Some older profiles may have
+        phoneNumber instead of mobile.
+      */
 
+      const phoneQuery = query(
+        usersRef,
+        where(
+          "phoneNumber",
+          "==",
+          `+91${cleanMobile}`
+        )
+      );
+
+      const phoneSnapshot =
+        await getDocs(phoneQuery);
+
+      if (!phoneSnapshot.empty) {
+        const userDoc =
+          phoneSnapshot.docs[0];
+
+        return {
+          id: userDoc.id,
+          data: userDoc.data(),
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error(
+        "Find user by mobile error:",
+        error
+      );
+
+      throw error;
+    }
+  };
 
   /* =========================================================
      SEND OTP
   ========================================================= */
 
-  const handleSendOTP =
-    async () => {
+  const handleSendOTP = async () => {
+    setError("");
+
+    const cleanMobile = mobile
+      .replace(/\D/g, "")
+      .trim();
+
+    /*
+      ADMIN CODE ENTERED
+      ==================
+      Do NOT send OTP
+    */
+
+    if (
+      cleanMobile === ADMIN_SECRET_CODE
+    ) {
+      setAdminMode(true);
+
+      return;
+    }
+
+    /*
+      VALIDATE MOBILE
+    */
+
+    if (!/^[0-9]{10}$/.test(cleanMobile)) {
+      setError(
+        "कृपया 10 अंकी मोबाईल नंबर टाका."
+      );
+
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      /*
+        CHECK WHETHER USER EXISTS
+        IN FIRESTORE
+      */
+
+      const existingUser =
+        await findUserByMobile(
+          cleanMobile
+        );
+
+      if (!existingUser) {
+        setError(
+          "या मोबाईल नंबरवर खाते सापडले नाही. कृपया आधी साइन अप करा."
+        );
+
+        setLoading(false);
+
+        return;
+      }
+
+      /*
+        OPTIONAL:
+        If mobile login is disabled
+        for a particular admin-created user,
+        prevent login.
+      */
+
+      const userData =
+        existingUser.data;
+
+      if (
+        userData.mobileLoginEnabled ===
+        false
+      ) {
+        setError(
+          "या मोबाईल नंबरसाठी Mobile Login बंद आहे. Admin शी संपर्क करा."
+        );
+
+        setLoading(false);
+
+        return;
+      }
+
+      /*
+        SETUP RECAPTCHA
+      */
+
+      const appVerifier =
+        setupRecaptcha();
+
+      /*
+        SEND OTP
+      */
+
+      const phoneNumber =
+        `+91${cleanMobile}`;
+
+      const confirmation =
+        await signInWithPhoneNumber(
+          auth,
+          phoneNumber,
+          appVerifier
+        );
+
+      setConfirmationResult(
+        confirmation
+      );
+
+      setOtpSent(true);
+
+      setCountdown(30);
 
       setError("");
+    } catch (err) {
+      console.error(
+        "Send Login OTP Error:",
+        err
+      );
 
+      if (
+        err.code ===
+        "auth/invalid-phone-number"
+      ) {
+        setError(
+          "मोबाईल नंबर योग्य नाही."
+        );
+      } else if (
+        err.code ===
+        "auth/too-many-requests"
+      ) {
+        setError(
+          "खूप प्रयत्न झाले आहेत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
+        );
+      } else if (
+        err.code ===
+        "auth/quota-exceeded"
+      ) {
+        setError(
+          "OTP SMS quota संपली आहे. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
+        );
+      } else if (
+        err.code ===
+        "auth/invalid-app-credential"
+      ) {
+        setError(
+          "OTP verification setup मध्ये समस्या आहे. कृपया Firebase reCAPTCHA / Authorized Domain settings तपासा."
+        );
+      } else {
+        setError(
+          "OTP पाठवताना काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* =========================================================
+     VERIFY OTP
+  ========================================================= */
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+
+    setError("");
+
+    if (!confirmationResult) {
+      setError(
+        "कृपया आधी OTP मागवा."
+      );
+
+      return;
+    }
+
+    const cleanOTP = otp
+      .replace(/\D/g, "")
+      .trim();
+
+    if (cleanOTP.length !== 6) {
+      setError(
+        "कृपया 6 अंकी OTP टाका."
+      );
+
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      /*
+        VERIFY OTP
+      */
+
+      const result =
+        await confirmationResult.confirm(
+          cleanOTP
+        );
+
+      /*
+        Firebase Phone Auth user
+
+        IMPORTANT:
+        This UID can be different from
+        the UID created by Admin Panel.
+      */
+
+      const authenticatedUser =
+        result.user;
+
+      console.log(
+        "Phone OTP login successful:",
+        authenticatedUser.uid
+      );
+
+      /*
+        GET REGISTERED MOBILE
+      */
 
       const cleanMobile =
         mobile
           .replace(/\D/g, "")
           .trim();
 
+      /*
+        FIND FIRESTORE PROFILE BY MOBILE
+        instead of only using:
+        users/{authenticatedUser.uid}
+      */
+
+      const existingUser =
+        await findUserByMobile(
+          cleanMobile
+        );
+
+      if (!existingUser) {
+        /*
+          This should normally never happen
+          because we already checked before
+          sending OTP.
+        */
+
+        await auth.signOut();
+
+        setError(
+          "तुमचे प्रोफाईल सापडले नाही. कृपया पुन्हा Login करा."
+        );
+
+        return;
+      }
+
+      const userProfile =
+        existingUser.data;
 
       /*
-        ADMIN CODE ENTERED
-        ==================
-        Do NOT send OTP
+        CHECK ROLE
+
+        Normal mobile login should
+        normally be a user account.
+
+        Admin login continues through
+        Email + Password.
       */
 
       if (
-        cleanMobile ===
-        ADMIN_SECRET_CODE
+        userProfile.role &&
+        userProfile.role !== "user" &&
+        userProfile.role !== "admin"
       ) {
-
-        setAdminMode(true);
-
-        return;
-
-      }
-
-
-      if (
-        !/^[0-9]{10}$/.test(
-          cleanMobile
-        )
-      ) {
+        await auth.signOut();
 
         setError(
-          "कृपया 10 अंकी मोबाईल नंबर टाका."
+          "या खात्याची भूमिका योग्य नाही. Admin शी संपर्क करा."
         );
 
         return;
-
       }
 
+      /*
+        COMBINE FIREBASE AUTH USER
+        + FIRESTORE PROFILE
 
-      try {
+        This gives your app access to:
+        - uid
+        - name
+        - mobile
+        - email
+        - role
+        - referral data
+        etc.
+      */
 
-        setLoading(true);
-
-
-        /*
-          CHECK WHETHER USER EXISTS
-          IN FIRESTORE
-        */
-
-        const usersQuery =
-          await import(
-            "firebase/firestore"
-          );
-
-
-        const {
-          collection,
-          query,
-          where,
-          getDocs,
-        } = usersQuery;
-
-
-        const mobileQuery =
-          query(
-            collection(
-              db,
-              "users"
-            ),
-            where(
-              "mobile",
-              "==",
-              cleanMobile
-            )
-          );
-
-
-        const snapshot =
-          await getDocs(
-            mobileQuery
-          );
-
-
-        if (
-          snapshot.empty
-        ) {
-
-          setError(
-            "या मोबाईल नंबरवर खाते सापडले नाही. कृपया आधी साइन अप करा."
-          );
-
-          setLoading(false);
-
-          return;
-
-        }
-
+      const loggedInUser = {
+        ...authenticatedUser,
+        ...userProfile,
 
         /*
-          SETUP RECAPTCHA
+          Keep actual Firebase Auth UID
+          separately.
         */
 
-        const appVerifier =
-          setupRecaptcha();
-
+        uid: authenticatedUser.uid,
 
         /*
-          SEND OTP
+          Firestore profile document ID.
+          Useful when Admin-created account
+          has a different UID.
         */
 
-        const phoneNumber =
-          `+91${cleanMobile}`;
+        profileId: existingUser.id,
 
+        /*
+          Keep mobile consistent.
+        */
 
-        const confirmation =
-          await signInWithPhoneNumber(
-            auth,
-            phoneNumber,
-            appVerifier
-          );
+        mobile:
+          userProfile.mobile ||
+          cleanMobile,
 
+        phoneNumber:
+          userProfile.phoneNumber ||
+          `+91${cleanMobile}`,
+      };
 
-        setConfirmationResult(
-          confirmation
-        );
+      console.log(
+        "User profile found:",
+        existingUser.id
+      );
 
-        setOtpSent(true);
+      console.log(
+        "Logged in user:",
+        loggedInUser
+      );
 
-        setCountdown(30);
+      /*
+        LOGIN SUCCESS
+      */
 
-        setError("");
-
-
-      } catch (err) {
-
-        console.error(
-          "Send Login OTP Error:",
-          err
-        );
-
-
-        if (
-          err.code ===
-          "auth/invalid-phone-number"
-        ) {
-
-          setError(
-            "मोबाईल नंबर योग्य नाही."
-          );
-
-        } else if (
-          err.code ===
-          "auth/too-many-requests"
-        ) {
-
-          setError(
-            "खूप प्रयत्न झाले आहेत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
-          );
-
-        } else if (
-          err.code ===
-          "auth/quota-exceeded"
-        ) {
-
-          setError(
-            "OTP SMS quota संपली आहे. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
-          );
-
-        } else {
-
-          setError(
-            "OTP पाठवताना काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा."
-          );
-
-        }
-
-      } finally {
-
-        setLoading(false);
-
+      if (onLoginSuccess) {
+        onLoginSuccess(loggedInUser);
       }
-
-    };
-
-
-  /* =========================================================
-     VERIFY OTP
-  ========================================================= */
-
-  const handleVerifyOTP =
-    async (e) => {
-
-      e.preventDefault();
-
-      setError("");
-
+    } catch (err) {
+      console.error(
+        "OTP Verification Error:",
+        err
+      );
 
       if (
-        !confirmationResult
+        err.code ===
+        "auth/invalid-verification-code"
       ) {
-
         setError(
-          "कृपया आधी OTP मागवा."
+          "OTP चुकीचा आहे. कृपया पुन्हा तपासा."
         );
-
-        return;
-
-      }
-
-
-      const cleanOTP =
-        otp
-          .replace(/\D/g, "")
-          .trim();
-
-
-      if (
-        cleanOTP.length !== 6
+      } else if (
+        err.code ===
+        "auth/code-expired"
       ) {
-
         setError(
-          "कृपया 6 अंकी OTP टाका."
+          "OTP ची वेळ संपली आहे. कृपया नवीन OTP मागवा."
         );
-
-        return;
-
+      } else if (
+        err.code ===
+        "auth/too-many-requests"
+      ) {
+        setError(
+          "खूप प्रयत्न झाले आहेत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
+        );
+      } else {
+        setError(
+          "OTP verify करताना काहीतरी चूक झाली."
+        );
       }
-
-
-      try {
-
-        setLoading(true);
-
-
-        /*
-          VERIFY OTP
-        */
-
-        const result =
-          await confirmationResult.confirm(
-            cleanOTP
-          );
-
-
-        const user =
-          result.user;
-
-
-        console.log(
-          "Login successful:",
-          user.uid
-        );
-
-
-        /*
-          GET USER PROFILE
-        */
-
-        const userRef =
-          doc(
-            db,
-            "users",
-            user.uid
-          );
-
-
-        const userSnapshot =
-          await getDoc(
-            userRef
-          );
-
-
-        if (
-          !userSnapshot.exists()
-        ) {
-
-          setError(
-            "तुमचे प्रोफाईल सापडले नाही. कृपया साइन अप करा."
-          );
-
-          return;
-
-        }
-
-
-        /*
-          LOGIN SUCCESS
-        */
-
-        if (
-          onLoginSuccess
-        ) {
-
-          onLoginSuccess(
-            user
-          );
-
-        }
-
-
-      } catch (err) {
-
-        console.error(
-          "OTP Verification Error:",
-          err
-        );
-
-
-        if (
-          err.code ===
-          "auth/invalid-verification-code"
-        ) {
-
-          setError(
-            "OTP चुकीचा आहे. कृपया पुन्हा तपासा."
-          );
-
-        } else if (
-          err.code ===
-          "auth/code-expired"
-        ) {
-
-          setError(
-            "OTP ची वेळ संपली आहे. कृपया नवीन OTP मागवा."
-          );
-
-        } else {
-
-          setError(
-            "OTP verify करताना काहीतरी चूक झाली."
-          );
-
-        }
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
-
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* =========================================================
      RESEND OTP
   ========================================================= */
 
-  const handleResendOTP =
-    async () => {
+  const handleResendOTP = async () => {
+    if (
+      countdown > 0 ||
+      resending
+    ) {
+      return;
+    }
 
-      if (
-        countdown > 0 ||
-        resending
-      ) {
+    setError("");
+
+    setResending(true);
+
+    try {
+      /*
+        CLEAR OLD RECAPTCHA
+      */
+
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (error) {}
+
+        window.recaptchaVerifier = null;
+      }
+
+      const appVerifier =
+        setupRecaptcha();
+
+      const cleanMobile =
+        mobile
+          .replace(/\D/g, "")
+          .trim();
+
+      /*
+        Verify that this mobile
+        still belongs to a registered user.
+      */
+
+      const existingUser =
+        await findUserByMobile(
+          cleanMobile
+        );
+
+      if (!existingUser) {
+        setError(
+          "या मोबाईल नंबरवर खाते सापडले नाही."
+        );
 
         return;
-
       }
 
+      const confirmation =
+        await signInWithPhoneNumber(
+          auth,
+          `+91${cleanMobile}`,
+          appVerifier
+        );
+
+      setConfirmationResult(
+        confirmation
+      );
+
+      setCountdown(30);
+
+      setOtp("");
 
       setError("");
+    } catch (err) {
+      console.error(
+        "Resend OTP Error:",
+        err
+      );
 
-      setResending(true);
-
-
-      try {
-
-        /*
-          CLEAR OLD RECAPTCHA
-        */
-
-        if (
-          window.recaptchaVerifier
-        ) {
-
-          try {
-
-            window.recaptchaVerifier.clear();
-
-          } catch (error) {}
-
-          window.recaptchaVerifier =
-            null;
-
-        }
-
-
-        const appVerifier =
-          setupRecaptcha();
-
-
-        const cleanMobile =
-          mobile
-            .replace(/\D/g, "")
-            .trim();
-
-
-        const confirmation =
-          await signInWithPhoneNumber(
-            auth,
-            `+91${cleanMobile}`,
-            appVerifier
-          );
-
-
-        setConfirmationResult(
-          confirmation
-        );
-
-        setCountdown(30);
-
-        setOtp("");
-
-        setError("");
-
-
-      } catch (err) {
-
-        console.error(
-          "Resend OTP Error:",
-          err
-        );
-
-
-        setError(
-          "OTP पुन्हा पाठवता आला नाही. कृपया थोड्या वेळाने प्रयत्न करा."
-        );
-
-
-      } finally {
-
-        setResending(false);
-
-      }
-
-    };
-
+      setError(
+        "OTP पुन्हा पाठवता आला नाही. कृपया थोड्या वेळाने प्रयत्न करा."
+      );
+    } finally {
+      setResending(false);
+    }
+  };
 
   /* =========================================================
      CHANGE MOBILE
   ========================================================= */
 
-  const handleChangeMobile =
-    () => {
+  const handleChangeMobile = () => {
+    setOtpSent(false);
 
-      setOtpSent(false);
+    setConfirmationResult(null);
 
-      setConfirmationResult(
-        null
-      );
+    setOtp("");
 
-      setOtp("");
-
-      setError("");
-
-    };
-
+    setError("");
+  };
 
   /* =========================================================
      UI
   ========================================================= */
 
   return (
-
     <div className="auth-wrapper">
 
       <div className="glow-orb orb-1"></div>
 
       <div className="glow-orb orb-2"></div>
 
-
       <div className="auth-card fade-in">
-
 
         {/* =================================================
            HEADER
@@ -932,11 +899,9 @@ export default function Login({
             🔒
           </div>
 
-
           <h2>
             पुन्हा स्वागत आहे
           </h2>
-
 
           <p>
             तुमच्या डॅशबोर्डवर जाण्यासाठी
@@ -945,19 +910,15 @@ export default function Login({
 
         </div>
 
-
         {/* =================================================
            ERROR
         ================================================= */}
 
         {error && (
-
           <div className="auth-error">
             {error}
           </div>
-
         )}
-
 
         {/* =================================================
            ADMIN LOGIN
@@ -1009,7 +970,6 @@ export default function Login({
 
             </div>
 
-
             {/* ADMIN EMAIL */}
 
             <div className="auth-input-group">
@@ -1018,27 +978,23 @@ export default function Login({
                 Admin Email ID
               </label>
 
-
               <input
                 type="email"
                 id="admin-email"
                 placeholder="admin@example.com"
                 value={adminEmail}
                 onChange={(e) => {
-
                   setAdminEmail(
                     e.target.value
                   );
 
                   setError("");
-
                 }}
                 autoComplete="username"
                 required
               />
 
             </div>
-
 
             {/* ADMIN PASSWORD */}
 
@@ -1048,20 +1004,17 @@ export default function Login({
                 Password
               </label>
 
-
               <input
                 type="password"
                 id="admin-password"
                 placeholder="Password"
                 value={adminPassword}
                 onChange={(e) => {
-
                   setAdminPassword(
                     e.target.value
                   );
 
                   setError("");
-
                 }}
                 autoComplete="current-password"
                 required
@@ -1069,21 +1022,15 @@ export default function Login({
 
             </div>
 
-
             <button
               type="submit"
               className="auth-btn"
-              disabled={
-                loading
-              }
+              disabled={loading}
             >
-
               {loading
                 ? "Login होत आहे..."
                 : "Admin Login"}
-
             </button>
-
 
             {/* BACK TO USER LOGIN */}
 
@@ -1136,13 +1083,11 @@ export default function Login({
 
             <div className="auth-form">
 
-
               <div className="auth-input-group">
 
                 <label htmlFor="login-mobile">
                   मोबाईल नंबर
                 </label>
-
 
                 <input
                   type="tel"
@@ -1160,16 +1105,13 @@ export default function Login({
 
               </div>
 
-
               <button
                 type="button"
                 className="auth-btn"
                 onClick={
                   handleSendOTP
                 }
-                disabled={
-                  loading
-                }
+                disabled={loading}
               >
 
                 {loading
@@ -1178,13 +1120,9 @@ export default function Login({
 
               </button>
 
-
               <div
                 id="login-recaptcha-container"
               ></div>
-
-
-              {/* ADMIN HINT IS NOT SHOWN */}
 
             </div>
 
@@ -1201,13 +1139,11 @@ export default function Login({
               className="auth-form"
             >
 
-
               <div className="auth-input-group">
 
                 <label htmlFor="login-otp">
                   OTP
                 </label>
-
 
                 <input
                   type="text"
@@ -1229,7 +1165,6 @@ export default function Login({
 
               </div>
 
-
               <p
                 style={{
                   textAlign: "center",
@@ -1241,13 +1176,10 @@ export default function Login({
                 +91 {mobile} वर OTP पाठवला आहे.
               </p>
 
-
               <button
                 type="submit"
                 className="auth-btn"
-                disabled={
-                  loading
-                }
+                disabled={loading}
               >
 
                 {loading
@@ -1255,7 +1187,6 @@ export default function Login({
                   : "OTP Verify करा"}
 
               </button>
-
 
               <div
                 style={{
@@ -1298,7 +1229,6 @@ export default function Login({
 
               </div>
 
-
               <div
                 style={{
                   textAlign: "center",
@@ -1326,13 +1256,11 @@ export default function Login({
 
               </div>
 
-
             </form>
 
           )
 
         )}
-
 
         {/* =================================================
            FOOTER
@@ -1344,27 +1272,21 @@ export default function Login({
 
             तुमचे खाते नाही का?{" "}
 
-
             <span
               onClick={
                 onSwitchToSignup
               }
               className="auth-link"
             >
-
               खाते तयार करा
-
             </span>
 
           </div>
 
         )}
 
-
       </div>
 
     </div>
-
   );
-
 }

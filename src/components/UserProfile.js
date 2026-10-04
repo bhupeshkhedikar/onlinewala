@@ -119,36 +119,101 @@ const [udhariHistory, setUdhariHistory] =
                  USER PROFILE
               ================================================= */
 
-              const userDocRef =
-                doc(
-                  db,
-                  "users",
-                  currentUser.uid
-                );
+              /* =================================================
+                 USER PROFILE
 
-              const userDocSnap =
-                await getDoc(
-                  userDocRef
-                );
+                 Admin-created users can have a Firestore profile
+                 document ID different from the Firebase Phone-Auth UID.
+                 So we first check UID, then mobile, then phoneNumber.
+              ================================================= */
 
+              let profileData = null;
+              let profileId = null;
 
-              if (
-                userDocSnap.exists()
-              ) {
+              // 1. Normal users/{auth.uid} profile
+              const userDocRef = doc(
+                db,
+                "users",
+                currentUser.uid
+              );
 
-                setUser({
-                  ...currentUser,
-                  ...userDocSnap.data()
-                });
+              const userDocSnap = await getDoc(
+                userDocRef
+              );
 
-              } else {
-
-                setUser(
-                  currentUser
-                );
-
+              if (userDocSnap.exists()) {
+                profileData = userDocSnap.data();
+                profileId = userDocSnap.id;
               }
 
+              // 2. Admin-created profile: find by 10-digit mobile
+              if (!profileData && currentUser.phoneNumber) {
+                const cleanMobile = currentUser.phoneNumber
+                  .replace(/\D/g, "")
+                  .slice(-10);
+
+                if (cleanMobile.length === 10) {
+                  const mobileQuery = query(
+                    collection(db, "users"),
+                    where("mobile", "==", cleanMobile)
+                  );
+
+                  const mobileSnapshot = await getDocs(
+                    mobileQuery
+                  );
+
+                  if (!mobileSnapshot.empty) {
+                    const profileDoc = mobileSnapshot.docs[0];
+                    profileData = profileDoc.data();
+                    profileId = profileDoc.id;
+                  }
+                }
+              }
+
+              // 3. Fallback: profile may store +91XXXXXXXXXX
+              if (!profileData && currentUser.phoneNumber) {
+                const cleanMobile = currentUser.phoneNumber
+                  .replace(/\D/g, "")
+                  .slice(-10);
+
+                if (cleanMobile.length === 10) {
+                  const phoneQuery = query(
+                    collection(db, "users"),
+                    where("phoneNumber", "==", `+91${cleanMobile}`)
+                  );
+
+                  const phoneSnapshot = await getDocs(
+                    phoneQuery
+                  );
+
+                  if (!phoneSnapshot.empty) {
+                    const profileDoc = phoneSnapshot.docs[0];
+                    profileData = profileDoc.data();
+                    profileId = profileDoc.id;
+                  }
+                }
+              }
+
+              // 4. Merge Firebase Auth user with Firestore profile
+              if (profileData) {
+                setUser({
+                  ...currentUser,
+                  ...profileData,
+                  authUid: currentUser.uid,
+                  profileId,
+                  mobile:
+                    profileData.mobile ||
+                    currentUser.phoneNumber?.replace(/\D/g, "").slice(-10),
+                  phoneNumber:
+                    profileData.phoneNumber ||
+                    currentUser.phoneNumber
+                });
+              } else {
+                setUser({
+                  ...currentUser,
+                  authUid: currentUser.uid
+                });
+              }
 
               /* =================================================
                  UDHARI

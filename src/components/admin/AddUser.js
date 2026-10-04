@@ -3,64 +3,161 @@ import { auth, db } from "./firebase";
 import {
   createUserWithEmailAndPassword
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+
+import {
+  doc,
+  setDoc
+} from "firebase/firestore";
+
 import "./AddUser.css";
 
 export default function AddUser({ onSuccess }) {
 
   const [form, setForm] = useState({
     name: "",
+    mobile: "",
     email: "",
     password: "",
     gender: "male",
-    role: "user" // Added role with default value
+    role: "user"
   });
 
   const [loading, setLoading] = useState(false);
 
+  const handleChange = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleSubmit = async () => {
-    if (!form.name || !form.email || !form.password) {
-      alert("Please fill all fields");
+
+    const cleanName = form.name.trim();
+
+    const cleanMobile = form.mobile
+      .replace(/\D/g, "")
+      .trim();
+
+    const cleanEmail = form.email
+      .trim()
+      .toLowerCase();
+
+    const cleanPassword = form.password;
+
+    // ==============================
+    // VALIDATION
+    // ==============================
+
+    if (!cleanName) {
+      alert("Please enter full name");
       return;
     }
-    
+
+    if (!/^[0-9]{10}$/.test(cleanMobile)) {
+      alert("Please enter valid 10 digit mobile number");
+      return;
+    }
+
+    if (!cleanEmail) {
+      alert("Please enter email");
+      return;
+    }
+
+    if (!cleanPassword || cleanPassword.length < 6) {
+      alert("Password must be at least 6 characters");
+      return;
+    }
+
     try {
+
       setLoading(true);
 
-      // 🔥 Create Auth User
+      // =====================================================
+      // CREATE FIREBASE EMAIL/PASSWORD AUTH USER
+      // =====================================================
+
       const res = await createUserWithEmailAndPassword(
         auth,
-        form.email,
-        form.password
+        cleanEmail,
+        cleanPassword
       );
 
-      // 🔥 Save to Firestore
-      await setDoc(doc(db, "users", res.user.uid), {
-        name: form.name,
-        email: form.email,
-        gender: form.gender,
-        role: form.role, // Save role to database
-        applications: [],
-        createdAt: new Date()
-      });
+      const uid = res.user.uid;
+
+      // =====================================================
+      // CREATE FIRESTORE USER PROFILE
+      // =====================================================
+
+      await setDoc(
+        doc(db, "users", uid),
+        {
+          // Basic information
+          name: cleanName,
+
+          mobile: cleanMobile,
+
+          phoneNumber: `+91${cleanMobile}`,
+
+          email: cleanEmail,
+
+          gender: form.gender,
+
+          // Role
+          role: form.role,
+
+          // Applications
+          applications: [],
+
+          // Registration source
+          createdBy: "admin",
+
+          // Important:
+          // This user is allowed to login using mobile OTP
+          mobileLoginEnabled: true,
+
+          // Created date
+          createdAt: new Date()
+        }
+      );
 
       alert("User Created Successfully ✅");
 
-      // Reset form including the role
+      // =====================================================
+      // RESET FORM
+      // =====================================================
+
       setForm({
         name: "",
+        mobile: "",
         email: "",
         password: "",
         gender: "male",
-        role: "user" 
+        role: "user"
       });
 
-      onSuccess && onSuccess();
+      if (onSuccess) {
+        onSuccess();
+      }
 
     } catch (err) {
-      alert(err.message);
+
+      console.error("Admin Create User Error:", err);
+
+      if (err.code === "auth/email-already-in-use") {
+        alert("This email is already registered.");
+      } else if (err.code === "auth/invalid-email") {
+        alert("Invalid email address.");
+      } else if (err.code === "auth/weak-password") {
+        alert("Password is too weak. Use at least 6 characters.");
+      } else {
+        alert(err.message);
+      }
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
@@ -69,46 +166,101 @@ export default function AddUser({ onSuccess }) {
 
       <h3>Create New User</h3>
 
-      <input
-        placeholder="Full Name"
-        value={form.name}
-        onChange={e => setForm({ ...form, name: e.target.value })}
-      />
+      {/* NAME */}
 
       <input
+        type="text"
+        placeholder="Full Name"
+        value={form.name}
+        onChange={(e) =>
+          handleChange("name", e.target.value)
+        }
+      />
+
+      {/* MOBILE */}
+
+      <input
+        type="tel"
+        placeholder="Mobile Number"
+        value={form.mobile}
+        maxLength="10"
+        inputMode="numeric"
+        onChange={(e) =>
+          handleChange(
+            "mobile",
+            e.target.value.replace(/\D/g, "")
+          )
+        }
+      />
+
+      {/* EMAIL */}
+
+      <input
+        type="email"
         placeholder="Email Address"
         value={form.email}
-        onChange={e => setForm({ ...form, email: e.target.value })}
+        onChange={(e) =>
+          handleChange("email", e.target.value)
+        }
       />
+
+      {/* PASSWORD */}
 
       <input
         type="password"
         placeholder="Password"
         value={form.password}
-        onChange={e => setForm({ ...form, password: e.target.value })}
+        onChange={(e) =>
+          handleChange("password", e.target.value)
+        }
       />
+
+      {/* GENDER */}
 
       <select
         value={form.gender}
-        onChange={e => setForm({ ...form, gender: e.target.value })}
+        onChange={(e) =>
+          handleChange("gender", e.target.value)
+        }
       >
         <option value="male">Male</option>
         <option value="female">Female</option>
       </select>
 
-      {/* Role Selection Dropdown */}
+      {/* ROLE */}
+
       <select
         value={form.role}
-        onChange={e => setForm({ ...form, role: e.target.value })}
+        onChange={(e) =>
+          handleChange("role", e.target.value)
+        }
       >
-        <option value="user">Customer / User</option>
-        <option value="staff">Staff / Desk Operator</option>
-        <option value="technician">IT / Hardware Support</option>
-        <option value="admin">Manager / Admin</option>
+        <option value="user">
+          Customer / User
+        </option>
+
+        <option value="staff">
+          Staff / Desk Operator
+        </option>
+
+        <option value="technician">
+          IT / Hardware Support
+        </option>
+
+        <option value="admin">
+          Manager / Admin
+        </option>
       </select>
 
-      <button onClick={handleSubmit} disabled={loading}>
-        {loading ? "Creating..." : "Create User"}
+      {/* BUTTON */}
+
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+      >
+        {loading
+          ? "Creating..."
+          : "Create User"}
       </button>
 
     </div>

@@ -42,6 +42,7 @@ import InstantRcPdfWithoutChip from "./components/InstantRcPdfWithoutChip";
 import InstantNumberLinkWithVoter from "./components/InstantNumberLinkWithVoter";
 import AdminUdhari from "./components/admin/AdminUdhari";
 import AdminWalletManager from "./components/admin/AdminWalletManager";
+import InstantServices from "./components/InstantServices";
 
 const Home = ({ authUser, userData }) => (
   <>
@@ -54,6 +55,7 @@ const Home = ({ authUser, userData }) => (
       <InstantDlPdf/>
       <InstantLLPdf/>
       <InstantRCPdf/> */}
+     
       <Hero />
       <QuickWalletReferral
         user={authUser ? (userData || authUser) : null}
@@ -61,7 +63,7 @@ const Home = ({ authUser, userData }) => (
 
       <BookingBar user={authUser} />
     </div>
-
+ <InstantServices/>
     <ServicesIcons user={authUser} />
     <JobBanner />
 
