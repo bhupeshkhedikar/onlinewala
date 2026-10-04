@@ -21,7 +21,7 @@ export default function ServicesIcons({
     useState("");
 
   /* =====================================================
-     CARD COLOR THEMES
+     कार्ड रंग थीम
   ===================================================== */
 
   const cardThemes = [
@@ -36,7 +36,7 @@ export default function ServicesIcons({
   ];
 
   /* =====================================================
-     FETCH SERVICES
+     सेवा मिळवा
   ===================================================== */
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function ServicesIcons({
         setServices(fetchedServices);
       } catch (error) {
         console.error(
-          "Error fetching services:",
+          "सेवा मिळवताना त्रुटी आली:",
           error
         );
       } finally {
@@ -67,7 +67,7 @@ export default function ServicesIcons({
   }, []);
 
   /* =====================================================
-     SERVICE CLICK
+     सेवा निवड
   ===================================================== */
 
   const handleServiceClick = (
@@ -78,7 +78,7 @@ export default function ServicesIcons({
         onLoginRequest();
       } else {
         alert(
-          "Please login first to book a service!"
+          "सेवा बुक करण्यासाठी कृपया प्रथम लॉगिन करा."
         );
       }
 
@@ -90,7 +90,7 @@ export default function ServicesIcons({
   };
 
   /* =====================================================
-     KEYBOARD ACCESS
+     कीबोर्डद्वारे सेवा निवड
   ===================================================== */
 
   const handleKeyDown = (
@@ -108,7 +108,7 @@ export default function ServicesIcons({
   };
 
   /* =====================================================
-     LOADING SKELETON
+     लोडिंग दाखवा
   ===================================================== */
 
   const renderLoading = () => {
@@ -118,6 +118,7 @@ export default function ServicesIcons({
       <div
         className="service-skeleton"
         key={index}
+        aria-label="सेवा लोड होत आहे"
       >
         <div className="skeleton-icon" />
 
@@ -129,25 +130,28 @@ export default function ServicesIcons({
   };
 
   /* =====================================================
-     RETURN
+     मुख्य भाग
   ===================================================== */
 
   return (
     <>
       <section
         className="services-container"
-        aria-label="Available Services"
+        aria-label="उपलब्ध सेवा"
       >
 
         {/* =================================================
-            SECTION HEADER
+            विभागाचे शीर्षक
         ================================================= */}
 
         <div className="services-heading">
 
           <div className="services-heading-left">
 
-            <span className="services-heading-icon">
+            <span
+              className="services-heading-icon"
+              aria-hidden="true"
+            >
               ✨
             </span>
 
@@ -157,7 +161,7 @@ export default function ServicesIcons({
               </h2>
 
               <p>
-                तुमच्यासाठी उपलब्ध असलेल्या
+                तुमच्यासाठी उपलब्ध असलेली
                 सेवा निवडा
               </p>
             </div>
@@ -174,22 +178,25 @@ export default function ServicesIcons({
 
 
         {/* =================================================
-            SERVICES GRID
+            सेवा ग्रिड
         ================================================= */}
 
         <div className="servicesRow">
 
-          {/* LOADING */}
+          {/* सेवा लोड होत असताना */}
 
           {loading ? (
             renderLoading()
           ) : services.length === 0 ? (
 
-            /* EMPTY */
+            /* कोणतीही सेवा उपलब्ध नसल्यास */
 
             <div className="services-empty">
 
-              <div className="empty-icon">
+              <div
+                className="empty-icon"
+                aria-hidden="true"
+              >
                 📦
               </div>
 
@@ -205,7 +212,7 @@ export default function ServicesIcons({
 
           ) : (
 
-            /* SERVICES */
+            /* उपलब्ध सेवा */
 
             services.map(
               (svc, index) => {
@@ -233,22 +240,28 @@ export default function ServicesIcons({
                     }
                     role="button"
                     tabIndex={0}
-                    aria-label={`Book ${svc.name}`}
+                    aria-label={`${svc.name} सेवा बुक करा`}
                   >
 
-                    {/* COLOR GLOW */}
+                    {/* रंगीत चमक */}
 
-                    <div className="service-glow" />
+                    <div
+                      className="service-glow"
+                      aria-hidden="true"
+                    />
 
-                    {/* NUMBER */}
+                    {/* क्रमांक */}
 
-                    <span className="service-number">
+                    <span
+                      className="service-number"
+                      aria-hidden="true"
+                    >
                       {String(
                         index + 1
                       ).padStart(2, "0")}
                     </span>
 
-                    {/* ICON */}
+                    {/* सेवा चिन्ह */}
 
                     <div className="icon-container">
 
@@ -257,9 +270,14 @@ export default function ServicesIcons({
                         <img
                           className="icon-img"
                           src={svc.imageUrl}
-                          alt={svc.name}
+                          alt={`${svc.name} चे चिन्ह`}
                           loading="lazy"
                           onError={(event) => {
+                            console.warn(
+                              "सेवेचे चिन्ह लोड झाले नाही:",
+                              svc.name
+                            );
+
                             event.currentTarget.style.display =
                               "none";
 
@@ -287,30 +305,35 @@ export default function ServicesIcons({
                               ? "none"
                               : "flex"
                         }}
+                        aria-hidden="true"
                       >
                         ✨
                       </div>
 
                     </div>
 
-                    {/* SERVICE NAME */}
+                    {/* सेवेचे नाव */}
 
                     <p className="service-name">
                       {svc.name}
                     </p>
 
-                    {/* BOOK LABEL */}
+                    {/* सेवा बुक करा */}
 
                     <span className="service-book">
-                      Book Now
-                      <span>
+                      सेवा बुक करा
+
+                      <span aria-hidden="true">
                         →
                       </span>
                     </span>
 
-                    {/* BOTTOM DECORATION */}
+                    {/* खालची सजावट */}
 
-                    <div className="service-bottom-line" />
+                    <div
+                      className="service-bottom-line"
+                      aria-hidden="true"
+                    />
 
                   </div>
                 );
@@ -324,7 +347,7 @@ export default function ServicesIcons({
 
 
       {/* ===================================================
-          BOOKING MODAL
+          बुकिंग विंडो
       =================================================== */}
 
       {isModalOpen && (
