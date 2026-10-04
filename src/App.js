@@ -43,6 +43,7 @@ import InstantNumberLinkWithVoter from "./components/InstantNumberLinkWithVoter"
 import AdminUdhari from "./components/admin/AdminUdhari";
 import AdminWalletManager from "./components/admin/AdminWalletManager";
 import InstantServices from "./components/InstantServices";
+import AadharToRationPdf from "./components/AadharToRationPdf";
 
 const Home = ({ authUser, userData }) => (
   <>

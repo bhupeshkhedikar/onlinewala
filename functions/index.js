@@ -7377,3 +7377,888 @@ exports.payUdhariFromWallet = onCall(
 
   }
 );
+
+// ============================================================
+// AADHAAR TO RATION PDF
+// ============================================================
+
+exports.aadharToRationPdf = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 120,
+    memory: "256MiB",
+  },
+
+  async (request) => {
+
+    // ========================================================
+    // 1. AUTH CHECK
+    // ========================================================
+
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "कृपया आधी Login करा."
+      );
+    }
+
+
+    // ========================================================
+    // 2. RESOLVE ONLINEWALAA USER
+    // ========================================================
+
+    const resolvedUser =
+      await resolveOnlineWalaaUser(
+        request
+      );
+
+    const uid =
+      resolvedUser.userId;
+
+
+    if (!uid) {
+      throw new HttpsError(
+        "unauthenticated",
+        "User account सापडले नाही."
+      );
+    }
+
+
+    // ========================================================
+    // 3. INPUT
+    // ========================================================
+
+    const uidNumber =
+      String(
+        request.data?.uidNumber ||
+        ""
+      )
+        .trim()
+        .replace(/\D/g, "");
+
+
+    const type =
+      String(
+        request.data?.type ||
+        "Default"
+      ).trim();
+
+
+    // ========================================================
+    // 4. VALIDATE AADHAAR
+    // ========================================================
+
+    if (!uidNumber) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Aadhaar Number टाका."
+      );
+    }
+
+
+    if (
+      !/^\d{12}$/.test(
+        uidNumber
+      )
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "कृपया Valid 12 digit Aadhaar Number टाका."
+      );
+    }
+
+
+    // ========================================================
+    // 5. SERVICE CHARGE
+    //
+    // Provider response मध्ये service_price = 5 आहे.
+    // ========================================================
+
+    const SERVICE_CHARGE = 50;
+
+
+    // ========================================================
+    // 6. USER REFERENCE
+    // ========================================================
+
+    const userRef =
+      db
+        .collection("users")
+        .doc(uid);
+
+
+    // ========================================================
+    // 7. INITIAL WALLET CHECK
+    // ========================================================
+
+    const userSnap =
+      await userRef.get();
+
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "User account सापडले नाही."
+      );
+    }
+
+
+    const userData =
+      userSnap.data() || {};
+
+
+    const initialWalletBalance =
+      Number(
+        userData.walletBalance ??
+        0
+      );
+
+
+    const initialAvailableBalance =
+      Number(
+        userData.availableBalance ??
+        initialWalletBalance
+      );
+
+
+    if (
+      !Number.isFinite(
+        initialWalletBalance
+      ) ||
+      !Number.isFinite(
+        initialAvailableBalance
+      )
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Wallet balance invalid आहे."
+      );
+    }
+
+
+    if (
+      initialAvailableBalance <
+      SERVICE_CHARGE
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        `Wallet मध्ये किमान ₹${SERVICE_CHARGE} उपलब्ध असणे आवश्यक आहे.`
+      );
+    }
+
+
+    // ========================================================
+    // 8. PARIPRINT API KEY
+    // ========================================================
+
+    const apiKey =
+      PARIPRINT_API_KEY.value();
+
+
+    if (!apiKey) {
+
+      console.error(
+        "PARIPRINT_API_KEY is missing."
+      );
+
+      throw new HttpsError(
+        "failed-precondition",
+        "Service configuration error."
+      );
+    }
+
+
+    // ========================================================
+    // 9. PARIPRINT API URL
+    //
+    // Example:
+    //
+    // slug=aadhar-to-ration-pdf
+    // uidNumber=123456789012
+    // type=Default
+    // api_key=SECRET
+    // ========================================================
+
+    const apiUrl =
+      "https://pariprint.in/api-proxy.php" +
+      "?slug=aadhar-to-ration-pdf" +
+      "&uidNumber=" +
+      encodeURIComponent(
+        uidNumber
+      ) +
+      "&type=" +
+      encodeURIComponent(
+        type
+      ) +
+      "&api_key=" +
+      encodeURIComponent(
+        apiKey
+      );
+
+
+    console.log(
+      "=========================================="
+    );
+
+    console.log(
+      "AADHAAR TO RATION PDF REQUEST"
+    );
+
+    console.log(
+      "User:",
+      uid
+    );
+
+    console.log(
+      "Aadhaar:",
+      `${uidNumber.substring(
+        0,
+        4
+      )}********`
+    );
+
+    console.log(
+      "Type:",
+      type
+    );
+
+    console.log(
+      "=========================================="
+    );
+
+
+    // ========================================================
+    // 10. PROVIDER REQUEST
+    // ========================================================
+
+    let providerResponse;
+
+    try {
+
+      const response =
+        await fetch(
+          apiUrl,
+          {
+            method: "GET",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              "User-Agent":
+                "OnlineWalaa/1.0",
+            },
+          }
+        );
+
+
+      const rawText =
+        await response.text();
+
+
+      console.log(
+        "Aadhaar Ration HTTP:",
+        response.status
+      );
+
+
+      console.log(
+        "Aadhaar Ration Response:",
+        rawText.substring(
+          0,
+          1500
+        )
+      );
+
+
+      try {
+
+        providerResponse =
+          JSON.parse(
+            rawText
+          );
+
+      } catch (
+        parseError
+      ) {
+
+        console.error(
+          "Provider JSON parse error:",
+          parseError
+        );
+
+        throw new HttpsError(
+          "internal",
+          "Provider कडून invalid response मिळाला."
+        );
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Aadhaar Ration provider error:",
+        error
+      );
+
+
+      if (
+        error instanceof
+        HttpsError
+      ) {
+        throw error;
+      }
+
+
+      throw new HttpsError(
+        "internal",
+        "Aadhaar to Ration service उपलब्ध नाही."
+      );
+    }
+
+
+    // ========================================================
+    // 11. EXTRACT PDF
+    // ========================================================
+
+    const pdfBase64 =
+      String(
+        providerResponse?.data?.pdf ||
+        providerResponse?.pdf ||
+        ""
+      ).trim();
+
+
+    // ========================================================
+    // 12. PROVIDER SUCCESS
+    // ========================================================
+
+    const providerStatus =
+      providerResponse?.status;
+
+
+    const providerSuccess =
+      providerStatus ===
+        "success" ||
+
+      providerStatus ===
+        "SUCCESS" ||
+
+      providerStatus ===
+        true;
+
+
+    console.log(
+      "Provider Status:",
+      providerStatus
+    );
+
+
+    console.log(
+      "Provider Message:",
+      providerResponse?.message
+    );
+
+
+    console.log(
+      "Has PDF:",
+      Boolean(
+        pdfBase64
+      )
+    );
+
+
+    if (
+      !providerSuccess ||
+      !pdfBase64
+    ) {
+
+      console.error(
+        "Aadhaar Ration PDF generation failed:",
+        providerResponse
+      );
+
+
+      throw new HttpsError(
+        "failed-precondition",
+        providerResponse?.message ||
+          "Aadhaar to Ration PDF तयार होऊ शकला नाही."
+      );
+    }
+
+
+    // ========================================================
+    // 13. CLEAN BASE64
+    // ========================================================
+
+    const cleanPdfBase64 =
+      pdfBase64
+        .replace(
+          /^data:application\/pdf;base64,/i,
+          ""
+        )
+        .replace(
+          /\s/g,
+          ""
+        );
+
+
+    if (
+      !cleanPdfBase64
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        "PDF data रिकामा आहे."
+      );
+    }
+
+
+    // ========================================================
+    // 14. VERIFY PDF
+    // ========================================================
+
+    let pdfBuffer;
+
+    try {
+
+      pdfBuffer =
+        Buffer.from(
+          cleanPdfBase64,
+          "base64"
+        );
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "PDF Base64 decode error:",
+        error
+      );
+
+      throw new HttpsError(
+        "internal",
+        "PDF decode करण्यात अडचण आली."
+      );
+    }
+
+
+    if (
+      pdfBuffer.length <
+        100 ||
+
+      pdfBuffer
+        .subarray(
+          0,
+          4
+        )
+        .toString() !==
+        "%PDF"
+    ) {
+
+      throw new HttpsError(
+        "failed-precondition",
+        "Provider कडून valid PDF मिळाला नाही."
+      );
+    }
+
+
+    // ========================================================
+    // 15. TRANSACTION REFERENCES
+    // ========================================================
+
+    const walletTransactionRef =
+      db
+        .collection(
+          "walletTransactions"
+        )
+        .doc();
+
+
+    const requestRef =
+      db
+        .collection(
+          "aadharToRationPdfRequests"
+        )
+        .doc();
+
+
+    const transactionId =
+      walletTransactionRef.id;
+
+
+    const requestId =
+      requestRef.id;
+
+
+    let remainingWalletBalance = 0;
+
+    let remainingAvailableBalance = 0;
+
+
+    // ========================================================
+    // 16. ATOMIC WALLET DEBIT
+    // ========================================================
+
+    try {
+
+      await db.runTransaction(
+        async (
+          transaction
+        ) => {
+
+          const freshUserSnap =
+            await transaction.get(
+              userRef
+            );
+
+
+          if (
+            !freshUserSnap.exists
+          ) {
+
+            throw new HttpsError(
+              "not-found",
+              "User account सापडले नाही."
+            );
+          }
+
+
+          const freshUserData =
+            freshUserSnap.data() ||
+            {};
+
+
+          const walletBalance =
+            Number(
+              freshUserData.walletBalance ??
+              0
+            );
+
+
+          const availableBalance =
+            Number(
+              freshUserData.availableBalance ??
+              walletBalance
+            );
+
+
+          if (
+            !Number.isFinite(
+              walletBalance
+            ) ||
+            !Number.isFinite(
+              availableBalance
+            )
+          ) {
+
+            throw new HttpsError(
+              "failed-precondition",
+              "Wallet balance invalid आहे."
+            );
+          }
+
+
+          // IMPORTANT:
+          // Service payment available balance
+          // मधून होईल.
+
+          if (
+            availableBalance <
+            SERVICE_CHARGE
+          ) {
+
+            throw new HttpsError(
+              "failed-precondition",
+              `Wallet मध्ये ₹${SERVICE_CHARGE} उपलब्ध नाहीत.`
+            );
+          }
+
+
+          // ----------------------------------------------------
+          // NEW BALANCES
+          // ----------------------------------------------------
+
+          remainingWalletBalance =
+            Math.max(
+              0,
+              Number(
+                (
+                  walletBalance -
+                  SERVICE_CHARGE
+                ).toFixed(2)
+              )
+            );
+
+
+          remainingAvailableBalance =
+            Math.max(
+              0,
+              Number(
+                (
+                  availableBalance -
+                  SERVICE_CHARGE
+                ).toFixed(2)
+              )
+            );
+
+
+          // ----------------------------------------------------
+          // UPDATE USER
+          // ----------------------------------------------------
+
+          transaction.update(
+            userRef,
+            {
+              walletBalance:
+                remainingWalletBalance,
+
+              availableBalance:
+                remainingAvailableBalance,
+
+              updatedAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+
+
+          // ----------------------------------------------------
+          // WALLET TRANSACTION
+          // ----------------------------------------------------
+
+          transaction.set(
+            walletTransactionRef,
+            {
+              uid,
+
+              userId:
+                uid,
+
+              type:
+                "DEBIT",
+
+              direction:
+                "DEBIT",
+
+              service:
+                "AADHAAR_TO_RATION_PDF",
+
+              serviceName:
+                "Aadhaar To Ration PDF",
+
+              amount:
+                SERVICE_CHARGE,
+
+              provider:
+                "PARIPRINT",
+
+              uidNumber,
+
+              documentType:
+                type,
+
+              providerMessage:
+                providerResponse?.message ||
+                null,
+
+              providerServicePrice:
+                Number(
+                  providerResponse?.service_price ??
+                  SERVICE_CHARGE
+                ),
+
+              balanceBefore:
+                walletBalance,
+
+              balanceAfter:
+                remainingWalletBalance,
+
+              availableBalanceBefore:
+                availableBalance,
+
+              availableBalanceAfter:
+                remainingAvailableBalance,
+
+              status:
+                "SUCCESS",
+
+              createdAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+
+
+          // ----------------------------------------------------
+          // SERVICE REQUEST HISTORY
+          // ----------------------------------------------------
+
+          transaction.set(
+            requestRef,
+            {
+              uid,
+
+              userId:
+                uid,
+
+              uidNumber,
+
+              type,
+
+              name:
+                providerResponse?.data?.name ||
+                null,
+
+              ration:
+                providerResponse?.data?.ration ||
+                null,
+
+              amount:
+                SERVICE_CHARGE,
+
+              provider:
+                "PARIPRINT",
+
+              providerService:
+                "aadhar_to_ration_pdf",
+
+              providerServicePrice:
+                Number(
+                  providerResponse?.service_price ??
+                  SERVICE_CHARGE
+                ),
+
+              providerMessage:
+                providerResponse?.message ||
+                null,
+
+              transactionId,
+
+              status:
+                "SUCCESS",
+
+              createdAt:
+                admin.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+            }
+          );
+        }
+      );
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Aadhaar Ration wallet transaction error:",
+        error
+      );
+
+
+      if (
+        error instanceof
+        HttpsError
+      ) {
+        throw error;
+      }
+
+
+      throw new HttpsError(
+        "internal",
+        "Wallet debit करण्यात समस्या आली."
+      );
+    }
+
+
+    // ========================================================
+    // 17. SUCCESS RESPONSE
+    // ========================================================
+
+    console.log(
+      "=========================================="
+    );
+
+    console.log(
+      "AADHAAR TO RATION PDF SUCCESS"
+    );
+
+    console.log(
+      "Transaction:",
+      transactionId
+    );
+
+    console.log(
+      "Amount:",
+      SERVICE_CHARGE
+    );
+
+    console.log(
+      "Remaining Wallet:",
+      remainingWalletBalance
+    );
+
+    console.log(
+      "Remaining Available:",
+      remainingAvailableBalance
+    );
+
+    console.log(
+      "=========================================="
+    );
+
+
+    return {
+
+      success:
+        true,
+
+      message:
+        providerResponse?.message ||
+        "Aadhaar to Ration PDF तयार आहे.",
+
+      uidNumber,
+
+      type,
+
+      name:
+        providerResponse?.data?.name ||
+        null,
+
+      ration:
+        providerResponse?.data?.ration ||
+        null,
+
+      pdf:
+        cleanPdfBase64,
+
+      filename:
+        providerResponse?.filename ||
+        `Aadhar_To_Ration_${uidNumber}.pdf`,
+
+      amount:
+        SERVICE_CHARGE,
+
+      providerServicePrice:
+        Number(
+          providerResponse?.service_price ??
+          SERVICE_CHARGE
+        ),
+
+      transactionId,
+
+      requestId,
+
+      remainingBalance:
+        remainingWalletBalance,
+
+      remainingWalletBalance,
+
+      remainingAvailableBalance,
+    };
+  }
+);
