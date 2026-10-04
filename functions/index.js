@@ -627,8 +627,7 @@ exports.adminApproveReferral =
 
       const referralId =
         String(
-          request.data?.referralId ||
-          ""
+          request.data?.referralId || ""
         ).trim();
 
       if (!referralId) {
@@ -648,17 +647,17 @@ exports.adminApproveReferral =
       try {
         result =
           await db.runTransaction(
-            async (
-              transaction
-            ) => {
+            async (transaction) => {
+              // =====================================================
+              // GET REFERRAL
+              // =====================================================
+
               const referralSnap =
                 await transaction.get(
                   referralRef
                 );
 
-              if (
-                !referralSnap.exists
-              ) {
+              if (!referralSnap.exists) {
                 throw new HttpsError(
                   "not-found",
                   "Referral not found."
@@ -671,8 +670,12 @@ exports.adminApproveReferral =
               const currentStatus =
                 String(
                   referral.status ||
-                  "pending"
+                    "pending"
                 ).toLowerCase();
+
+              // =====================================================
+              // ALREADY CONFIRMED
+              // =====================================================
 
               if (
                 currentStatus ===
@@ -681,15 +684,21 @@ exports.adminApproveReferral =
                 return {
                   alreadyProcessed:
                     true,
+
                   amount:
                     Number(
                       referral.rewardAmount ||
-                      0
+                        0
                     ),
+
                   referrerId:
                     referral.referrerId,
                 };
               }
+
+              // =====================================================
+              // ALREADY REJECTED
+              // =====================================================
 
               if (
                 currentStatus ===
@@ -700,6 +709,10 @@ exports.adminApproveReferral =
                   "This referral has already been rejected."
                 );
               }
+
+              // =====================================================
+              // ONLY PENDING / APPROVED CAN BE APPROVED
+              // =====================================================
 
               if (
                 currentStatus !==
@@ -713,6 +726,10 @@ exports.adminApproveReferral =
                 );
               }
 
+              // =====================================================
+              // REFERRER ID
+              // =====================================================
+
               const referrerId =
                 referral.referrerId;
 
@@ -722,6 +739,10 @@ exports.adminApproveReferral =
                   "Referral referrerId is missing."
                 );
               }
+
+              // =====================================================
+              // GET REFERRER USER
+              // =====================================================
 
               const referrerRef =
                 db
@@ -733,9 +754,7 @@ exports.adminApproveReferral =
                   referrerRef
                 );
 
-              if (
-                !referrerSnap.exists
-              ) {
+              if (!referrerSnap.exists) {
                 throw new HttpsError(
                   "not-found",
                   "Referrer user account not found."
@@ -745,11 +764,15 @@ exports.adminApproveReferral =
               const referrer =
                 referrerSnap.data();
 
+              // =====================================================
+              // REWARD AMOUNT
+              // =====================================================
+
               const rewardAmount =
                 Number(
                   referral.rewardAmount ||
-                  referral.reward ||
-                  0
+                    referral.reward ||
+                    0
                 );
 
               if (
@@ -765,35 +788,74 @@ exports.adminApproveReferral =
                 );
               }
 
+              // =====================================================
+              // CURRENT WALLET VALUES
+              // =====================================================
+
               const currentWallet =
                 Number(
                   referrer.walletBalance ||
-                  0
+                    0
                 );
 
               const currentAvailable =
                 Number(
                   referrer.availableBalance ||
-                  0
+                    0
                 );
+
+              const currentPendingReferral =
+                Number(
+                  referrer.pendingReferralAmount ||
+                    0
+                );
+
+              // =====================================================
+              // ADD REWARD TO AVAILABLE BALANCE
+              // REMOVE REWARD FROM PENDING
+              // =====================================================
 
               const newAvailable =
                 currentAvailable +
                 rewardAmount;
 
+              const newPendingReferral =
+                Math.max(
+                  0,
+                  currentPendingReferral -
+                    rewardAmount
+                );
+
+              // =====================================================
+              // UPDATE USER WALLET
+              // =====================================================
+
               transaction.update(
                 referrerRef,
                 {
+                  // Keep existing walletBalance
                   walletBalance:
                     currentWallet,
+
+                  // Add approved referral reward
                   availableBalance:
                     newAvailable,
+
+                  // Remove approved reward
+                  // from pending referral amount
+                  pendingReferralAmount:
+                    newPendingReferral,
+
                   updatedAt:
                     admin.firestore
                       .FieldValue
                       .serverTimestamp(),
                 }
               );
+
+              // =====================================================
+              // CREATE WALLET TRANSACTION
+              // =====================================================
 
               const walletTransactionRef =
                 db
@@ -807,23 +869,32 @@ exports.adminApproveReferral =
                 {
                   userId:
                     referrerId,
+
                   amount:
                     rewardAmount,
+
                   type:
                     "REFERRAL_REWARD",
+
                   direction:
                     "CREDIT",
+
                   status:
                     "success",
+
                   referenceId:
                     referralId,
+
                   description:
                     "Referral reward approved by admin.",
+
                   approvedBy:
                     request.auth.uid,
+
                   approvedByEmail:
-                    request.auth.token?.email ||
-                    "",
+                    request.auth.token
+                      ?.email || "",
+
                   createdAt:
                     admin.firestore
                       .FieldValue
@@ -831,26 +902,37 @@ exports.adminApproveReferral =
                 }
               );
 
+              // =====================================================
+              // UPDATE REFERRAL
+              // =====================================================
+
               transaction.update(
                 referralRef,
                 {
                   status:
                     "confirmed",
+
                   adminApproved:
                     true,
+
                   serviceBooked:
                     true,
+
                   approvedBy:
                     request.auth.uid,
+
                   approvedByEmail:
-                    request.auth.token?.email ||
-                    "",
+                    request.auth.token
+                      ?.email || "",
+
                   approvedAt:
                     admin.firestore
                       .FieldValue
                       .serverTimestamp(),
+
                   walletTransactionId:
                     walletTransactionRef.id,
+
                   updatedAt:
                     admin.firestore
                       .FieldValue
@@ -858,12 +940,19 @@ exports.adminApproveReferral =
                 }
               );
 
+              // =====================================================
+              // RETURN RESULT
+              // =====================================================
+
               return {
                 alreadyProcessed:
                   false,
+
                 amount:
                   rewardAmount,
-                referrerId,
+
+                referrerId:
+                  referrerId,
               };
             }
           );
@@ -886,14 +975,22 @@ exports.adminApproveReferral =
         );
       }
 
+      // =====================================================
+      // FINAL RESPONSE
+      // =====================================================
+
       return {
         success: true,
+
         alreadyProcessed:
           result.alreadyProcessed,
+
         amount:
           result.amount,
+
         referrerId:
           result.referrerId,
+
         message:
           result.alreadyProcessed
             ? "Referral was already approved."
