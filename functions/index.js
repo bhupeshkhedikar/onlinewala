@@ -49,8 +49,11 @@ exports.createWalletOrder =
         );
       }
 
+      const resolvedUser =
+        await resolveOnlineWalaaUser(request);
+
       const userId =
-        request.auth.uid;
+        resolvedUser.userId;
 
       const amount =
         Number(
@@ -257,8 +260,11 @@ exports.verifyWalletPayment =
         );
       }
 
+      const resolvedUser =
+        await resolveOnlineWalaaUser(request);
+
       const userId =
-        request.auth.uid;
+        resolvedUser.userId;
 
       const {
         rechargeId,
@@ -1171,8 +1177,11 @@ exports.createWithdrawal =
         );
       }
 
+      const resolvedUser =
+        await resolveOnlineWalaaUser(request);
+
       const uid =
-        request.auth.uid;
+        resolvedUser.userId;
 
       const amount =
         Number(
@@ -1678,6 +1687,155 @@ exports.adminRejectWithdrawal =
    USER → ONLINEWALAA WALLET PAYMENT
    ========================================================= */
 
+/* =========================================================
+   USER → ONLINEWALAA WALLET PAYMENT
+   ========================================================= */
+
+/*
+ * IMPORTANT:
+ * Firebase Phone/OTP login UID can be different from the UID
+ * used by the existing users/{uid} profile.
+ *
+ * This helper first tries the Firebase Auth UID.
+ * If that profile does not exist, it uses the authenticated
+ * Firebase phone number to find the existing users document.
+ *
+ * Supported profile phone fields:
+ *   - phoneNumber
+ *   - mobile
+ *   - mobileNumber
+ *
+ * It also supports values stored as:
+ *   9876543210
+ *   +919876543210
+ *   +91 9876543210
+ */
+async function resolveOnlineWalaaUser(request) {
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "कृपया प्रथम लॉगिन करा."
+    );
+  }
+
+  const authUid = request.auth.uid;
+
+  // ---------------------------------------------------------
+  // 1. FIRST: Try the current Firebase Auth UID
+  // ---------------------------------------------------------
+  const directRef = db
+    .collection("users")
+    .doc(authUid);
+
+  const directSnap = await directRef.get();
+
+  if (directSnap.exists) {
+    return {
+      ref: directRef,
+      snap: directSnap,
+      userId: directRef.id,
+      matchedBy: "uid",
+    };
+  }
+
+  // ---------------------------------------------------------
+  // 2. GET VERIFIED PHONE NUMBER FROM FIREBASE AUTH
+  // ---------------------------------------------------------
+  const authPhone = String(
+    request.auth.token?.phone_number || ""
+  ).trim();
+
+  const normalizedPhone = authPhone.replace(/\D/g, "");
+
+  if (!normalizedPhone) {
+    throw new HttpsError(
+      "not-found",
+      "User profile सापडला नाही. Firebase account मध्ये mobile number उपलब्ध नाही."
+    );
+  }
+
+  // Indian 10-digit number from +91XXXXXXXXXX
+  const tenDigitPhone =
+    normalizedPhone.length >= 10
+      ? normalizedPhone.slice(-10)
+      : normalizedPhone;
+
+  if (!/^[6-9]\d{9}$/.test(tenDigitPhone)) {
+    throw new HttpsError(
+      "not-found",
+      "User profile सापडला नाही. Login mobile number valid नाही."
+    );
+  }
+
+  const phoneVariants = [
+    tenDigitPhone,
+    `+91${tenDigitPhone}`,
+    `+91 ${tenDigitPhone}`,
+  ];
+
+  // ---------------------------------------------------------
+  // 3. SEARCH EXISTING PROFILE BY PHONE
+  // ---------------------------------------------------------
+  const phoneFields = [
+    "phoneNumber",
+    "mobile",
+    "mobileNumber",
+  ];
+
+  for (const field of phoneFields) {
+    for (const phoneValue of phoneVariants) {
+      const querySnap = await db
+        .collection("users")
+        .where(field, "==", phoneValue)
+        .limit(2)
+        .get();
+
+      if (querySnap.empty) {
+        continue;
+      }
+
+      if (querySnap.size > 1) {
+        console.error(
+          "Multiple user profiles found for phone:",
+          field,
+          phoneValue
+        );
+
+        throw new HttpsError(
+          "failed-precondition",
+          "या mobile number वर एकापेक्षा जास्त user profiles सापडले. कृपया admin कडून profile तपासा."
+        );
+      }
+
+      const profileDoc = querySnap.docs[0];
+
+      return {
+        ref: profileDoc.ref,
+        snap: profileDoc,
+        userId: profileDoc.id,
+        matchedBy: `${field}:${phoneValue}`,
+      };
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 4. NO PROFILE FOUND
+  // ---------------------------------------------------------
+  console.error(
+    "OnlineWalaa profile lookup failed.",
+    {
+      authUid,
+      phoneFieldAvailable: Boolean(authPhone),
+      phoneLast4: tenDigitPhone.slice(-4),
+    }
+  );
+
+  throw new HttpsError(
+    "not-found",
+    "User profile सापडला नाही."
+  );
+}
+
 exports.payOnlineWalaaFromWallet =
   onCall(
     {
@@ -1697,12 +1855,50 @@ exports.payOnlineWalaaFromWallet =
         );
       }
 
-      const userId =
-        request.auth.uid;
+      /* -----------------------------------------------------
+         2. RESOLVE USER PROFILE
 
+         Normal login:
+           Firebase Auth UID == users document ID
+
+         OTP login:
+           Firebase Auth UID may be different.
+           In that case find the existing users document
+           using the verified Firebase phone number.
+      ----------------------------------------------------- */
+
+      let resolvedUser;
+
+      try {
+        resolvedUser =
+          await resolveOnlineWalaaUser(request);
+      } catch (error) {
+        console.error(
+          "OnlineWalaa user profile resolution error:",
+          error
+        );
+
+        if (error instanceof HttpsError) {
+          throw error;
+        }
+
+        throw new HttpsError(
+          "internal",
+          "User profile शोधताना काहीतरी चूक झाली."
+        );
+      }
+
+      const userRef =
+        resolvedUser.ref;
+
+      // IMPORTANT:
+      // From this point onward, use the actual Firestore
+      // profile document ID, NOT request.auth.uid.
+      const userId =
+        resolvedUser.userId;
 
       /* -----------------------------------------------------
-         2. AMOUNT VALIDATION
+         3. AMOUNT VALIDATION
       ----------------------------------------------------- */
 
       const amount =
@@ -1732,7 +1928,7 @@ exports.payOnlineWalaaFromWallet =
       }
 
       /* -----------------------------------------------------
-         3. OPTIONAL MAX PAYMENT LIMIT
+         4. OPTIONAL MAX PAYMENT LIMIT
       ----------------------------------------------------- */
 
       const MAX_PAYMENT = 50000;
@@ -1744,15 +1940,9 @@ exports.payOnlineWalaaFromWallet =
         );
       }
 
-
       /* -----------------------------------------------------
-         4. REFERENCES
+         5. REFERENCES
       ----------------------------------------------------- */
-
-      const userRef =
-        db
-          .collection("users")
-          .doc(userId);
 
       const adminWalletRef =
         db
@@ -1769,9 +1959,8 @@ exports.payOnlineWalaaFromWallet =
           .collection("adminWalletTransactions")
           .doc();
 
-
       /* -----------------------------------------------------
-         5. ATOMIC FIRESTORE TRANSACTION
+         6. ATOMIC FIRESTORE TRANSACTION
       ----------------------------------------------------- */
 
       let result;
@@ -1798,7 +1987,6 @@ exports.payOnlineWalaaFromWallet =
                 );
               }
 
-
               /* ---------------------------------------------
                  READ ADMIN WALLET
               --------------------------------------------- */
@@ -1808,10 +1996,8 @@ exports.payOnlineWalaaFromWallet =
                   adminWalletRef
                 );
 
-
               const userData =
-                userSnap.data();
-
+                userSnap.data() || {};
 
               /* ---------------------------------------------
                  CURRENT USER BALANCE
@@ -1829,7 +2015,6 @@ exports.payOnlineWalaaFromWallet =
                   0
                 );
 
-
               /* ---------------------------------------------
                  BALANCE CHECK
               --------------------------------------------- */
@@ -1846,7 +2031,6 @@ exports.payOnlineWalaaFromWallet =
 
               }
 
-
               /* ---------------------------------------------
                  NEW USER BALANCE
               --------------------------------------------- */
@@ -1858,7 +2042,6 @@ exports.payOnlineWalaaFromWallet =
               const newAvailable =
                 currentAvailable -
                 amount;
-
 
               /* ---------------------------------------------
                  ADMIN WALLET BALANCE
@@ -1881,7 +2064,6 @@ exports.payOnlineWalaaFromWallet =
                   0
                 );
 
-
               const newAdminBalance =
                 currentAdminBalance +
                 amount;
@@ -1889,7 +2071,6 @@ exports.payOnlineWalaaFromWallet =
               const newAdminTotalReceived =
                 currentAdminTotalReceived +
                 amount;
-
 
               /* ---------------------------------------------
                  PAYMENT REFERENCE
@@ -1901,7 +2082,6 @@ exports.payOnlineWalaaFromWallet =
                   6
                 )}`;
 
-
               /* ---------------------------------------------
                  UPDATE USER WALLET
               --------------------------------------------- */
@@ -1909,7 +2089,6 @@ exports.payOnlineWalaaFromWallet =
               transaction.update(
                 userRef,
                 {
-
                   walletBalance:
                     newWallet,
 
@@ -1920,10 +2099,8 @@ exports.payOnlineWalaaFromWallet =
                     admin.firestore
                       .FieldValue
                       .serverTimestamp(),
-
                 }
               );
-
 
               /* ---------------------------------------------
                  CREATE / UPDATE ADMIN WALLET
@@ -1932,7 +2109,6 @@ exports.payOnlineWalaaFromWallet =
               transaction.set(
                 adminWalletRef,
                 {
-
                   balance:
                     newAdminBalance,
 
@@ -1943,13 +2119,11 @@ exports.payOnlineWalaaFromWallet =
                     admin.firestore
                       .FieldValue
                       .serverTimestamp(),
-
                 },
                 {
                   merge: true
                 }
               );
-
 
               /* ---------------------------------------------
                  USER TRANSACTION
@@ -1958,9 +2132,12 @@ exports.payOnlineWalaaFromWallet =
               transaction.set(
                 userTransactionRef,
                 {
-
                   userId:
                     userId,
+
+                  // Keep Firebase Auth UID also for tracing.
+                  authUid:
+                    request.auth.uid,
 
                   amount:
                     amount,
@@ -1984,10 +2161,8 @@ exports.payOnlineWalaaFromWallet =
                     admin.firestore
                       .FieldValue
                       .serverTimestamp(),
-
                 }
               );
-
 
               /* ---------------------------------------------
                  ADMIN TRANSACTION
@@ -1996,9 +2171,12 @@ exports.payOnlineWalaaFromWallet =
               transaction.set(
                 adminTransactionRef,
                 {
-
                   userId:
                     userId,
+
+                  // Keep Firebase Auth UID also for tracing.
+                  authUid:
+                    request.auth.uid,
 
                   amount:
                     amount,
@@ -2025,10 +2203,8 @@ exports.payOnlineWalaaFromWallet =
                     admin.firestore
                       .FieldValue
                       .serverTimestamp(),
-
                 }
               );
-
 
               /* ---------------------------------------------
                  RESULT
@@ -2054,6 +2230,15 @@ exports.payOnlineWalaaFromWallet =
                 adminBalance:
                   newAdminBalance,
 
+                userId:
+                  userId,
+
+                authUid:
+                  request.auth.uid,
+
+                matchedBy:
+                  resolvedUser.matchedBy,
+
               };
 
             }
@@ -2066,13 +2251,11 @@ exports.payOnlineWalaaFromWallet =
           error
         );
 
-
         if (
           error instanceof HttpsError
         ) {
           throw error;
         }
-
 
         throw new HttpsError(
           "internal",
@@ -2081,9 +2264,8 @@ exports.payOnlineWalaaFromWallet =
 
       }
 
-
       /* -----------------------------------------------------
-         SUCCESS RESPONSE
+         7. SUCCESS RESPONSE
       ----------------------------------------------------- */
 
       return {
@@ -2130,7 +2312,10 @@ exports.instantPanFind = onCall(
         );
       }
 
-      const userId = request.auth.uid;
+      const resolvedUser =
+        await resolveOnlineWalaaUser(request);
+
+      const userId = resolvedUser.userId;
 
       console.log("Authenticated user:", userId);
 
@@ -2828,7 +3013,10 @@ exports.instantRcPdf = onCall(
       );
     }
 
-    const userId = request.auth.uid;
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
+    const userId = resolvedUser.userId;
 
     // ============================================================
     // 2. INPUT
@@ -3250,7 +3438,10 @@ exports.instantLlPdf = onCall(
   },
 
   async (request) => {
-    const uid = request.auth?.uid;
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
+    const uid = resolvedUser.userId;
 
     if (!uid) {
       throw new HttpsError(
@@ -3673,7 +3864,10 @@ exports.instantDlPdf = onCall(
     memory: "256MiB",
   },
   async (request) => {
-    const uid = request.auth?.uid;
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
+    const uid = resolvedUser.userId;
 
     if (!uid) {
       throw new HttpsError(
@@ -4236,7 +4430,10 @@ exports.instantLlPass = onCall(
       );
     }
 
-    const uid = request.auth.uid;
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
+    const uid = resolvedUser.userId;
 
     // ----------------------------------------------------------
     // INPUT
@@ -4795,8 +4992,11 @@ exports.checkLlPassStatus = onCall(
       );
     }
 
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
     const uid =
-      request.auth.uid;
+      resolvedUser.userId;
 
     // ----------------------------------------------------------
     // INPUT
@@ -5136,7 +5336,10 @@ exports.instantRcPdfWithoutChip = onCall(
       );
     }
 
-    const uid = request.auth.uid;
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
+    const uid = resolvedUser.userId;
 
     const rcno = String(
       request.data?.rcno || ""
@@ -5511,7 +5714,10 @@ exports.instantNumberLinkWithVoter = onCall(
       );
     }
 
-    const uid = request.auth.uid;
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
+    const uid = resolvedUser.userId;
 
     // ----------------------------------------------------------
     // Input
@@ -6741,8 +6947,11 @@ exports.payUdhariFromWallet = onCall(
       );
     }
 
+    const resolvedUser =
+      await resolveOnlineWalaaUser(request);
+
     const uid =
-      request.auth.uid;
+      resolvedUser.userId;
 
     const {
       udhariId,

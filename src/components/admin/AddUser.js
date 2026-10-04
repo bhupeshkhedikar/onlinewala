@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { auth, db } from "./firebase";
+
 import {
   createUserWithEmailAndPassword
 } from "firebase/auth";
 
 import {
   doc,
-  setDoc
+  setDoc,
+  getDocs,
+  collection,
+  query,
+  where
 } from "firebase/firestore";
 
 import "./AddUser.css";
@@ -24,6 +29,10 @@ export default function AddUser({ onSuccess }) {
 
   const [loading, setLoading] = useState(false);
 
+  // =====================================================
+  // HANDLE INPUT CHANGE
+  // =====================================================
+
   const handleChange = (field, value) => {
     setForm((prev) => ({
       ...prev,
@@ -31,23 +40,93 @@ export default function AddUser({ onSuccess }) {
     }));
   };
 
+  // =====================================================
+  // GENERATE REFERRAL CODE
+  // Example: OW7K2P9A
+  // =====================================================
+
+  const generateReferralCode = () => {
+
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    let code = "OW";
+
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(
+        Math.floor(Math.random() * chars.length)
+      );
+    }
+
+    return code;
+  };
+
+  // =====================================================
+  // GENERATE UNIQUE REFERRAL CODE
+  // =====================================================
+
+  const generateUniqueReferralCode = async () => {
+
+    let referralCode = "";
+    let exists = true;
+
+    let attempts = 0;
+
+    while (exists && attempts < 10) {
+
+      referralCode = generateReferralCode();
+
+      const referralQuery = query(
+        collection(db, "users"),
+        where(
+          "referralCode",
+          "==",
+          referralCode
+        )
+      );
+
+      const snapshot =
+        await getDocs(referralQuery);
+
+      exists = !snapshot.empty;
+
+      attempts++;
+    }
+
+    if (exists) {
+      throw new Error(
+        "Unable to generate unique referral code. Please try again."
+      );
+    }
+
+    return referralCode;
+  };
+
+  // =====================================================
+  // CREATE USER
+  // =====================================================
+
   const handleSubmit = async () => {
 
-    const cleanName = form.name.trim();
+    const cleanName =
+      form.name.trim();
 
-    const cleanMobile = form.mobile
-      .replace(/\D/g, "")
-      .trim();
+    const cleanMobile =
+      form.mobile
+        .replace(/\D/g, "")
+        .trim();
 
-    const cleanEmail = form.email
-      .trim()
-      .toLowerCase();
+    const cleanEmail =
+      form.email
+        .trim()
+        .toLowerCase();
 
-    const cleanPassword = form.password;
+    const cleanPassword =
+      form.password;
 
-    // ==============================
+    // =====================================================
     // VALIDATION
-    // ==============================
+    // =====================================================
 
     if (!cleanName) {
       alert("Please enter full name");
@@ -55,7 +134,9 @@ export default function AddUser({ onSuccess }) {
     }
 
     if (!/^[0-9]{10}$/.test(cleanMobile)) {
-      alert("Please enter valid 10 digit mobile number");
+      alert(
+        "Please enter valid 10 digit mobile number"
+      );
       return;
     }
 
@@ -64,8 +145,13 @@ export default function AddUser({ onSuccess }) {
       return;
     }
 
-    if (!cleanPassword || cleanPassword.length < 6) {
-      alert("Password must be at least 6 characters");
+    if (
+      !cleanPassword ||
+      cleanPassword.length < 6
+    ) {
+      alert(
+        "Password must be at least 6 characters"
+      );
       return;
     }
 
@@ -74,16 +160,30 @@ export default function AddUser({ onSuccess }) {
       setLoading(true);
 
       // =====================================================
+      // GENERATE UNIQUE REFERRAL CODE
+      // =====================================================
+
+      const referralCode =
+        await generateUniqueReferralCode();
+
+      console.log(
+        "Generated Referral Code:",
+        referralCode
+      );
+
+      // =====================================================
       // CREATE FIREBASE EMAIL/PASSWORD AUTH USER
       // =====================================================
 
-      const res = await createUserWithEmailAndPassword(
-        auth,
-        cleanEmail,
-        cleanPassword
-      );
+      const res =
+        await createUserWithEmailAndPassword(
+          auth,
+          cleanEmail,
+          cleanPassword
+        );
 
-      const uid = res.user.uid;
+      const uid =
+        res.user.uid;
 
       // =====================================================
       // CREATE FIRESTORE USER PROFILE
@@ -92,36 +192,89 @@ export default function AddUser({ onSuccess }) {
       await setDoc(
         doc(db, "users", uid),
         {
-          // Basic information
+
+          // =================================================
+          // BASIC INFORMATION
+          // =================================================
+
           name: cleanName,
 
           mobile: cleanMobile,
 
-          phoneNumber: `+91${cleanMobile}`,
+          phoneNumber:
+            `+91${cleanMobile}`,
 
           email: cleanEmail,
 
           gender: form.gender,
 
-          // Role
+          // =================================================
+          // ROLE
+          // =================================================
+
           role: form.role,
 
-          // Applications
+          // =================================================
+          // REFERRAL
+          // =================================================
+
+          referralCode: referralCode,
+
+          // =================================================
+          // REFERRAL RELATED FIELDS
+          // =================================================
+
+          referredBy: "",
+
+          referralFromURL: "",
+
+          referralReward: 0,
+
+          referralCount: 0,
+
+          // =================================================
+          // APPLICATIONS
+          // =================================================
+
           applications: [],
 
-          // Registration source
+          // =================================================
+          // WALLET
+          // =================================================
+
+          walletBalance: 0,
+
+          availableBalance: 0,
+
+          pendingReferralAmount: 0,
+
+          // =================================================
+          // REGISTRATION SOURCE
+          // =================================================
+
           createdBy: "admin",
 
-          // Important:
-          // This user is allowed to login using mobile OTP
+          // =================================================
+          // MOBILE OTP LOGIN
+          // =================================================
+
           mobileLoginEnabled: true,
 
-          // Created date
+          // =================================================
+          // CREATED DATE
+          // =================================================
+
           createdAt: new Date()
         }
       );
 
-      alert("User Created Successfully ✅");
+      // =====================================================
+      // SUCCESS
+      // =====================================================
+
+      alert(
+        `User Created Successfully ✅\n\nReferral Code: ${referralCode}`
+      );
 
       // =====================================================
       // RESET FORM
@@ -136,22 +289,54 @@ export default function AddUser({ onSuccess }) {
         role: "user"
       });
 
+      // =====================================================
+      // REFRESH USER LIST
+      // =====================================================
+
       if (onSuccess) {
         onSuccess();
       }
 
     } catch (err) {
 
-      console.error("Admin Create User Error:", err);
+      console.error(
+        "Admin Create User Error:",
+        err
+      );
 
-      if (err.code === "auth/email-already-in-use") {
-        alert("This email is already registered.");
-      } else if (err.code === "auth/invalid-email") {
-        alert("Invalid email address.");
-      } else if (err.code === "auth/weak-password") {
-        alert("Password is too weak. Use at least 6 characters.");
+      if (
+        err.code ===
+        "auth/email-already-in-use"
+      ) {
+
+        alert(
+          "This email is already registered."
+        );
+
+      } else if (
+        err.code ===
+        "auth/invalid-email"
+      ) {
+
+        alert(
+          "Invalid email address."
+        );
+
+      } else if (
+        err.code ===
+        "auth/weak-password"
+      ) {
+
+        alert(
+          "Password is too weak. Use at least 6 characters."
+        );
+
       } else {
-        alert(err.message);
+
+        alert(
+          err.message ||
+          "Unable to create user."
+        );
       }
 
     } finally {
@@ -161,23 +346,34 @@ export default function AddUser({ onSuccess }) {
     }
   };
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
     <div className="addUser">
 
       <h3>Create New User</h3>
 
-      {/* NAME */}
+      {/* =================================================
+          NAME
+      ================================================= */}
 
       <input
         type="text"
         placeholder="Full Name"
         value={form.name}
         onChange={(e) =>
-          handleChange("name", e.target.value)
+          handleChange(
+            "name",
+            e.target.value
+          )
         }
       />
 
-      {/* MOBILE */}
+      {/* =================================================
+          MOBILE
+      ================================================= */}
 
       <input
         type="tel"
@@ -188,53 +384,84 @@ export default function AddUser({ onSuccess }) {
         onChange={(e) =>
           handleChange(
             "mobile",
-            e.target.value.replace(/\D/g, "")
+            e.target.value.replace(
+              /\D/g,
+              ""
+            )
           )
         }
       />
 
-      {/* EMAIL */}
+      {/* =================================================
+          EMAIL
+      ================================================= */}
 
       <input
         type="email"
         placeholder="Email Address"
         value={form.email}
         onChange={(e) =>
-          handleChange("email", e.target.value)
+          handleChange(
+            "email",
+            e.target.value
+          )
         }
       />
 
-      {/* PASSWORD */}
+      {/* =================================================
+          PASSWORD
+      ================================================= */}
 
       <input
         type="password"
         placeholder="Password"
         value={form.password}
         onChange={(e) =>
-          handleChange("password", e.target.value)
+          handleChange(
+            "password",
+            e.target.value
+          )
         }
       />
 
-      {/* GENDER */}
+      {/* =================================================
+          GENDER
+      ================================================= */}
 
       <select
         value={form.gender}
         onChange={(e) =>
-          handleChange("gender", e.target.value)
+          handleChange(
+            "gender",
+            e.target.value
+          )
         }
       >
-        <option value="male">Male</option>
-        <option value="female">Female</option>
+
+        <option value="male">
+          Male
+        </option>
+
+        <option value="female">
+          Female
+        </option>
+
       </select>
 
-      {/* ROLE */}
+      {/* =================================================
+          ROLE
+      ================================================= */}
 
       <select
         value={form.role}
         onChange={(e) =>
-          handleChange("role", e.target.value)
+          handleChange(
+            "role",
+            e.target.value
+          )
         }
       >
+
         <option value="user">
           Customer / User
         </option>
@@ -250,17 +477,22 @@ export default function AddUser({ onSuccess }) {
         <option value="admin">
           Manager / Admin
         </option>
+
       </select>
 
-      {/* BUTTON */}
+      {/* =================================================
+          BUTTON
+      ================================================= */}
 
       <button
         onClick={handleSubmit}
         disabled={loading}
       >
+
         {loading
           ? "Creating..."
           : "Create User"}
+
       </button>
 
     </div>

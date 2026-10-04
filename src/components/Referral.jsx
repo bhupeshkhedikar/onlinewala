@@ -41,123 +41,234 @@ export default function Referral() {
      FETCH USER + REFERRALS
   ========================================================= */
 
-  const loadReferralData = async () => {
-    try {
-      setLoading(true);
-      setError("");
+ const loadReferralData = async () => {
+  try {
+    setLoading(true);
+    setError("");
 
-      const currentUser =
-        auth.currentUser;
+    const currentUser = auth.currentUser;
 
-      if (!currentUser) {
-        setError(
-          "कृपया आधी लॉगिन करा."
+    if (!currentUser) {
+      setError("कृपया आधी लॉगिन करा.");
+      setLoading(false);
+      return;
+    }
+
+    /* =====================================================
+       GET USER PROFILE
+       1. First try Auth UID
+       2. Then mobile number
+       3. Then +91 phoneNumber
+    ===================================================== */
+
+    let userData = null;
+    let profileId = currentUser.uid;
+
+    // -----------------------------------------
+    // STEP 1: Find by Firebase Auth UID
+    // -----------------------------------------
+    const uidRef = doc(
+      db,
+      "users",
+      currentUser.uid
+    );
+
+    const uidSnap = await getDoc(uidRef);
+
+    if (uidSnap.exists()) {
+      userData = uidSnap.data();
+      profileId = uidSnap.id;
+    }
+
+    // -----------------------------------------
+    // STEP 2: Find by mobile number
+    // -----------------------------------------
+    if (!userData) {
+      const rawPhone = String(
+        currentUser.phoneNumber || ""
+      ).replace(/\D/g, "");
+
+      const cleanMobile =
+        rawPhone.length >= 10
+          ? rawPhone.slice(-10)
+          : "";
+
+      if (cleanMobile) {
+        const mobileQuery = query(
+          collection(db, "users"),
+          where("mobile", "==", cleanMobile)
         );
 
-        setLoading(false);
+        const mobileSnapshot =
+          await getDocs(mobileQuery);
 
-        return;
+        if (!mobileSnapshot.empty) {
+          const profileDoc =
+            mobileSnapshot.docs[0];
+
+          profileId = profileDoc.id;
+          userData = profileDoc.data();
+        }
       }
+    }
 
-      /* =====================================================
-         GET USER PROFILE
-      ===================================================== */
+    // -----------------------------------------
+    // STEP 3: Find by +91 phoneNumber
+    // -----------------------------------------
+    if (!userData) {
+      const rawPhone = String(
+        currentUser.phoneNumber || ""
+      ).replace(/\D/g, "");
 
-      const userRef = doc(
-        db,
-        "users",
-        currentUser.uid
-      );
+      const cleanMobile =
+        rawPhone.length >= 10
+          ? rawPhone.slice(-10)
+          : "";
 
-      const userSnap =
-        await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        setError(
-          "User profile सापडला नाही."
-        );
-
-        setLoading(false);
-
-        return;
-      }
-
-      const data =
-        userSnap.data();
-
-      setUserData(data);
-
-      /* =====================================================
-         GET REFERRALS WHERE CURRENT USER IS REFERRER
-      ===================================================== */
-
-      const referralQuery =
-        query(
-          collection(
-            db,
-            "referrals"
-          ),
+      if (cleanMobile) {
+        const phoneQuery = query(
+          collection(db, "users"),
           where(
-            "referrerId",
+            "phoneNumber",
             "==",
-            currentUser.uid
+            `+91${cleanMobile}`
           )
         );
 
-      const referralSnapshot =
-        await getDocs(
-          referralQuery
-        );
+        const phoneSnapshot =
+          await getDocs(phoneQuery);
 
-      /* =====================================================
-         CONVERT FIRESTORE DATA
-      ===================================================== */
+        if (!phoneSnapshot.empty) {
+          const profileDoc =
+            phoneSnapshot.docs[0];
 
-      const referralList =
-        referralSnapshot.docs.map(
-          (item) => ({
-            id: item.id,
-            ...item.data(),
-          })
-        );
+          profileId = profileDoc.id;
+          userData = profileDoc.data();
+        }
+      }
+    }
 
-      /* =====================================================
-         SORT NEWEST FIRST
-      ===================================================== */
-
-      referralList.sort(
-        (a, b) => {
-          const dateA =
-            a.createdAt?.toDate?.() ||
-            new Date(0);
-
-          const dateB =
-            b.createdAt?.toDate?.() ||
-            new Date(0);
-
-          return (
-            dateB.getTime() -
-            dateA.getTime()
-          );
+    // -----------------------------------------
+    // USER NOT FOUND
+    // -----------------------------------------
+    if (!userData) {
+      console.log(
+        "Referral: User profile not found",
+        {
+          authUid: currentUser.uid,
+          phoneNumber: currentUser.phoneNumber
         }
       );
 
-      setReferrals(
-        referralList
-      );
-    } catch (err) {
-      console.error(
-        "Referral loading error:",
-        err
+      setError(
+        "User profile सापडला नाही."
       );
 
-      setError(
-        "Referral माहिती load करताना error आला."
-      );
-    } finally {
       setLoading(false);
+      return;
     }
-  };
+
+    // Save profile
+    setUserData({
+      ...userData,
+      profileId,
+      authUid: currentUser.uid
+    });
+
+    /* =====================================================
+       REFERRAL IDS
+       Admin-created user:
+       profileId !== currentUser.uid
+
+       Therefore check BOTH IDs.
+    ===================================================== */
+
+    const referralUserIds = [
+      currentUser.uid,
+      profileId
+    ].filter(
+      (id, index, arr) =>
+        id &&
+        arr.indexOf(id) === index
+    );
+
+    /* =====================================================
+       GET REFERRALS
+    ===================================================== */
+
+    let referralList = [];
+
+    for (const referralUserId of referralUserIds) {
+      try {
+        const referralQuery = query(
+          collection(db, "referrals"),
+          where(
+            "referrerId",
+            "==",
+            referralUserId
+          )
+        );
+
+        const referralSnapshot =
+          await getDocs(referralQuery);
+
+        referralSnapshot.docs.forEach(
+          (item) => {
+            const existing =
+              referralList.find(
+                (ref) => ref.id === item.id
+              );
+
+            if (!existing) {
+              referralList.push({
+                id: item.id,
+                ...item.data()
+              });
+            }
+          }
+        );
+      } catch (referralError) {
+        console.error(
+          "Referral query error:",
+          referralError
+        );
+      }
+    }
+
+    /* =====================================================
+       SORT NEWEST FIRST
+    ===================================================== */
+
+    referralList.sort((a, b) => {
+      const dateA =
+        a.createdAt?.toDate?.() ||
+        new Date(0);
+
+      const dateB =
+        b.createdAt?.toDate?.() ||
+        new Date(0);
+
+      return (
+        dateB.getTime() -
+        dateA.getTime()
+      );
+    });
+
+    setReferrals(referralList);
+
+  } catch (err) {
+    console.error(
+      "Referral loading error:",
+      err
+    );
+
+    setError(
+      "Referral माहिती load करताना error आला."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* =========================================================
      REFERRAL LINK
