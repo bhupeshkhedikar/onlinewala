@@ -1,142 +1,279 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mr-IN">
 
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Google Search Console -->
   <meta name="google-site-verification" content="tPKEfUlee716Yy7nD2F9_eYGbsuGojsZBk1N4ORUDy0" />
+  <!-- Bing Webmaster Tools: add your code, then uncomment -->
+  <!-- <meta name="msvalidate.01" content="YOUR_BING_CODE" /> -->
 
-  <!-- Primary SEO Title -->
-  <title>onlinewala – Online Services, PAN, Aadhaar, Passport & More</title>
-
-  <!-- Basic -->
-  <meta charset="UTF-8" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <!-- Title (keep under 60 characters) and description (under 160) -->
+  <title>onlinewala | PAN Card, Aadhaar, Passport, Ticket Booking Online</title>
   <meta name="description"
-    content="onlinewala – तुमची सर्व ऑनलाइन कामे, एकाच ठिकाणी. PAN Card, Aadhaar, Passport, Ticket Booking, Bill Payment, Digital Services आणि इतर ऑनलाइन सेवा." />
-
+    content="onlinewala: PAN Card, Aadhaar, Passport, Ticket Booking, Bill Payment आणि इतर ऑनलाइन सेवा, एकाच ठिकाणी. जलद, सोपी आणि विश्वासार्ह सेवा." />
+  <meta name="keywords"
+    content="onlinewala, online wala, PAN card online, Aadhaar update, passport apply online, ticket booking, bill payment, online services Nashik, ऑनलाइन सेवा" />
   <meta name="author" content="onlinewala" />
 
-  <meta name="robots" content="index, follow, max-image-preview:large" />
-
+  <!-- Crawling rules -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="bingbot" content="index, follow" />
   <meta name="theme-color" content="#0b5ed7" />
 
-  <!-- Canonical -->
+  <!-- Canonical and language targeting -->
   <link rel="canonical" href="https://onlinewalaa.com/" />
+  <link rel="alternate" hreflang="mr-IN" href="https://onlinewalaa.com/" />
+  <link rel="alternate" hreflang="x-default" href="https://onlinewalaa.com/" />
+  <!-- Add when you create English pages:
+  <link rel="alternate" hreflang="en-IN" href="https://onlinewalaa.com/en/" /> -->
 
-  <!-- Favicon -->
+  <!-- Sitemap and AI-readable summary -->
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM summary" />
+
+  <!-- Icons and manifest -->
   <link rel="icon" type="image/png" href="/favicon.png" />
-
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-
-  <meta property="og:title" content="onlinewala – तुमची सर्व ऑनलाइन कामे, एकाच ठिकाणी" />
-
+  <meta property="og:title" content="onlinewala | तुमची सर्व ऑनलाइन कामे, एकाच ठिकाणी" />
   <meta property="og:description"
     content="PAN Card, Aadhaar, Passport, Ticket Booking, Bill Payment आणि इतर ऑनलाइन सेवा onlinewala वर." />
-
   <meta property="og:url" content="https://onlinewalaa.com/" />
-
   <meta property="og:image" content="https://onlinewalaa.com/onlinewala-preview.jpg" />
-
   <meta property="og:image:width" content="1200" />
-
   <meta property="og:image:height" content="630" />
-
+  <meta property="og:image:alt" content="onlinewala online services" />
   <meta property="og:site_name" content="onlinewala" />
-
   <meta property="og:locale" content="mr_IN" />
+  <meta property="og:locale:alternate" content="en_IN" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-
-  <meta name="twitter:title" content="onlinewala – Online Services" />
-
+  <meta name="twitter:title" content="onlinewala | Online Services" />
   <meta name="twitter:description"
     content="PAN, Aadhaar, Passport, Ticket Booking, Bill Payment आणि इतर ऑनलाइन सेवा." />
-
   <meta name="twitter:image" content="https://onlinewalaa.com/onlinewala-preview.jpg" />
 
-  <!-- Mobile -->
+  <!-- Mobile / PWA -->
   <meta name="mobile-web-app-capable" content="yes" />
-
   <meta name="apple-mobile-web-app-capable" content="yes" />
-
   <meta name="apple-mobile-web-app-title" content="onlinewala" />
+  <meta name="format-detection" content="telephone=yes" />
 
-  <!-- Google Fonts -->
+  <!-- Performance: fonts load without blocking render -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet" />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" media="print"
+    onload="this.media='all'" />
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" />
+  </noscript>
 
   <!-- =================================================
-       ORGANIZATION STRUCTURED DATA
+       STRUCTURED DATA (one @graph, linked by @id)
+       Replace every value marked REPLACE with real data.
   ================================================== -->
-
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": "https://onlinewalaa.com/#organization",
-    "name": "onlinewala",
-    "alternateName": [
-      "onlinewala",
-      "onlinewala.com",
-      "Onlinewala",
-      "Onlinevala",
-      "Online Wala",
-      "Onlinewla",
-      "Onleinwala"
-    ],
-    "url": "https://onlinewalaa.com/",
-    "logo": "https://onlinewalaa.com/logo.png",
-    "description": "onlinewala provides online services including PAN Card, Aadhaar, Passport, Ticket Booking, Bill Payment and other digital services."
-  }
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://onlinewalaa.com/#organization",
+        "name": "onlinewala",
+        "alternateName": ["Onlinewala", "Online Wala", "onlinewalaa.com"],
+        "url": "https://onlinewalaa.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://onlinewalaa.com/logo.png",
+          "width": 512,
+          "height": 512
+        },
+        "description": "onlinewala provides PAN Card, Aadhaar, Passport, Ticket Booking, Bill Payment and other digital assistance services.",
+        "sameAs": [
+          "https://www.facebook.com/REPLACE",
+          "https://www.instagram.com/REPLACE",
+          "https://www.youtube.com/@REPLACE",
+          "https://www.linkedin.com/company/REPLACE",
+          "https://g.page/REPLACE"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91-REPLACE",
+          "contactType": "customer service",
+          "areaServed": "IN",
+          "availableLanguage": ["Marathi", "Hindi", "English"]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://onlinewalaa.com/#website",
+        "url": "https://onlinewalaa.com/",
+        "name": "onlinewala",
+        "inLanguage": "mr-IN",
+        "publisher": { "@id": "https://onlinewalaa.com/#organization" }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://onlinewalaa.com/#webpage",
+        "url": "https://onlinewalaa.com/",
+        "name": "onlinewala | PAN Card, Aadhaar, Passport, Ticket Booking Online",
+        "isPartOf": { "@id": "https://onlinewalaa.com/#website" },
+        "about": { "@id": "https://onlinewalaa.com/#organization" },
+        "primaryImageOfPage": "https://onlinewalaa.com/onlinewala-preview.jpg",
+        "inLanguage": "mr-IN",
+        "breadcrumb": { "@id": "https://onlinewalaa.com/#breadcrumb" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://onlinewalaa.com/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlinewalaa.com/" }
+        ]
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://onlinewalaa.com/#localbusiness",
+        "name": "onlinewala",
+        "image": "https://onlinewalaa.com/onlinewala-preview.jpg",
+        "url": "https://onlinewalaa.com/",
+        "telephone": "+91-REPLACE",
+        "priceRange": "₹",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "REPLACE",
+          "addressLocality": "Nashik",
+          "addressRegion": "Maharashtra",
+          "postalCode": "REPLACE",
+          "addressCountry": "IN"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "09:00",
+            "closes": "20:00"
+          }
+        ],
+        "areaServed": { "@type": "Country", "name": "India" },
+        "parentOrganization": { "@id": "https://onlinewalaa.com/#organization" }
+      },
+      {
+        "@type": "ItemList",
+        "@id": "https://onlinewalaa.com/#services",
+        "name": "onlinewala services",
+        "itemListElement": [
+          {
+            "@type": "ListItem", "position": 1,
+            "item": {
+              "@type": "Service", "name": "PAN Card Application and Correction",
+              "provider": { "@id": "https://onlinewalaa.com/#organization" },
+              "areaServed": "IN"
+            }
+          },
+          {
+            "@type": "ListItem", "position": 2,
+            "item": {
+              "@type": "Service", "name": "Aadhaar Update Assistance",
+              "provider": { "@id": "https://onlinewalaa.com/#organization" },
+              "areaServed": "IN"
+            }
+          },
+          {
+            "@type": "ListItem", "position": 3,
+            "item": {
+              "@type": "Service", "name": "Passport Application Assistance",
+              "provider": { "@id": "https://onlinewalaa.com/#organization" },
+              "areaServed": "IN"
+            }
+          },
+          {
+            "@type": "ListItem", "position": 4,
+            "item": {
+              "@type": "Service", "name": "Ticket Booking",
+              "provider": { "@id": "https://onlinewalaa.com/#organization" },
+              "areaServed": "IN"
+            }
+          },
+          {
+            "@type": "ListItem", "position": 5,
+            "item": {
+              "@type": "Service", "name": "Bill Payment",
+              "provider": { "@id": "https://onlinewalaa.com/#organization" },
+              "areaServed": "IN"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://onlinewalaa.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "onlinewala म्हणजे काय?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "onlinewala ही एक ऑनलाइन सेवा वेबसाइट आहे जिथे PAN Card, Aadhaar, Passport, Ticket Booking आणि Bill Payment सारखी कामे एकाच ठिकाणी करता येतात."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "onlinewala वर कोणत्या सेवा मिळतात?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "PAN Card, Aadhaar, Passport, Ticket Booking, Bill Payment आणि इतर डिजिटल सेवा उपलब्ध आहेत."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is onlinewala?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "onlinewala is an online service platform that helps people with PAN Card, Aadhaar, Passport, ticket booking, bill payment and other digital services in one place."
+            }
+          }
+        ]
+      }
+    ]
   </script>
-
-  <!-- =================================================
-       WEBSITE STRUCTURED DATA
-  ================================================== -->
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "@id": "https://onlinewalaa.com/#website",
-    "url": "https://onlinewalaa.com/",
-    "name": "onlinewala",
-    "alternateName": [
-       "onlinewala",
-        "onlinewala.com",
-      "Onlinewala",
-      "Onlinevala",
-      "Online Wala",
-      "Onlinewla",
-      "Onleinwala"
-    ],
-    "publisher": {
-      "@id": "https://onlinewalaa.com/#organization"
-    }
-  }
-  </script>
-
 </head>
 
 <body>
 
-  <noscript>
-    You need to enable JavaScript to run this app.
-  </noscript>
+  <!-- Real text for crawlers, AI bots and no-JS users. React replaces this when it mounts. -->
+  <div id="root">
+    <header>
+      <h1>onlinewala: PAN Card, Aadhaar, Passport, Ticket Booking आणि Bill Payment सेवा</h1>
+      <p>तुमची सर्व ऑनलाइन कामे, एकाच ठिकाणी. जलद, सोपी आणि विश्वासार्ह सेवा.</p>
+    </header>
+    <main>
+      <h2>आमच्या सेवा</h2>
+      <ul>
+        <li>PAN Card: नवीन अर्ज आणि दुरुस्ती</li>
+        <li>Aadhaar: अपडेट आणि मदत</li>
+        <li>Passport: अर्ज सहाय्य</li>
+        <li>Ticket Booking: रेल्वे, बस आणि विमान</li>
+        <li>Bill Payment: वीज, मोबाईल आणि इतर बिले</li>
+      </ul>
+      <p>onlinewala ही स्वतंत्र सहाय्य सेवा आहे आणि कोणत्याही सरकारी संस्थेशी अधिकृतपणे संलग्न नाही.</p>
+    </main>
+  </div>
 
-  <!-- React mounts the entire application here -->
-  <div id="root"></div>
+  <noscript>
+    You need to enable JavaScript to use the full onlinewala app.
+  </noscript>
 
 </body>
 
