@@ -1,8 +1,11 @@
 
 const {
   onCall,
+  onRequest,
   HttpsError,
 } = require("firebase-functions/v2/https");
+
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 
 const {
   defineSecret,
@@ -28,6 +31,10 @@ const RAZORPAY_KEY_ID =
 const RAZORPAY_KEY_SECRET =
   defineSecret("RAZORPAY_KEY_SECRET");
 const PARIPRINT_API_KEY = defineSecret("PARIPRINT_API_KEY");
+const WHATSAPP_ACCESS_TOKEN = defineSecret("WHATSAPP_ACCESS_TOKEN");
+const WHATSAPP_PHONE_NUMBER_ID = defineSecret("WHATSAPP_PHONE_NUMBER_ID");
+const WHATSAPP_VERIFY_TOKEN = defineSecret("WHATSAPP_VERIFY_TOKEN");
+const META_APP_SECRET = defineSecret("META_APP_SECRET");
 const MIN_WITHDRAWAL = 100;
 const MAX_WITHDRAWAL = 50000;
 
@@ -8260,5 +8267,859 @@ exports.aadharToRationPdf = onCall(
 
       remainingAvailableBalance,
     };
+  }
+);
+
+
+// ============================================================
+// ONLINEWALAA - WHATSAPP APPLICATION NOTIFICATION
+// Admin creates an application for a customer; send the approved
+// WhatsApp template to that customer's opted-in mobile number.
+// ============================================================
+
+exports.sendApplicationWhatsApp = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    secrets: [
+      WHATSAPP_ACCESS_TOKEN,
+      WHATSAPP_PHONE_NUMBER_ID,
+    ],
+  },
+  async (request) => {
+    // Use the same admin authorization policy as the existing functions.
+    checkAdmin(request);
+
+    const userId = String(request.data?.userId || "").trim();
+    const applicationName = String(
+      request.data?.applicationName || ""
+    ).trim();
+    const applicationStatus = String(
+      request.data?.applicationStatus || ""
+    ).trim();
+
+    if (!userId || !applicationName || !applicationStatus) {
+      throw new HttpsError(
+        "invalid-argument",
+        "userId, applicationName and applicationStatus are required."
+      );
+    }
+
+    const customerRef = db.collection("users").doc(userId);
+    const customerSnap = await customerRef.get();
+
+    if (!customerSnap.exists) {
+      throw new HttpsError("not-found", "Customer profile not found.");
+    }
+
+    const customer = customerSnap.data() || {};
+
+    // Require explicit WhatsApp consent stored on the customer profile.
+    if (customer.whatsappOptIn !== true) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Customer has not opted in to WhatsApp messages."
+      );
+    }
+
+    let mobile = String(
+      customer.mobile || customer.phoneNumber || customer.mobileNumber || ""
+    ).replace(/\D/g, "");
+
+    if (mobile.length === 10) {
+      mobile = `91${mobile}`;
+    } else if (mobile.length === 12 && mobile.startsWith("91")) {
+      // Already in international format without the plus sign.
+    } else {
+      throw new HttpsError(
+        "invalid-argument",
+        "Customer mobile number must be a valid Indian 10-digit number."
+      );
+    }
+
+    const logRef = db.collection("whatsappLogs").doc();
+
+    await logRef.set({
+      userId,
+      mobile,
+      applicationName,
+      status: "sending",
+      templateName: "onlinewalaa_application_confirmation",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    try {
+      const apiResponse = await fetch(
+        `https://graph.facebook.com/v25.0/${WHATSAPP_PHONE_NUMBER_ID.value()}/messages`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN.value()}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: mobile,
+            type: "template",
+            template: {
+              name: "onlinewalaa_application_confirmation",
+              language: { code: "en" },
+              components: [
+                {
+                  type: "body",
+                  parameters: [
+                    {
+                      type: "text",
+                      text: String(customer.name || "Customer"),
+                    },
+                    { type: "text", text: applicationName },
+                    { type: "text", text: applicationStatus },
+                  ],
+                },
+              ],
+            },
+          }),
+        }
+      );
+
+      const result = await apiResponse.json();
+
+      if (!apiResponse.ok) {
+        const apiMessage =
+          result?.error?.message || "WhatsApp API request failed.";
+        await logRef.update({
+          status: "failed",
+          error: apiMessage,
+          metaErrorCode: result?.error?.code || null,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        console.error("WhatsApp API error:", {
+          status: apiResponse.status,
+          code: result?.error?.code,
+          message: apiMessage,
+        });
+
+        return {
+          success: false,
+          message: "Application saved, but WhatsApp message could not be sent.",
+        };
+      }
+
+      const messageId = result?.messages?.[0]?.id || null;
+
+      await logRef.update({
+        status: "accepted",
+        messageId,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {
+        success: true,
+        messageId,
+        message: "WhatsApp message accepted by Meta.",
+      };
+    } catch (error) {
+      console.error("WhatsApp send failed:", error);
+
+      await logRef.update({
+        status: "failed",
+        error: error?.message || "Unknown WhatsApp sending error.",
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {
+        success: false,
+        message: "Application saved, but WhatsApp sending failed.",
+      };
+    }
+  }
+);
+
+
+// ============================================================
+// ONLINEWALAA - SEND INVOICE + SELECTED APPLICATION PDFS
+// Requires the approved Marathi Utility template:
+// onlinewalaa_application_invoice_documents
+// Header: Document | Body variables: customer, application,
+// subtotal, discount, final amount.
+// ============================================================
+
+exports.sendApplicationWhatsAppDocuments = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    timeoutSeconds: 540,
+    memory: "1GiB",
+    secrets: [WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID],
+  },
+  async (request) => {
+    checkAdmin(request);
+
+    const userId = String(request.data?.userId || "").trim();
+    const applicationName = String(request.data?.applicationName || "").trim();
+    const invoiceStoragePath = String(request.data?.invoiceStoragePath || "").trim();
+    const documentStoragePaths = Array.isArray(request.data?.documentStoragePaths)
+      ? request.data.documentStoragePaths.map((path) => String(path || "").trim()).filter(Boolean)
+      : [];
+
+    const subtotal = Number(request.data?.subtotal);
+    const discountAmount = Number(request.data?.discountAmount);
+    const total = Number(request.data?.total);
+
+    if (
+      !userId ||
+      !applicationName ||
+      !invoiceStoragePath ||
+      !Number.isFinite(subtotal) ||
+      !Number.isFinite(discountAmount) ||
+      !Number.isFinite(total) ||
+      subtotal < 0 ||
+      discountAmount < 0 ||
+      total < 0
+    ) {
+      throw new HttpsError("invalid-argument", "Application, invoice and valid amount details are required.");
+    }
+
+    if (documentStoragePaths.length > 15) {
+      throw new HttpsError("invalid-argument", "A maximum of 15 additional PDF documents can be sent at once.");
+    }
+
+    const customerSnap = await db.collection("users").doc(userId).get();
+    if (!customerSnap.exists) {
+      throw new HttpsError("not-found", "Customer profile not found.");
+    }
+
+    const customer = customerSnap.data() || {};
+    if (customer.whatsappOptIn !== true) {
+      throw new HttpsError("failed-precondition", "Customer has not opted in to WhatsApp messages.");
+    }
+
+    let mobile = String(
+      customer.mobile || customer.phoneNumber || customer.mobileNumber || ""
+    ).replace(/\D/g, "");
+
+    if (mobile.length === 10) {
+      mobile = `91${mobile}`;
+    } else if (!(mobile.length === 12 && mobile.startsWith("91"))) {
+      throw new HttpsError("invalid-argument", "Customer mobile number must be a valid Indian 10-digit number.");
+    }
+
+    const isAllowedStoragePath = (storagePath, kind) => {
+      if (!storagePath || storagePath.startsWith("/") || storagePath.includes("..")) return false;
+      if (kind === "invoice") {
+        return storagePath.startsWith(`application-invoices/${userId}/`);
+      }
+      return (
+        storagePath.startsWith("application-documents/categories/") ||
+        storagePath.startsWith(`application-documents/custom/${userId}/`)
+      );
+    };
+
+    if (!isAllowedStoragePath(invoiceStoragePath, "invoice")) {
+      throw new HttpsError("permission-denied", "Invoice file path is not allowed.");
+    }
+
+    const uniqueDocumentPaths = [...new Set(documentStoragePaths)];
+    for (const storagePath of uniqueDocumentPaths) {
+      if (!isAllowedStoragePath(storagePath, "document")) {
+        throw new HttpsError("permission-denied", "One or more PDF document paths are not allowed.");
+      }
+    }
+
+    const filesToSend = [
+      { storagePath: invoiceStoragePath, kind: "invoice" },
+      ...uniqueDocumentPaths.map((storagePath) => ({ storagePath, kind: "attachment" })),
+    ];
+
+    const templateName = "onlinewalaa_application_invoice_documents";
+    const bucket = admin.storage().bucket();
+    const token = WHATSAPP_ACCESS_TOKEN.value();
+    const phoneNumberId = WHATSAPP_PHONE_NUMBER_ID.value();
+    const batchLogRef = db.collection("whatsappLogs").doc();
+
+    await batchLogRef.set({
+      userId,
+      mobile,
+      applicationName,
+      templateName,
+      type: "application_invoice_documents",
+      documentCount: filesToSend.length,
+      subtotal,
+      discountAmount,
+      total,
+      status: "sending",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const formatRupees = (value) => `₹${value.toFixed(2)}`;
+    const bodyParameters = [
+      { type: "text", text: String(customer.name || "Customer").slice(0, 100) },
+      { type: "text", text: applicationName.slice(0, 200) },
+      { type: "text", text: formatRupees(subtotal) },
+      { type: "text", text: formatRupees(discountAmount) },
+      { type: "text", text: formatRupees(total) },
+    ];
+
+    const results = [];
+
+    for (const fileInfo of filesToSend) {
+      const fileLogRef = db.collection("whatsappLogs").doc();
+
+      try {
+        const storageFile = bucket.file(fileInfo.storagePath);
+        const [metadata] = await storageFile.getMetadata();
+        const size = Number(metadata.size || 0);
+
+        if (size <= 0 || size > 100 * 1024 * 1024) {
+          throw new Error("PDF is empty or exceeds WhatsApp's 100 MB document limit.");
+        }
+
+        const [fileBuffer] = await storageFile.download();
+        if (fileBuffer.subarray(0, 5).toString() !== "%PDF-") {
+          throw new Error("The selected file is not a valid PDF.");
+        }
+
+        const filename = fileInfo.storagePath.split("/").pop().replace(/[^\w.\- ]/g, "_").slice(0, 120);
+        const formData = new FormData();
+        formData.append("messaging_product", "whatsapp");
+        formData.append("type", "application/pdf");
+        formData.append("file", new Blob([fileBuffer], { type: "application/pdf" }), filename);
+
+        const mediaResponse = await fetch(
+          `https://graph.facebook.com/v25.0/${phoneNumberId}/media`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          }
+        );
+
+        const mediaResult = await mediaResponse.json();
+        if (!mediaResponse.ok || !mediaResult?.id) {
+          throw new Error(mediaResult?.error?.message || "WhatsApp media upload failed.");
+        }
+
+        const sendResponse = await fetch(
+          `https://graph.facebook.com/v25.0/${phoneNumberId}/messages`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              messaging_product: "whatsapp",
+              to: mobile,
+              type: "template",
+              template: {
+                name: templateName,
+                language: { code: "mr" },
+                components: [
+                  {
+                    type: "header",
+                    parameters: [
+                      {
+                        type: "document",
+                        document: {
+                          id: mediaResult.id,
+                          filename,
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: "body",
+                    parameters: bodyParameters,
+                  },
+                ],
+              },
+            }),
+          }
+        );
+
+        const sendResult = await sendResponse.json();
+        if (!sendResponse.ok || !sendResult?.messages?.[0]?.id) {
+          throw new Error(sendResult?.error?.message || "WhatsApp document template send failed.");
+        }
+
+        const messageId = sendResult.messages[0].id;
+        await fileLogRef.set({
+          batchId: batchLogRef.id,
+          userId,
+          mobile,
+          applicationName,
+          templateName,
+          storagePath: fileInfo.storagePath,
+          filename,
+          documentKind: fileInfo.kind,
+          messageId,
+          status: "accepted",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        results.push({
+          filename,
+          kind: fileInfo.kind,
+          messageId,
+          status: "accepted",
+        });
+      } catch (error) {
+        console.error("WhatsApp PDF send failed:", {
+          storagePath: fileInfo.storagePath,
+          message: error?.message,
+        });
+
+        await fileLogRef.set({
+          batchId: batchLogRef.id,
+          userId,
+          mobile,
+          applicationName,
+          templateName,
+          storagePath: fileInfo.storagePath,
+          documentKind: fileInfo.kind,
+          status: "failed",
+          error: error?.message || "Unknown PDF delivery error.",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        results.push({
+          filename: fileInfo.storagePath.split("/").pop(),
+          kind: fileInfo.kind,
+          status: "failed",
+          error: error?.message || "Unknown PDF delivery error.",
+        });
+      }
+    }
+
+    const acceptedCount = results.filter((item) => item.status === "accepted").length;
+    const failedCount = results.length - acceptedCount;
+
+    await batchLogRef.update({
+      status: failedCount === 0 ? "accepted" : acceptedCount > 0 ? "partial" : "failed",
+      acceptedCount,
+      failedCount,
+      results,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: acceptedCount > 0,
+      batchId: batchLogRef.id,
+      acceptedCount,
+      failedCount,
+      results,
+      message: `${acceptedCount} of ${results.length} PDF message(s) accepted by WhatsApp.`,
+    };
+  }
+);
+
+// ============================================================
+// ONLINEWALAA - WHATSAPP DELIVERY STATUS WEBHOOK
+// Meta calls GET to verify the callback URL and POST to send
+// message status updates. Updates matching whatsappLogs records.
+// ============================================================
+
+exports.whatsappWebhook = onRequest(
+  {
+    region: "asia-south1",
+    invoker: "public",
+    secrets: [WHATSAPP_VERIFY_TOKEN, META_APP_SECRET],
+  },
+  async (req, res) => {
+    // Meta webhook verification handshake.
+    if (req.method === "GET") {
+      const mode = req.query["hub.mode"];
+      const token = req.query["hub.verify_token"];
+      const challenge = req.query["hub.challenge"];
+
+      if (
+        mode === "subscribe" &&
+        typeof token === "string" &&
+        token === WHATSAPP_VERIFY_TOKEN.value()
+      ) {
+        console.log("WhatsApp webhook verified successfully.");
+        return res.status(200).send(String(challenge || ""));
+      }
+
+      console.warn("WhatsApp webhook verification failed.");
+      return res.sendStatus(403);
+    }
+
+    if (req.method !== "POST") {
+      res.set("Allow", "GET, POST");
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    // Validate that the POST really came from Meta.
+    try {
+      const signature = req.get("x-hub-signature-256") || "";
+      const appSecret = META_APP_SECRET.value();
+      const rawBody = req.rawBody;
+
+      if (!signature.startsWith("sha256=") || !rawBody) {
+        console.warn("WhatsApp webhook rejected: missing signature or raw body.");
+        return res.sendStatus(401);
+      }
+
+      const expected = crypto
+        .createHmac("sha256", appSecret)
+        .update(rawBody)
+        .digest("hex");
+
+      const receivedBuffer = Buffer.from(signature.slice(7), "hex");
+      const expectedBuffer = Buffer.from(expected, "hex");
+
+      if (
+        receivedBuffer.length !== expectedBuffer.length ||
+        !crypto.timingSafeEqual(receivedBuffer, expectedBuffer)
+      ) {
+        console.warn("WhatsApp webhook rejected: invalid signature.");
+        return res.sendStatus(401);
+      }
+    } catch (error) {
+      console.error("WhatsApp webhook signature validation error:", error);
+      return res.sendStatus(401);
+    }
+
+    try {
+      const body = req.body || {};
+      if (body.object !== "whatsapp_business_account") {
+        return res.sendStatus(404);
+      }
+
+      const statusUpdates = [];
+
+      for (const entry of body.entry || []) {
+        for (const change of entry.changes || []) {
+          const value = change.value || {};
+
+          for (const item of value.statuses || []) {
+            const messageId = String(item.id || "");
+            const status = String(item.status || "").toLowerCase();
+
+            if (!messageId || !status) continue;
+
+            const update = {
+              status,
+              recipientId: item.recipient_id || null,
+              statusTimestamp: item.timestamp
+                ? new Date(Number(item.timestamp) * 1000)
+                : null,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+
+            if (Array.isArray(item.errors) && item.errors.length) {
+              update.errors = item.errors.map((error) => ({
+                code: error.code || null,
+                title: error.title || null,
+                message: error.message || null,
+                details: error.error_data?.details || null,
+              }));
+            }
+
+            const matchingLogs = await db
+              .collection("whatsappLogs")
+              .where("messageId", "==", messageId)
+              .limit(10)
+              .get();
+
+            if (!matchingLogs.empty) {
+              const batch = db.batch();
+              matchingLogs.docs.forEach((docSnap) => {
+                batch.update(docSnap.ref, update);
+              });
+              await batch.commit();
+            } else {
+              // Preserve the event even if the original log is not found.
+              await db.collection("whatsappWebhookEvents").add({
+                messageId,
+                ...update,
+                receivedAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            }
+
+            statusUpdates.push({ messageId, status });
+            console.log("WhatsApp delivery status received:", {
+              messageId,
+              status,
+              recipientId: item.recipient_id || null,
+            });
+          }
+        }
+      }
+
+      // Acknowledge quickly so Meta does not keep retrying the event.
+      return res.status(200).json({
+        success: true,
+        processed: statusUpdates.length,
+      });
+    } catch (error) {
+      console.error("WhatsApp webhook processing error:", error);
+      return res.sendStatus(500);
+    }
+  }
+);
+
+
+
+// ============================================================
+// ONLINEWALAA - BOOKING WHATSAPP NOTIFICATIONS
+// Sends:
+// 1) Customer: onlinewalaa_service_booking_confirmation (Marathi)
+// 2) Admin: onlinewalaa_new_booking_admin (English)
+//
+// Customer message is sent ONLY when users/{userId}.whatsappOptIn
+// is explicitly true. Admin notification is sent independently.
+// ============================================================
+
+// IMPORTANT: Replace this with the admin's WhatsApp number in
+// international format, digits only: country code + mobile number.
+// Example format: "919876543210"
+const ADMIN_WHATSAPP_NUMBER = "918788647637";
+
+exports.notifyAdminAndCustomerNewBooking = onDocumentCreated(
+  {
+    document: "bookings/{bookingId}",
+    region: "asia-south1",
+    retry: false,
+    secrets: [WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID],
+  },
+  async (event) => {
+    const bookingSnap = event.data;
+    if (!bookingSnap) {
+      console.log("Booking event has no document data.");
+      return;
+    }
+
+    const booking = bookingSnap.data() || {};
+    const bookingId = event.params.bookingId;
+
+    const token = WHATSAPP_ACCESS_TOKEN.value();
+    const phoneNumberId = WHATSAPP_PHONE_NUMBER_ID.value();
+    const apiUrl =
+      `https://graph.facebook.com/v25.0/${phoneNumberId}/messages`;
+
+    const cleanPhone = (value) => {
+      let digits = String(value || "").replace(/\D/g, "");
+      if (digits.length === 10) digits = `91${digits}`;
+      if (digits.length === 12 && digits.startsWith("91")) return digits;
+      return "";
+    };
+
+    const money = (value) => {
+      const amount = Number(value || 0);
+      return Number.isFinite(amount) ? String(amount) : "0";
+    };
+
+    const sendTemplate = async ({
+      to,
+      templateName,
+      language,
+      parameters,
+      logType,
+    }) => {
+      const logRef = db.collection("whatsappLogs").doc(
+        `${bookingId}_${logType}`
+      );
+
+      // Prevent duplicate sends if the same Firestore event is delivered twice.
+      const alreadyStarted = await db.runTransaction(async (transaction) => {
+        const existing = await transaction.get(logRef);
+        if (existing.exists) return true;
+
+        transaction.create(logRef, {
+          bookingId,
+          userId: booking.userId || null,
+          mobile: to,
+          templateName,
+          type: logType,
+          status: "sending",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return false;
+      });
+
+      if (alreadyStarted) {
+        console.log(`WhatsApp ${logType} already started for booking ${bookingId}.`);
+        return { skipped: true, reason: "already_started" };
+      }
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to,
+            type: "template",
+            template: {
+              name: templateName,
+              language: { code: language },
+              components: [
+                {
+                  type: "body",
+                  parameters: parameters.map((value) => ({
+                    type: "text",
+                    text: String(value ?? "").slice(0, 1000),
+                  })),
+                },
+              ],
+            },
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result?.messages?.[0]?.id) {
+          const message =
+            result?.error?.message || "WhatsApp template send failed.";
+
+          await logRef.update({
+            status: "failed",
+            error: message,
+            metaErrorCode: result?.error?.code || null,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          console.error(`WhatsApp ${logType} failed:`, {
+            bookingId,
+            status: response.status,
+            code: result?.error?.code || null,
+            message,
+          });
+
+          return { success: false, error: message };
+        }
+
+        const messageId = result.messages[0].id;
+
+        await logRef.update({
+          status: "accepted",
+          messageId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return { success: true, messageId };
+      } catch (error) {
+        await logRef.update({
+          status: "failed",
+          error: error?.message || "Unknown WhatsApp error.",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        console.error(`WhatsApp ${logType} exception:`, error);
+        return { success: false, error: error?.message || "Unknown error" };
+      }
+    };
+
+    const results = {};
+
+    // ----------------------------------------------------------
+    // 1. ADMIN NOTIFICATION
+    // Template: onlinewalaa_new_booking_admin
+    // Language: English | Body variables: {{1}} to {{9}}
+    // ----------------------------------------------------------
+    const adminNumber = cleanPhone(ADMIN_WHATSAPP_NUMBER);
+
+    if (!adminNumber) {
+      console.error(
+        "Admin WhatsApp number is not configured. Update ADMIN_WHATSAPP_NUMBER.",
+        { bookingId }
+      );
+      results.admin = { success: false, error: "Admin number not configured." };
+    } else {
+      results.admin = await sendTemplate({
+        to: adminNumber,
+        templateName: "onlinewalaa_new_booking_admin",
+        language: "en",
+        logType: "booking_admin_notification",
+        parameters: [
+          booking.userName || "Customer",        // {{1}} Customer Name
+          booking.userMobile || "",              // {{2}} Mobile
+          booking.userEmail || "",               // {{3}} Email
+          booking.service || "",                 // {{4}} Service
+          booking.date || "",                    // {{5}} Date
+          booking.time || "",                    // {{6}} Time
+          money(booking.govtFee),                // {{7}} Government Fee
+          money(booking.serviceCharge),          // {{8}} Service Charge
+          money(booking.total),                  // {{9}} Total Amount
+        ],
+      });
+    }
+
+    // ----------------------------------------------------------
+    // 2. CUSTOMER CONFIRMATION
+    // Template: onlinewalaa_service_booking_confirmation
+    // Language: Marathi (mr) | Body variables: {{1}} to {{5}}
+    // Send only with recorded explicit WhatsApp consent.
+    // ----------------------------------------------------------
+    try {
+      const userId = String(booking.userId || "").trim();
+
+      if (!userId) {
+        results.customer = { skipped: true, reason: "Booking has no userId." };
+      } else {
+        const userSnap = await db.collection("users").doc(userId).get();
+        const userData = userSnap.exists ? userSnap.data() || {} : {};
+
+        if (userData.whatsappOptIn !== true) {
+          results.customer = {
+            skipped: true,
+            reason: "Customer has not explicitly opted in to WhatsApp.",
+          };
+          console.log("Customer WhatsApp skipped: no opt-in.", { bookingId, userId });
+        } else {
+          const customerNumber = cleanPhone(
+            booking.userMobile ||
+            userData.mobile ||
+            userData.phoneNumber ||
+            userData.mobileNumber
+          );
+
+          if (!customerNumber) {
+            results.customer = {
+              success: false,
+              error: "Customer mobile number is invalid.",
+            };
+          } else {
+            results.customer = await sendTemplate({
+              to: customerNumber,
+              templateName: "onlinewalaa_service_booking_confirmation",
+              language: "mr",
+              logType: "booking_customer_confirmation",
+              parameters: [
+                booking.userName || userData.name || "Customer", // {{1}}
+                booking.service || "",                            // {{2}}
+                booking.date || "",                               // {{3}}
+                booking.time || "",                               // {{4}}
+                money(booking.total),                             // {{5}}
+              ],
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Customer booking WhatsApp processing failed:", {
+        bookingId,
+        message: error?.message,
+      });
+      results.customer = {
+        success: false,
+        error: error?.message || "Customer notification failed.",
+      };
+    }
+
+    console.log("Booking WhatsApp notification processing complete.", {
+      bookingId,
+      admin: results.admin?.success ? "accepted" : results.admin?.skipped ? "skipped" : "failed",
+      customer: results.customer?.success ? "accepted" : results.customer?.skipped ? "skipped" : "failed",
+    });
+
+    return results;
   }
 );

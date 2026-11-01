@@ -604,6 +604,17 @@ export default function UserManager({ users }) {
                     <p
                       style={{
                         margin: "3px 0 0",
+                        color: "#475569",
+                        fontSize: "8px",
+                        fontWeight: 700
+                      }}
+                    >
+                      Mobile: {u.mobile || "No mobile number"}
+                    </p>
+
+                    <p
+                      style={{
+                        margin: "3px 0 0",
                         color: "#94a3b8",
                         fontSize: "7px"
                       }}

@@ -823,7 +823,7 @@ const InstantLlPass = () => {
 
             <p className="ll-pass-description">
               Application Number, DOB, LL Test
-              Password आणि State भरा.
+              Password आणि State भरा.पेमेंट पूर्ण झाल्यानंतर निकाल ३० मिनिटे किंवा ४८ तासात येईल.
             </p>
 
             {/* APPLICATION */}

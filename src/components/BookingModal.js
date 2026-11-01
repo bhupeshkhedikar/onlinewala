@@ -4,7 +4,10 @@ import {
   collection,
   addDoc,
   serverTimestamp,
-  getDocs
+  getDocs,
+  doc,
+  getDoc,
+  setDoc
 } from "firebase/firestore";
 import {
   ref,
@@ -45,6 +48,10 @@ export default function BookingModal({
     user?.email || ""
   );
 
+  // WhatsApp सूचना संमती
+  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
+  const [loadingWhatsappConsent, setLoadingWhatsappConsent] = useState(true);
+
   // कागदपत्रे
   const [files, setFiles] = useState({});
   const [customDetails, setCustomDetails] = useState({});
@@ -52,6 +59,33 @@ export default function BookingModal({
 
   // अपलोड स्थिती
   const [uploadStatus, setUploadStatus] = useState(null);
+
+  // वापरकर्त्याची आधीची WhatsApp संमती तपासा
+  useEffect(() => {
+    const fetchWhatsappConsent = async () => {
+      if (!user?.uid) {
+        setLoadingWhatsappConsent(false);
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userRef);
+
+        if (userSnapshot.exists()) {
+          setWhatsappOptIn(
+            userSnapshot.data()?.whatsappOptIn === true
+          );
+        }
+      } catch (error) {
+        console.error("WhatsApp संमती मिळवताना त्रुटी:", error);
+      } finally {
+        setLoadingWhatsappConsent(false);
+      }
+    };
+
+    fetchWhatsappConsent();
+  }, [user?.uid]);
 
   /* =====================================================
      तारीख संबंधित मदतनीस
@@ -698,6 +732,19 @@ export default function BookingModal({
           selectedData?.serviceCharge || 0
         );
 
+      // WhatsApp संमती user profile मध्ये सेव्ह करा.
+      // Checkbox unchecked असल्यास ग्राहकाची संमती false राहील.
+      if (user?.uid) {
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            whatsappOptIn: whatsappOptIn === true,
+            whatsappOptInUpdatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+      }
+
       await addDoc(
         collection(db, "bookings"),
         {
@@ -711,6 +758,8 @@ export default function BookingModal({
 
           userEmail:
             email.trim(),
+
+          whatsappOptIn: whatsappOptIn === true,
 
           service,
 
@@ -1382,6 +1431,51 @@ export default function BookingModal({
                       placeholder="तुमचा ई-मेल पत्ता"
                     />
 
+                  </div>
+
+                  <div
+                    className="bm-whatsapp-consent"
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "10px",
+                      padding: "14px",
+                      marginTop: "14px",
+                      border: "1px solid #dbe4ee",
+                      borderRadius: "10px",
+                      background: "#f8fafc"
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      id="bm-whatsapp-opt-in"
+                      checked={whatsappOptIn}
+                      disabled={loadingWhatsappConsent || loading}
+                      onChange={(e) =>
+                        setWhatsappOptIn(e.target.checked)
+                      }
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        marginTop: "2px",
+                        flexShrink: 0,
+                        cursor: "pointer"
+                      }}
+                    />
+                    <label
+                      htmlFor="bm-whatsapp-opt-in"
+                      style={{
+                        fontSize: "13px",
+                        lineHeight: 1.6,
+                        color: "#334155",
+                        cursor: "pointer"
+                      }}
+                    >
+                      मी OnlineWalaa कडून WhatsApp वर बुकिंग अपडेट्स,
+                      अर्जासंबंधी माहिती, इनव्हॉइस आणि सेवा सूचना
+                      मिळवण्यास सहमती देतो/देते. मला ही सेवा कधीही
+                      बंद करता येईल.
+                    </label>
                   </div>
 
                   <div className="bm-security-note">
