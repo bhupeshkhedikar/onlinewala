@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import {
   collection,
@@ -18,25 +19,39 @@ export default function Referral() {
   const [copyMessage, setCopyMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Listen for Firebase authentication changes
   useEffect(() => {
-    loadReferralData();
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        // Guest user: show public referral information
+        setUserData(null);
+        setReferrals([]);
+        setError("");
+        setLoading(false);
+        return;
+      }
+
+      await loadReferralData(currentUser);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   /* =========================================================
      FETCH USER + REFERRALS
   ========================================================= */
 
-  const loadReferralData = async () => {
+  const loadReferralData = async (currentUser = auth.currentUser) => {
+    if (!currentUser) {
+      setUserData(null);
+      setReferrals([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
-
-      const currentUser = auth.currentUser;
-
-      if (!currentUser) {
-        setError("कृपया आधी लॉगिन करा.");
-        return;
-      }
 
       let profileData = null;
       let profileId = currentUser.uid;
@@ -102,6 +117,8 @@ export default function Referral() {
 
       if (!profileData) {
         setError("User profile सापडला नाही.");
+        setUserData(null);
+        setReferrals([]);
         return;
       }
 
@@ -177,14 +194,31 @@ export default function Referral() {
 
   const referralCode = userData?.referralCode || "";
 
-  const referralLink =
-    `${window.location.origin}/signup?ref=${referralCode}`;
+  const referralLink = referralCode
+    ? `${window.location.origin}/signup?ref=${encodeURIComponent(
+        referralCode
+      )}`
+    : "";
+
+  /* =========================================================
+     LOGIN / SIGNUP
+  ========================================================= */
+
+  const goToLogin = () => {
+    window.location.href = "/login?redirect=%2Freferral";
+  };
+
+  const goToSignup = () => {
+    window.location.href = "/signup?redirect=%2Freferral";
+  };
 
   /* =========================================================
      COPY TO CLIPBOARD
   ========================================================= */
 
   const copyToClipboard = async (text, message) => {
+    if (!text) return;
+
     try {
       await navigator.clipboard.writeText(text);
       setCopyMessage(message);
@@ -203,6 +237,8 @@ export default function Referral() {
   ========================================================= */
 
   const shareOnWhatsApp = () => {
+    if (!referralLink) return;
+
     const message =
       `🎁 OnlineWalaa वर माझ्या referral link ने join करा!\n\n` +
       `1. माझ्या लिंकवरून नवीन account तयार करा.\n` +
@@ -227,6 +263,8 @@ export default function Referral() {
   ========================================================= */
 
   const shareReferral = async () => {
+    if (!referralLink) return;
+
     try {
       if (navigator.share) {
         await navigator.share({
@@ -320,9 +358,10 @@ export default function Referral() {
 
   /* =========================================================
      ERROR
+     Only show errors for authenticated users
   ========================================================= */
 
-  if (error) {
+  if (error && auth.currentUser) {
     return (
       <div className="referral-page">
         <div className="referral-error-box">
@@ -333,7 +372,7 @@ export default function Referral() {
 
           <button
             className="referral-retry-btn"
-            onClick={loadReferralData}
+            onClick={() => loadReferralData(auth.currentUser)}
           >
             पुन्हा प्रयत्न करा
           </button>
@@ -350,7 +389,7 @@ export default function Referral() {
     <div className="referral-page">
       <div className="referral-container">
 
-        {/* HERO */}
+        {/* HERO - Visible to everyone */}
         <section className="referral-hero">
           <div className="referral-hero-content">
             <div className="referral-icon">🎁</div>
@@ -376,123 +415,169 @@ export default function Referral() {
           </div>
         </section>
 
-        {/* WALLET SUMMARY */}
-        <section className="referral-wallet-card">
-          <div className="wallet-card-left">
-            <div className="wallet-icon">💰</div>
+        {/* PERSONAL REFERRAL DETAILS - Logged-in users only */}
+        {userData ? (
+          <>
+            {/* WALLET SUMMARY */}
+            <section className="referral-wallet-card">
+              <div className="wallet-card-left">
+                <div className="wallet-icon">💰</div>
 
-            <div>
-              <span>एकूण Referral Earnings</span>
-              <h2>₹{totalEarning}</h2>
+                <div>
+                  <span>एकूण Referral Earnings</span>
+                  <h2>₹{totalEarning}</h2>
+                </div>
+              </div>
+
+              <div className="wallet-card-right">
+                <div>
+                  <span>प्रलंबित रिवॉर्ड</span>
+                  <strong>₹{pendingEarning}</strong>
+                </div>
+
+                <div>
+                  <span>मंजूर रिवॉर्ड</span>
+                  <strong>₹{confirmedEarning}</strong>
+                </div>
+              </div>
+            </section>
+
+            {/* REFERRAL CODE */}
+            <section className="referral-code-card">
+              <div className="section-heading">
+                <div>
+                  <span className="section-label">
+                    तुमचा REFERRAL CODE
+                  </span>
+
+                  <h2>तुमचा कोड शेअर करा</h2>
+                </div>
+
+                <div className="code-gift">🎁</div>
+              </div>
+
+              <div className="referral-code-box">
+                <span>{referralCode || "कोड उपलब्ध नाही"}</span>
+
+                <button
+                  type="button"
+                  disabled={!referralCode}
+                  onClick={() =>
+                    copyToClipboard(
+                      referralCode,
+                      "Referral code कॉपी झाला!"
+                    )
+                  }
+                >
+                  📋 कॉपी करा
+                </button>
+              </div>
+
+              {copyMessage && (
+                <div className="copy-success">
+                  ✓ {copyMessage}
+                </div>
+              )}
+            </section>
+
+            {/* REFERRAL LINK */}
+            <section className="referral-link-card">
+              <div className="section-heading">
+                <div>
+                  <span className="section-label">
+                    तुमची REFERRAL LINK
+                  </span>
+
+                  <h2>मित्रांना आमंत्रित करा</h2>
+                </div>
+
+                <div className="link-icon">🔗</div>
+              </div>
+
+              <div className="referral-link-box">
+                <input
+                  type="text"
+                  value={referralLink}
+                  readOnly
+                  placeholder="Referral link उपलब्ध नाही"
+                />
+
+                <button
+                  type="button"
+                  disabled={!referralLink}
+                  onClick={() =>
+                    copyToClipboard(
+                      referralLink,
+                      "Referral link कॉपी झाली!"
+                    )
+                  }
+                >
+                  कॉपी
+                </button>
+              </div>
+
+              <div className="referral-share-buttons">
+                <button
+                  type="button"
+                  className="share-whatsapp"
+                  disabled={!referralLink}
+                  onClick={shareOnWhatsApp}
+                >
+                  <span>🟢</span>
+                  WhatsApp वर शेअर करा
+                </button>
+
+                <button
+                  type="button"
+                  className="share-button"
+                  disabled={!referralLink}
+                  onClick={shareReferral}
+                >
+                  <span>📤</span>
+                  शेअर करा
+                </button>
+              </div>
+            </section>
+          </>
+        ) : (
+          /* GUEST LOGIN / SIGNUP PROMPT */
+          <section className="referral-login-prompt">
+            <div className="login-prompt-icon">🔐</div>
+
+            <h2>तुमचा Referral Code तयार करा</h2>
+
+            <p>
+              Referral Program मध्ये सहभागी होण्यासाठी आणि
+              तुमचा Referral Code व Link तयार करण्यासाठी
+              कृपया Login किंवा Sign Up करा.
+            </p>
+
+            <div className="login-prompt-buttons">
+              <button
+                type="button"
+                className="referral-login-btn"
+                onClick={goToLogin}
+              >
+                Login करा
+              </button>
+
+              <button
+                type="button"
+                className="referral-signup-btn"
+                onClick={goToSignup}
+              >
+                Sign Up करा
+              </button>
             </div>
-          </div>
 
-          <div className="wallet-card-right">
-            <div>
-              <span>प्रलंबित रिवॉर्ड</span>
-              <strong>₹{pendingEarning}</strong>
-            </div>
+            <small>
+              Account तयार केल्यानंतर तुम्ही तुमचा referral
+              link share करून rewards मिळवू शकता.
+            </small>
+          </section>
+        )}
 
-            <div>
-              <span>मंजूर रिवॉर्ड</span>
-              <strong>₹{confirmedEarning}</strong>
-            </div>
-          </div>
-        </section>
-
-        {/* REFERRAL CODE */}
-        <section className="referral-code-card">
-          <div className="section-heading">
-            <div>
-              <span className="section-label">
-                तुमचा REFERRAL CODE
-              </span>
-
-              <h2>तुमचा कोड शेअर करा</h2>
-            </div>
-
-            <div className="code-gift">🎁</div>
-          </div>
-
-          <div className="referral-code-box">
-            <span>{referralCode || "—"}</span>
-
-            <button
-              type="button"
-              onClick={() =>
-                copyToClipboard(
-                  referralCode,
-                  "Referral code कॉपी झाला!"
-                )
-              }
-            >
-              📋 कॉपी करा
-            </button>
-          </div>
-
-          {copyMessage && (
-            <div className="copy-success">
-              ✓ {copyMessage}
-            </div>
-          )}
-        </section>
-
-        {/* REFERRAL LINK */}
-        <section className="referral-link-card">
-          <div className="section-heading">
-            <div>
-              <span className="section-label">
-                तुमची REFERRAL LINK
-              </span>
-
-              <h2>मित्रांना आमंत्रित करा</h2>
-            </div>
-
-            <div className="link-icon">🔗</div>
-          </div>
-
-          <div className="referral-link-box">
-            <input
-              type="text"
-              value={referralLink}
-              readOnly
-            />
-
-            <button
-              type="button"
-              onClick={() =>
-                copyToClipboard(
-                  referralLink,
-                  "Referral link कॉपी झाली!"
-                )
-              }
-            >
-              कॉपी
-            </button>
-          </div>
-
-          <div className="referral-share-buttons">
-            <button
-              type="button"
-              className="share-whatsapp"
-              onClick={shareOnWhatsApp}
-            >
-              <span>🟢</span>
-              WhatsApp वर शेअर करा
-            </button>
-
-            <button
-              type="button"
-              className="share-button"
-              onClick={shareReferral}
-            >
-              <span>📤</span>
-              शेअर करा
-            </button>
-          </div>
-        </section>
-
-        {/* HOW IT WORKS */}
+        {/* HOW IT WORKS - Visible to everyone */}
         <section className="how-referral-card">
           <div className="section-heading">
             <div>
@@ -572,144 +657,149 @@ export default function Referral() {
           </div>
         </section>
 
-        {/* STATISTICS */}
-        <section className="referral-stats">
-          <div className="referral-stat-card">
-            <div className="stat-icon blue">👥</div>
+        {/* STATISTICS - Logged-in users only */}
+        {userData && (
+          <section className="referral-stats">
+            <div className="referral-stat-card">
+              <div className="stat-icon blue">👥</div>
 
-            <div>
-              <span>एकूण Referrals</span>
-              <strong>{totalReferrals}</strong>
+              <div>
+                <span>एकूण Referrals</span>
+                <strong>{totalReferrals}</strong>
+              </div>
             </div>
-          </div>
 
-          <div className="referral-stat-card">
-            <div className="stat-icon orange">⏳</div>
+            <div className="referral-stat-card">
+              <div className="stat-icon orange">⏳</div>
 
-            <div>
-              <span>प्रलंबित</span>
-              <strong>{pendingReferrals}</strong>
+              <div>
+                <span>प्रलंबित</span>
+                <strong>{pendingReferrals}</strong>
+              </div>
             </div>
-          </div>
 
-          <div className="referral-stat-card">
-            <div className="stat-icon green">✓</div>
+            <div className="referral-stat-card">
+              <div className="stat-icon green">✓</div>
 
-            <div>
-              <span>मंजूर</span>
-              <strong>{confirmedReferrals}</strong>
+              <div>
+                <span>मंजूर</span>
+                <strong>{confirmedReferrals}</strong>
+              </div>
             </div>
-          </div>
 
-          <div className="referral-stat-card">
-            <div className="stat-icon red">✕</div>
+            <div className="referral-stat-card">
+              <div className="stat-icon red">✕</div>
 
-            <div>
-              <span>नामंजूर</span>
-              <strong>{rejectedReferrals}</strong>
+              <div>
+                <span>नामंजूर</span>
+                <strong>{rejectedReferrals}</strong>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* REFERRAL HISTORY */}
-        <section className="referral-history-card">
-          <div className="section-heading">
-            <div>
-              <span className="section-label">
-                REFERRAL HISTORY
+        {/* REFERRAL HISTORY - Logged-in users only */}
+        {userData && (
+          <section className="referral-history-card">
+            <div className="section-heading">
+              <div>
+                <span className="section-label">
+                  REFERRAL HISTORY
+                </span>
+
+                <h2>तुमचे Referrals</h2>
+              </div>
+
+              <span className="referral-count">
+                {totalReferrals}
               </span>
-
-              <h2>तुमचे Referrals</h2>
             </div>
 
-            <span className="referral-count">
-              {totalReferrals}
-            </span>
-          </div>
+            {referrals.length === 0 ? (
+              <div className="empty-referrals">
+                <div className="empty-icon">🎁</div>
 
-          {referrals.length === 0 ? (
-            <div className="empty-referrals">
-              <div className="empty-icon">🎁</div>
+                <h3>अजून referrals नाहीत</h3>
 
-              <h3>अजून referrals नाहीत</h3>
+                <p>
+                  तुमची referral link मित्रांसोबत शेअर करा.
+                  मित्राने account तयार करून OnlineWalaa वरील
+                  कोणतीही सेवा घेतल्यानंतर referral
+                  verification साठी पुढे जाईल.
+                </p>
 
-              <p>
-                तुमची referral link मित्रांसोबत शेअर करा.
-                मित्राने account तयार करून OnlineWalaa वरील
-                कोणतीही सेवा घेतल्यानंतर referral
-                verification साठी पुढे जाईल.
-              </p>
-
-              <button
-                type="button"
-                onClick={shareReferral}
-              >
-                📤 Referral Link शेअर करा
-              </button>
-            </div>
-          ) : (
-            <div className="referral-list">
-              {referrals.map((referral) => (
-                <div
-                  className="referral-item"
-                  key={referral.id}
+                <button
+                  type="button"
+                  onClick={shareReferral}
+                  disabled={!referralLink}
                 >
-                  <div className="referred-user-icon">
-                    👤
-                  </div>
+                  📤 Referral Link शेअर करा
+                </button>
+              </div>
+            ) : (
+              <div className="referral-list">
+                {referrals.map((referral) => (
+                  <div
+                    className="referral-item"
+                    key={referral.id}
+                  >
+                    <div className="referred-user-icon">
+                      👤
+                    </div>
 
-                  <div className="referred-user-info">
-                    <strong>
-                      तुमच्यामार्फत आलेला User
-                    </strong>
+                    <div className="referred-user-info">
+                      <strong>
+                        तुमच्यामार्फत आलेला User
+                      </strong>
 
-                    <span>
-                      {formatDate(referral.createdAt)}
-                    </span>
-
-                    {referral.serviceName && (
-                      <small>
-                        सेवा: {referral.serviceName}
-                      </small>
-                    )}
-
-                    {referral.status === "pending" && (
-                      <small>
-                        Referral आणि सेवा पडताळणी प्रलंबित
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="referral-reward">
-                    <strong>
-                      +₹{referral.rewardAmount}
-                    </strong>
-
-                    {referral.status === "pending" && (
-                      <span className="status pending">
-                        ⏳ पडताळणी प्रलंबित
+                      <span>
+                        {formatDate(referral.createdAt)}
                       </span>
-                    )}
 
-                    {referral.status === "confirmed" && (
-                      <span className="status confirmed">
-                        ✓ रिवॉर्ड मंजूर
-                      </span>
-                    )}
+                      {referral.serviceName && (
+                        <small>
+                          सेवा: {referral.serviceName}
+                        </small>
+                      )}
 
-                    {referral.status === "rejected" && (
-                      <span className="status rejected">
-                        ✕ रेफरल मंजूर नाही
-                      </span>
-                    )}
+                      {referral.status === "pending" && (
+                        <small>
+                          Referral आणि सेवा पडताळणी प्रलंबित
+                        </small>
+                      )}
+                    </div>
+
+                    <div className="referral-reward">
+                      <strong>
+                        +₹{referral.rewardAmount}
+                      </strong>
+
+                      {referral.status === "pending" && (
+                        <span className="status pending">
+                          ⏳ पडताळणी प्रलंबित
+                        </span>
+                      )}
+
+                      {referral.status === "confirmed" && (
+                        <span className="status confirmed">
+                          ✓ रिवॉर्ड मंजूर
+                        </span>
+                      )}
+
+                      {referral.status === "rejected" && (
+                        <span className="status rejected">
+                          ✕ रेफरल मंजूर नाही
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
-        {/* IMPORTANT RULES */}
+        {/* IMPORTANT RULES - Visible to everyone */}
         <section className="referral-rules">
           <div className="rules-icon">ℹ️</div>
 

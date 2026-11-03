@@ -347,19 +347,10 @@ export default function App() {
         }
       />
 
-      <Route
-        path="/referral"
-        element={
-          authUser ? (
-            <Referral user={authUser} />
-          ) : (
-            <Navigate
-              to="/login"
-              replace
-            />
-          )
-        }
-      />
+    <Route
+  path="/referral"
+  element={<Referral user={authUser} />}
+/>
 
       <Route
         path="/wallet"

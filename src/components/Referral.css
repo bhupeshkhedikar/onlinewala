@@ -977,3 +977,107 @@
   }
 }
 
+/* Guest login/signup prompt */
+.referral-login-prompt {
+  background: #ffffff;
+  border: 1px solid #e5eaf2;
+  border-radius: 18px;
+  padding: 32px 24px;
+  margin: 24px 0;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(15, 35, 75, 0.06);
+}
+
+.login-prompt-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef4ff;
+  border-radius: 50%;
+  font-size: 28px;
+}
+
+.referral-login-prompt h2 {
+  margin: 0 0 12px;
+  color: #172b4d;
+  font-size: 24px;
+}
+
+.referral-login-prompt p {
+  max-width: 620px;
+  margin: 0 auto 22px;
+  color: #5b6577;
+  line-height: 1.7;
+}
+
+.login-prompt-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.login-prompt-buttons button {
+  min-width: 140px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.referral-login-btn {
+  background: #3a72b5;
+  color: #ffffff;
+}
+
+.referral-login-btn:hover {
+  background: #2d609d;
+}
+
+.referral-signup-btn {
+  background: #eef4ff;
+  color: #3a72b5;
+  border: 1px solid #3a72b5 !important;
+}
+
+.referral-signup-btn:hover {
+  background: #e1ecfb;
+}
+
+.referral-login-prompt small {
+  display: block;
+  color: #778196;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.login-prompt-buttons button:focus-visible {
+  outline: 3px solid rgba(58, 114, 181, 0.25);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .referral-login-prompt {
+    padding: 26px 18px;
+    border-radius: 14px;
+  }
+
+  .referral-login-prompt h2 {
+    font-size: 21px;
+  }
+
+  .login-prompt-buttons {
+    flex-direction: column;
+  }
+
+  .login-prompt-buttons button {
+    width: 100%;
+  }
+}
