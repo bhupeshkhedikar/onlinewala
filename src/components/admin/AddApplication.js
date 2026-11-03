@@ -1653,7 +1653,7 @@ export default function AddApplication({ userId, user }) {
                             <div className="query-box">
                                 <p className="col-title">कोणत्याही प्रश्नासाठी :</p>
                                 <p className="col-desc">वेबसाइट: www.onlinewalaa.com<br /></p>
-                                <p className="col-desc">ई-मेल: info@onlinewalaa.com<br />मोबाईल: +91 98765 43210</p>
+                                <p className="col-desc">ई-मेल: support@onlinewalaa.com<br />मोबाईल: +91 9185 262428</p>
                                 <p className="no-sig-text">हे संगणकीकृत INVOICE आहे, यावर स्वाक्षरीची गरज नाही.</p>
                             </div>
                             <div className="spin-win-banner-horizontal">

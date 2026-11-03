@@ -26,7 +26,9 @@ export default function Header({ authUser, onLogout }) {
           <div className="phone-pill">
             <span className="phone-icon">📞</span>
             <span className="phone-text">
-              +91 98765 43210
+              9185 262428
+            </span><span className="phone-text">
+              7218 262428
             </span>
           </div>
 

@@ -304,3 +304,57 @@
     gap: 10px;
   }
 }
+
+/* --- Added Footer Link Columns: preserves existing styling --- */
+.ow-col-links {
+  flex: 0 1 210px;
+}
+
+/* Link list styling */
+.ow-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ow-footer-links li {
+  margin: 0 0 10px;
+}
+
+.ow-footer-links a {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.ow-footer-links a:hover {
+  color: #2563eb;
+}
+
+/* Contact email link */
+.ow-contact-text a {
+  color: inherit;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.ow-contact-text a:hover {
+  color: #2563eb;
+}
+
+/* Responsive: match existing mobile centering */
+@media (max-width: 768px) {
+  .ow-col-links {
+    flex: 1 1 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ow-footer-links {
+    text-align: center;
+  }
+}

@@ -1627,9 +1627,9 @@ export default function AdminInvoiceDashboard() {
                                 </p>
 
                                 <p className="col-desc">
-                                    ई-मेल: info@onlinewalaa.com
+                                    ई-मेल: support@onlinewalaa.com
                                     <br />
-                                    मोबाईल: +91 98765 43210
+                                    मोबाईल: +91 9185 262428
                                 </p>
 
                                 <p className="no-sig-text">

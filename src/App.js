@@ -44,6 +44,11 @@ import AdminUdhari from "./components/admin/AdminUdhari";
 import AdminWalletManager from "./components/admin/AdminWalletManager";
 import InstantServices from "./components/InstantServices";
 import AadharToRationPdf from "./components/AadharToRationPdf";
+import AboutUs from "./components/AboutUs";
+import ContactUs from "./components/ContactUs";
+import TermsConditions from "./components/TermsConditions";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
 
 const Home = ({ authUser, userData }) => (
   <>
@@ -261,7 +266,23 @@ export default function App() {
             path="/aadhaar-to-pan"
             element={<InstantPanFind />}
           />
-
+<Route
+  path="/about"
+  element={<AboutUs />}
+/>
+<Route
+  path="/contact"
+  element={<ContactUs />}
+/>
+<Route
+  path="/terms"
+  element={<TermsConditions />}
+/>
+<Route path="/privacy" element={<PrivacyPolicy />} />
+<Route
+  path="/refund-policy"
+  element={<RefundCancellationPolicy />}
+/>
       <Route
         path="/biodata-builder"
         element={<BiodataBuilder />}
