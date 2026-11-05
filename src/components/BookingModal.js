@@ -42,11 +42,13 @@ export default function BookingModal({
   );
 
   // संपर्क माहिती
-  const [name, setName] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [email, setEmail] = useState(
-    user?.email || ""
+  const [name, setName] = useState(
+    user?.displayName || user?.name || ""
   );
+  const [mobile, setMobile] = useState(
+    user?.phoneNumber || user?.mobile || ""
+  );
+  const [email, setEmail] = useState(user?.email || "");
 
   // WhatsApp सूचना संमती
   const [whatsappOptIn, setWhatsappOptIn] = useState(true);
@@ -73,9 +75,37 @@ export default function BookingModal({
         const userSnapshot = await getDoc(userRef);
 
         if (userSnapshot.exists()) {
-          setWhatsappOptIn(
-            userSnapshot.data()?.whatsappOptIn === true
+          const profile = userSnapshot.data() || {};
+
+          setWhatsappOptIn(profile.whatsappOptIn === true);
+          setName(
+            profile.fullName ||
+            profile.name ||
+            profile.displayName ||
+            user?.displayName ||
+            user?.name ||
+            ""
           );
+          setMobile(
+            String(
+              profile.mobile ||
+              profile.phone ||
+              profile.phoneNumber ||
+              profile.contactNumber ||
+              user?.phoneNumber ||
+              user?.mobile ||
+              ""
+            ).replace(/\D/g, "").slice(-10)
+          );
+          setEmail(profile.email || user?.email || "");
+        } else {
+          setName(user?.displayName || user?.name || "");
+          setMobile(
+            String(user?.phoneNumber || user?.mobile || "")
+              .replace(/\D/g, "")
+              .slice(-10)
+          );
+          setEmail(user?.email || "");
         }
       } catch (error) {
         console.error("WhatsApp संमती मिळवताना त्रुटी:", error);
@@ -446,23 +476,21 @@ export default function BookingModal({
      कागदपत्रे
   ===================================================== */
 
-  const handleFileChange = (
-    docName,
-    file
-  ) => {
-    setFiles((prev) => {
-      const updated = {
-        ...prev
-      };
+  const handleFileChange = (docName, selectedFiles) => {
+    const newFiles = Array.from(selectedFiles || []);
+    setFiles((prev) => ({
+      ...prev,
+      [docName]: [...(prev[docName] || []), ...newFiles]
+    }));
+  };
 
-      if (file) {
-        updated[docName] = file;
-      } else {
-        delete updated[docName];
-      }
-
-      return updated;
-    });
+  const handleRemoveFile = (docName, fileIndex) => {
+    setFiles((prev) => ({
+      ...prev,
+      [docName]: (prev[docName] || []).filter(
+        (_, index) => index !== fileIndex
+      )
+    }));
   };
 
   const handleAddExtraDoc = () => {
@@ -471,7 +499,7 @@ export default function BookingModal({
       {
         id: Date.now(),
         name: "",
-        file: null
+        files: []
       }
     ]);
   };
@@ -492,18 +520,28 @@ export default function BookingModal({
     );
   };
 
-  const handleExtraDocFileChange = (
-    id,
-    newFile
-  ) => {
+  const handleExtraDocFileChange = (id, selectedFiles) => {
+    const newFiles = Array.from(selectedFiles || []);
     setExtraDocs((prev) =>
-      prev.map((doc) =>
-        doc.id === id
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, files: [...(item.files || []), ...newFiles] }
+          : item
+      )
+    );
+  };
+
+  const handleRemoveExtraFile = (id, fileIndex) => {
+    setExtraDocs((prev) =>
+      prev.map((item) =>
+        item.id === id
           ? {
-              ...doc,
-              file: newFile
+              ...item,
+              files: (item.files || []).filter(
+                (_, index) => index !== fileIndex
+              )
             }
-          : doc
+          : item
       )
     );
   };
@@ -540,7 +578,9 @@ export default function BookingModal({
               alt="पूर्वदृश्य"
             />
           ) : (
-            <span>PDF</span>
+            <span>
+              {file.type === "application/pdf" ? "PDF" : "FILE"}
+            </span>
           )}
         </div>
 
@@ -579,7 +619,7 @@ export default function BookingModal({
       );
 
     for (const doc of requiredDocs) {
-      if (!files[doc.name]) {
+      if (!files[doc.name]?.length) {
         alert(
           `कृपया ${doc.name} अपलोड करा.`
         );
@@ -590,7 +630,7 @@ export default function BookingModal({
     for (const ed of extraDocs) {
       if (
         !ed.name.trim() ||
-        !ed.file
+        !ed.files?.length
       ) {
         alert(
           "सर्व अतिरिक्त कागदपत्रांसाठी नाव आणि फाईल द्या किंवा रिकामी नोंद काढून टाका."
@@ -601,32 +641,25 @@ export default function BookingModal({
 
     const filesToUpload = [];
 
-    Object.keys(files).forEach(
-      (docName) => {
-        if (files[docName]) {
-          filesToUpload.push({
-            name: docName,
-            file: files[docName],
-            isExtra: false
-          });
-        }
-      }
-    );
-
-    extraDocs.forEach((ed) => {
-      if (
-        ed.file &&
-        ed.name.trim()
-      ) {
-        filesToUpload.push({
-          name: ed.name.trim(),
-          file: ed.file,
-          isExtra: true
-        });
-      }
+    Object.keys(files).forEach((docName) => {
+      (files[docName] || []).forEach((file) => {
+        filesToUpload.push({ name: docName, file, isExtra: false });
+      });
     });
 
-    setLoading(true);
+    extraDocs.forEach((ed) => {
+      (ed.files || []).forEach((file) => {
+        if (ed.name.trim()) {
+          filesToUpload.push({
+            name: ed.name.trim(),
+            file,
+            isExtra: true
+          });
+        }
+      });
+    });
+
+        setLoading(true);
 
     let uploadedDocs = [];
 
@@ -713,8 +746,10 @@ export default function BookingModal({
 
         uploadedDocs.push({
           name: item.name,
+          fileName: item.file.name,
           url,
-          type: item.file.type
+          type: item.file.type || "application/octet-stream",
+          size: item.file.size
         });
       }
 
@@ -803,7 +838,9 @@ export default function BookingModal({
       );
 
       alert(
-        "बुकिंग पूर्ण होऊ शकले नाही. कृपया पुन्हा प्रयत्न करा."
+        `बुकिंग पूर्ण होऊ शकले नाही: ${
+          error?.message || "कृपया पुन्हा प्रयत्न करा."
+        }`
       );
 
       setLoading(false);
@@ -1791,14 +1828,11 @@ export default function BookingModal({
                                     <input
                                       className="bm-file-input"
                                       type="file"
-                                      accept="image/*,.pdf"
-                                      onChange={(e) =>
-                                        handleFileChange(
-                                          doc.name,
-                                          e.target
-                                            .files?.[0]
-                                        )
-                                      }
+                                      multiple
+                                      onChange={(e) => {
+                                        handleFileChange(doc.name, e.target.files);
+                                        e.target.value = "";
+                                      }}
                                     />
 
                                     <div className="bm-upload-placeholder">
@@ -1815,11 +1849,19 @@ export default function BookingModal({
 
                                   </div>
 
-                                  {renderFilePreview(
-                                    files[
-                                      doc.name
-                                    ]
-                                  )}
+                                  {(files[doc.name] || []).map((file, fileIndex) => (
+                                    <div className="bm-multi-file-item" key={`${file.name}-${fileIndex}`}>
+                                      {renderFilePreview(file)}
+                                      <button
+                                        type="button"
+                                        className="bm-remove-file-btn"
+                                        onClick={() => handleRemoveFile(doc.name, fileIndex)}
+                                        aria-label="फाईल काढा"
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  ))}
 
                                 </div>
                               )
@@ -1947,22 +1989,35 @@ export default function BookingModal({
                                     }
                                   />
 
-                                  <input
-                                    type="file"
-                                    accept="image/*,.pdf"
-                                    className="bm-file-input"
-                                    onChange={(e) =>
-                                      handleExtraDocFileChange(
-                                        ed.id,
-                                        e.target
-                                          .files?.[0]
-                                      )
-                                    }
-                                  />
+                                  <div className="bm-file-wrapper">
+                                    <input
+                                      type="file"
+                                      multiple
+                                      className="bm-file-input"
+                                      onChange={(e) => {
+                                        handleExtraDocFileChange(ed.id, e.target.files);
+                                        e.target.value = "";
+                                      }}
+                                    />
+                                    <div className="bm-upload-placeholder">
+                                      <span className="bm-upload-icon">⬆</span>
+                                      <span>फाईल निवडा (एकाच वेळी अनेक फाईल निवडू शकता)</span>
+                                    </div>
+                                  </div>
 
-                                  {renderFilePreview(
-                                    ed.file
-                                  )}
+                                  {(ed.files || []).map((file, fileIndex) => (
+                                    <div className="bm-multi-file-item" key={`${file.name}-${fileIndex}`}>
+                                      {renderFilePreview(file)}
+                                      <button
+                                        type="button"
+                                        className="bm-remove-file-btn"
+                                        onClick={() => handleRemoveExtraFile(ed.id, fileIndex)}
+                                        aria-label="फाईल काढा"
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  ))}
 
                                 </div>
                               )
@@ -2059,6 +2114,7 @@ export default function BookingModal({
                       </button>
 
                       <button
+                        type="button"
                         className="bm-btn submit"
                         onClick={
                           handleSubmit

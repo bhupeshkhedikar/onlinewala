@@ -2391,11 +2391,15 @@ exports.payOnlineWalaaFromWallet =
     }
   );
 
+
+
 exports.instantPanFind = onCall(
   {
     region: "asia-south1",
     invoker: "public",
     secrets: [PARIPRINT_API_KEY],
+    timeoutSeconds: 120,
+    memory: "256MiB",
   },
   async (request) => {
     console.log("========================================");
@@ -2408,8 +2412,6 @@ exports.instantPanFind = onCall(
       // ========================================
 
       if (!request.auth) {
-        console.error("❌ User is not authenticated.");
-
         throw new HttpsError(
           "unauthenticated",
           "कृपया आधी Login करा."
@@ -2424,33 +2426,22 @@ exports.instantPanFind = onCall(
       console.log("Authenticated user:", userId);
 
       // ========================================
-      // STEP 2: GET & VALIDATE AADHAAR
+      // STEP 2: VALIDATE AADHAAR
       // ========================================
 
       const aadhaarNumber = String(
         request.data?.aadhaarNumber || ""
       ).replace(/\D/g, "");
 
-      console.log(
-        "Aadhaar received:",
-        aadhaarNumber ? "YES" : "NO"
-      );
-
-      console.log(
-        "Aadhaar length:",
-        aadhaarNumber.length
-      );
+      console.log("Aadhaar received:", !!aadhaarNumber);
+      console.log("Aadhaar length:", aadhaarNumber.length);
 
       if (!/^\d{12}$/.test(aadhaarNumber)) {
-        console.error("❌ Invalid Aadhaar number.");
-
         throw new HttpsError(
           "invalid-argument",
           "कृपया 12 अंकों का valid Aadhaar Number दर्ज करें."
         );
       }
-
-      console.log("✅ Aadhaar validation successful.");
 
       // ========================================
       // STEP 3: SERVICE AMOUNT
@@ -2458,23 +2449,19 @@ exports.instantPanFind = onCall(
 
       const SERVICE_AMOUNT = 50;
 
-      console.log(
-        `STEP 3: Service amount = ₹${SERVICE_AMOUNT}`
-      );
+      console.log(`Service amount: ₹${SERVICE_AMOUNT}`);
 
       // ========================================
       // STEP 4: CHECK WALLET BALANCE
       // ========================================
 
-      console.log("STEP 4: Checking wallet balance...");
-
-      const userRef = db.collection("users").doc(userId);
+      const userRef = db
+        .collection("users")
+        .doc(userId);
 
       const userSnap = await userRef.get();
 
       if (!userSnap.exists) {
-        console.error("❌ User document not found.");
-
         throw new HttpsError(
           "not-found",
           "User account नहीं मिला."
@@ -2503,9 +2490,10 @@ exports.instantPanFind = onCall(
         currentAvailableBalance
       );
 
-      if (currentAvailableBalance < SERVICE_AMOUNT) {
-        console.error("❌ Insufficient wallet balance.");
-
+      if (
+        !Number.isFinite(currentAvailableBalance) ||
+        currentAvailableBalance < SERVICE_AMOUNT
+      ) {
         throw new HttpsError(
           "failed-precondition",
           `Wallet balance insufficient. कम से कम ₹${SERVICE_AMOUNT} होना चाहिए.`
@@ -2515,305 +2503,291 @@ exports.instantPanFind = onCall(
       console.log("✅ Wallet balance sufficient.");
 
       // ========================================
-      // STEP 5: CHECK PARIPRINT API CONFIG
+      // STEP 5: PARIPRINT API CONFIGURATION
       // ========================================
-
-      console.log(
-        "STEP 5: Checking Pariprint API configuration..."
-      );
 
       const apiKey = PARIPRINT_API_KEY.value();
 
       if (!apiKey) {
-        console.error(
-          "❌ Pariprint API key is not configured."
-        );
-
         throw new HttpsError(
           "failed-precondition",
           "Pariprint API configuration missing है."
         );
       }
 
-      console.log(
-        "✅ Pariprint API key is configured."
-      );
-
-      // ========================================
-      // STEP 6: PREPARE PARIPRINT REQUEST
-      // ========================================
-
-      console.log(
-        "STEP 6: Preparing Pariprint API request..."
-      );
-
       const endpoint =
         "https://pariprint.in/api-proxy.php";
 
-      const slug = "instant-pan-find";
-
-      const apiUrl = new URL(endpoint);
-
-      apiUrl.searchParams.set("slug", slug);
-      apiUrl.searchParams.set(
-        "api_key",
-        apiKey
-      );
-      apiUrl.searchParams.set(
-        "aadhaar_number",
-        aadhaarNumber
-      );
-
-      console.log(
-        "Pariprint endpoint:",
-        endpoint
-      );
-
-      console.log(
-        "Pariprint slug:",
-        slug
-      );
+      console.log("Pariprint API key configured.");
 
       // ========================================
-      // STEP 7: CALL PARIPRINT API
+      // STEP 6: PAN VALIDATION
       // ========================================
 
-      console.log(
-        "STEP 7: Calling Pariprint API..."
-      );
-
-      let providerResponse;
-
-      try {
-        providerResponse = await fetch(
-          apiUrl.toString(),
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
+      const isValidPan = (pan) => {
+        return /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(
+          String(pan || "")
+            .trim()
+            .toUpperCase()
         );
-      } catch (fetchError) {
-        console.error(
-          "❌ Pariprint API request failed:",
-          fetchError
-        );
-
-        throw new HttpsError(
-          "unavailable",
-          "PAN service temporarily unavailable है. कृपया थोड़ी देर बाद try करें."
-        );
-      }
-
-      console.log(
-        "✅ Pariprint API request completed."
-      );
-
-      console.log(
-        "Pariprint HTTP status:",
-        providerResponse.status
-      );
-
-      console.log(
-        "Pariprint HTTP status text:",
-        providerResponse.statusText
-      );
+      };
 
       // ========================================
-      // STEP 8: READ PARIPRINT RESPONSE
+      // STEP 7: NORMALIZE PARIPRINT RESPONSE
       // ========================================
 
-      console.log(
-        "STEP 8: Reading Pariprint response..."
-      );
+      const normalizeResponse = (data) => {
 
-      let apiData;
-
-      try {
-        apiData = await providerResponse.json();
-      } catch (jsonError) {
-        console.error(
-          "❌ Unable to parse Pariprint JSON response:",
-          jsonError
-        );
-
-        throw new HttpsError(
-          "internal",
-          "PAN service से invalid response मिला."
-        );
-      }
-
-      console.log(
-        "📦 PARIPRINT RESPONSE RECEIVED"
-      );
-
-      console.log(
-        "API status:",
-        apiData?.status
-      );
-
-      console.log(
-        "API message:",
-        apiData?.message
-      );
-
-      console.log(
-        "Response code:",
-        apiData?.response_code
-      );
-
-      console.log(
-        "PAN field:",
-        apiData?.full_pan_number
-          ? "full_pan_number received"
-          : apiData?.pan_number
-          ? "pan_number received"
-          : "PAN not received"
-      );
-
-      // ========================================
-      // STEP 9: CHECK PARIPRINT RESPONSE
-      // ========================================
-
-      console.log(
-        "STEP 9: Checking Pariprint response..."
-      );
-
-      const providerStatus =
-        apiData?.status === true ||
-        String(apiData?.status)
-          .trim()
-          .toLowerCase() === "true";
-
-      /*
-       * IMPORTANT:
-       * Pariprint response currently returns:
-       *
-       * full_pan_number: "FGAPK8630M"
-       *
-       * instead of:
-       *
-       * pan_number: "FGAPK8630M"
-       *
-       * Therefore we support both fields.
-       */
-
-      const panNumber = String(
-        apiData?.full_pan_number ||
-        apiData?.pan_number ||
-        ""
-      )
-        .trim()
-        .toUpperCase();
-
-      const validPanFormat =
-        /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(
-          panNumber
-        );
-
-      const panFindCompleted =
-        String(
-          apiData?.aadhaar_to_panfind_status || ""
+        const panNumber = String(
+          data?.pan_no ||
+          data?.full_pan_number ||
+          data?.pan_number ||
+          data?.pan ||
+          ""
         )
           .trim()
-          .toUpperCase() === "COMPLETED";
+          .toUpperCase();
 
-      console.log(
-        "Provider status accepted:",
-        providerStatus
-      );
+        const status = String(
+          data?.status ?? ""
+        )
+          .trim()
+          .toLowerCase();
 
-      console.log(
-        "PAN extracted:",
-        panNumber ? "YES" : "NO"
-      );
+        const statusSuccess =
+          status === "200" ||
+          status === "true" ||
+          status === "success";
 
-      console.log(
-        "PAN format valid:",
-        validPanFormat
-      );
+        const panValid = isValidPan(panNumber);
 
-      console.log(
-        "PAN find completed:",
-        panFindCompleted
-      );
+        return {
+          success:
+            statusSuccess &&
+            panValid,
 
-      /*
-       * Successful response requires:
-       *
-       * 1. Provider status = true
-       * 2. Valid PAN format
-       * 3. PAN find status = COMPLETED
-       */
+          panNumber,
 
-      const apiSuccess =
-        providerStatus &&
-        validPanFormat &&
-        panFindCompleted;
+          status: data?.status ?? null,
 
-      console.log(
-        "Final API success:",
-        apiSuccess
-      );
+          message:
+            data?.message || "",
+
+          requestId:
+            data?.request_id ||
+            data?.requestId ||
+            null,
+
+          orderId:
+            data?.order_id ||
+            data?.orderId ||
+            null,
+
+          aadhaarStatus:
+            data?.aadhaar_status || null,
+
+          panFindStatus:
+            data?.aadhaar_to_panfind_status || null,
+
+          downloadUrl:
+            data?.download_url || null,
+        };
+      };
 
       // ========================================
-      // PROVIDER FAILURE
+      // STEP 8: PARIPRINT API REQUEST
+      // API: aadhaar-to-pan
+      // METHOD: GET
+      // PARAMETER: aadhaar_no
       // ========================================
 
-      if (!apiSuccess) {
-        console.error(
-          "❌ PAN FIND FAILED."
+      const callPanProvider = async () => {
+
+        console.log("----------------------------------------");
+        console.log("Calling Pariprint Aadhaar to PAN API");
+
+        const url = new URL(endpoint);
+
+        url.searchParams.set(
+          "slug",
+          "aadhaar-to-pan"
         );
 
-        console.error(
-          "Provider message:",
-          apiData?.message
+        url.searchParams.set(
+          "aadhaar_no",
+          aadhaarNumber
         );
 
-        console.error(
-          "Provider status:",
-          apiData?.status
+        url.searchParams.set(
+          "api_key",
+          apiKey
         );
 
-        console.error(
-          "PAN received:",
-          panNumber ? "YES" : "NO"
-        );
+        try {
+
+          const response = await fetch(
+            url.toString(),
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+              },
+            }
+          );
+
+          console.log(
+            "Pariprint HTTP status:",
+            response.status
+          );
+
+          const rawResponse = await response.text();
+
+          let data;
+
+          try {
+            data = JSON.parse(rawResponse);
+          } catch (jsonError) {
+
+            console.error(
+              "Pariprint returned invalid JSON."
+            );
+
+            return {
+              success: false,
+              data: null,
+              normalized: null,
+            };
+          }
+
+          const normalized =
+            normalizeResponse(data);
+
+          console.log(
+            "API status:",
+            normalized.status
+          );
+
+          console.log(
+            "API message:",
+            normalized.message
+          );
+
+          console.log(
+            "PAN received:",
+            normalized.panNumber ? "YES" : "NO"
+          );
+
+          console.log(
+            "PAN format valid:",
+            isValidPan(normalized.panNumber)
+          );
+
+          console.log(
+            "Request ID received:",
+            !!normalized.requestId
+          );
+
+          console.log(
+            "Order ID received:",
+            !!normalized.orderId
+          );
+
+          return {
+            success:
+              response.ok &&
+              normalized.success,
+
+            data,
+            normalized,
+          };
+
+        } catch (error) {
+
+          console.error(
+            "Pariprint API request failed:",
+            error?.message
+          );
+
+          return {
+            success: false,
+            data: null,
+            normalized: null,
+          };
+        }
+      };
+
+      // ========================================
+      // STEP 9: EXECUTE PAN FIND
+      // ========================================
+
+      console.log("========================================");
+      console.log("STEP 9: CALLING PARIPRINT API");
+      console.log("========================================");
+
+      const providerResult =
+        await callPanProvider();
+
+      if (!providerResult.success) {
 
         console.error(
-          "PAN status:",
-          apiData?.aadhaar_to_panfind_status
+          "❌ PARIPRINT PAN LOOKUP FAILED."
         );
 
         throw new HttpsError(
           "failed-precondition",
-          apiData?.message ||
-            "PAN Number सापडला नाही."
+          providerResult.normalized?.message ||
+          "PAN details could not be fetched. No wallet amount has been deducted. Please try again later."
         );
       }
 
-      console.log(
-        "🎉 PAN FIND SUCCESSFUL"
-      );
+      const apiData = providerResult.data;
+
+      const normalizedResult =
+        providerResult.normalized;
+
+      const panNumber =
+        normalizedResult.panNumber;
+
+      const providerUsed = "aadhaar-to-pan";
+
+      console.log("========================================");
+      console.log("🎉 PAN LOOKUP SUCCESSFUL");
+      console.log("Provider:", providerUsed);
+      console.log("PAN received: YES");
+      console.log("========================================");
 
       // ========================================
-      // STEP 10: WALLET DEBIT
+      // STEP 10: FINAL PAN VALIDATION
+      // ========================================
+
+      if (!isValidPan(panNumber)) {
+        throw new HttpsError(
+          "failed-precondition",
+          "Invalid PAN response received."
+        );
+      }
+
+      // ========================================
+      // STEP 11: WALLET DEBIT
+      // ONLY AFTER SUCCESSFUL PAN LOOKUP
       // ========================================
 
       console.log(
-        "STEP 10: Starting wallet debit..."
+        "STEP 11: Starting wallet debit..."
       );
 
-      const walletTransactionRef =
-        db.collection("walletTransactions").doc();
+      const walletTransactionRef = db
+        .collection("walletTransactions")
+        .doc();
 
-      const panRequestRef =
-        db.collection("panFindRequests").doc();
+      const panRequestRef = db
+        .collection("panFindRequests")
+        .doc();
 
       const transactionResult =
         await db.runTransaction(
           async (transaction) => {
+
             const freshUserSnap =
               await transaction.get(userRef);
 
@@ -2827,17 +2801,15 @@ exports.instantPanFind = onCall(
             const freshUserData =
               freshUserSnap.data() || {};
 
-            const freshWalletBalance =
-              Number(
-                freshUserData.walletBalance || 0
-              );
+            const freshWalletBalance = Number(
+              freshUserData.walletBalance || 0
+            );
 
-            const freshAvailableBalance =
-              Number(
-                freshUserData.availableBalance ??
-                freshUserData.walletBalance ??
-                0
-              );
+            const freshAvailableBalance = Number(
+              freshUserData.availableBalance ??
+              freshUserData.walletBalance ??
+              0
+            );
 
             console.log(
               "Fresh wallet balance:",
@@ -2850,8 +2822,8 @@ exports.instantPanFind = onCall(
             );
 
             if (
-              freshAvailableBalance <
-              SERVICE_AMOUNT
+              !Number.isFinite(freshAvailableBalance) ||
+              freshAvailableBalance < SERVICE_AMOUNT
             ) {
               throw new HttpsError(
                 "failed-precondition",
@@ -2860,18 +2832,10 @@ exports.instantPanFind = onCall(
             }
 
             const newWalletBalance =
-              Math.max(
-                0,
-                freshWalletBalance -
-                  SERVICE_AMOUNT
-              );
+              freshWalletBalance - SERVICE_AMOUNT;
 
             const newAvailableBalance =
-              Math.max(
-                0,
-                freshAvailableBalance -
-                  SERVICE_AMOUNT
-              );
+              freshAvailableBalance - SERVICE_AMOUNT;
 
             // --------------------------------
             // UPDATE USER WALLET
@@ -2893,7 +2857,7 @@ exports.instantPanFind = onCall(
             );
 
             // --------------------------------
-            // WALLET TRANSACTION
+            // CREATE WALLET TRANSACTION
             // --------------------------------
 
             transaction.set(
@@ -2901,29 +2865,23 @@ exports.instantPanFind = onCall(
               {
                 userId: userId,
 
-                amount:
-                  SERVICE_AMOUNT,
+                amount: SERVICE_AMOUNT,
 
-                type:
-                  "SERVICE_PAYMENT",
+                type: "SERVICE_PAYMENT",
 
-                direction:
-                  "DEBIT",
+                direction: "DEBIT",
 
-                status:
-                  "success",
+                status: "success",
 
-                service:
-                  "INSTANT_PAN_FIND",
+                service: "INSTANT_PAN_FIND",
 
-                description:
-                  "Instant PAN Find",
+                description: "Instant PAN Find",
 
-                provider:
-                  "pariprint",
+                provider: "pariprint",
 
-                referenceId:
-                  panRequestRef.id,
+                providerService: providerUsed,
+
+                referenceId: panRequestRef.id,
 
                 createdAt:
                   admin.firestore.FieldValue
@@ -2932,7 +2890,7 @@ exports.instantPanFind = onCall(
             );
 
             // --------------------------------
-            // PAN FIND REQUEST
+            // CREATE PAN FIND REQUEST
             // --------------------------------
 
             transaction.set(
@@ -2940,36 +2898,40 @@ exports.instantPanFind = onCall(
               {
                 userId: userId,
 
-                service:
-                  "INSTANT_PAN_FIND",
+                service: "INSTANT_PAN_FIND",
 
-                status:
-                  "success",
+                status: "success",
 
-                amount:
-                  SERVICE_AMOUNT,
+                amount: SERVICE_AMOUNT,
 
-                panNumber:
-                  panNumber,
+                panNumber: panNumber,
 
-                provider:
-                  "pariprint",
+                provider: "pariprint",
+
+                providerService: providerUsed,
 
                 walletTransactionId:
                   walletTransactionRef.id,
 
+                // PARIPRINT DETAILS
+
                 requestId:
-                  apiData?.request_id || null,
+                  normalizedResult.requestId,
 
                 orderId:
-                  apiData?.order_id || null,
+                  normalizedResult.orderId,
+
+                downloadUrl:
+                  normalizedResult.downloadUrl,
 
                 aadhaarStatus:
-                  apiData?.aadhaar_status || null,
+                  normalizedResult.aadhaarStatus,
 
                 providerStatus:
-                  apiData?.aadhaar_to_panfind_status ||
-                  null,
+                  normalizedResult.status,
+
+                providerPanFindStatus:
+                  normalizedResult.panFindStatus,
 
                 createdAt:
                   admin.firestore.FieldValue
@@ -2984,9 +2946,7 @@ exports.instantPanFind = onCall(
           }
         );
 
-      console.log(
-        "✅ Wallet debit successful."
-      );
+      console.log("✅ Wallet debit successful.");
 
       console.log(
         `Debited ₹${SERVICE_AMOUNT}`
@@ -2998,12 +2958,13 @@ exports.instantPanFind = onCall(
       );
 
       // ========================================
-      // STEP 11: SUCCESS RESPONSE
+      // STEP 12: SUCCESS RESPONSE
+      // COMPATIBLE WITH EXISTING REACT COMPONENT
       // ========================================
 
-      console.log(
-        "STEP 11: Returning successful response..."
-      );
+      console.log("========================================");
+      console.log("🎉 instantPanFind SUCCESS");
+      console.log("Provider:", providerUsed);
 
       console.log(
         "Transaction ID:",
@@ -3011,34 +2972,22 @@ exports.instantPanFind = onCall(
       );
 
       console.log(
-        "PAN Find Request ID:",
+        "PAN Request ID:",
         panRequestRef.id
       );
 
-      console.log(
-        "========================================"
-      );
-
-      console.log(
-        "🎉 instantPanFind SUCCESS"
-      );
-
-      console.log(
-        "========================================"
-      );
+      console.log("========================================");
 
       return {
         success: true,
 
         message:
-          apiData?.message ||
+          normalizedResult.message ||
           "Aadhaar to PAN find successful.",
 
-        panNumber:
-          panNumber,
+        panNumber: panNumber,
 
-        amount:
-          SERVICE_AMOUNT,
+        amount: SERVICE_AMOUNT,
 
         transactionId:
           walletTransactionRef.id,
@@ -3047,7 +2996,13 @@ exports.instantPanFind = onCall(
           panRequestRef.id,
 
         providerRequestId:
-          apiData?.request_id || null,
+          normalizedResult.requestId,
+
+        orderId:
+          normalizedResult.orderId,
+
+        downloadUrl:
+          normalizedResult.downloadUrl,
 
         remainingBalance:
           transactionResult.newWalletBalance,
@@ -3056,37 +3011,15 @@ exports.instantPanFind = onCall(
     } catch (error) {
 
       // ========================================
-      // ERROR HANDLING
+      // STEP 13: ERROR HANDLING
       // ========================================
 
-      console.error(
-        "========================================"
-      );
+      console.error("========================================");
+      console.error("❌ instantPanFind ERROR");
+      console.error("Error code:", error?.code);
+      console.error("Error message:", error?.message);
+      console.error("========================================");
 
-      console.error(
-        "❌ instantPanFind ERROR"
-      );
-
-      console.error(
-        "Error code:",
-        error?.code
-      );
-
-      console.error(
-        "Error message:",
-        error?.message
-      );
-
-      console.error(
-        "Error details:",
-        error?.details
-      );
-
-      console.error(
-        "========================================"
-      );
-
-      // Preserve Firebase HttpsError
       if (error instanceof HttpsError) {
         throw error;
       }
@@ -3098,6 +3031,8 @@ exports.instantPanFind = onCall(
     }
   }
 );
+
+
 
 exports.instantRcPdf = onCall(
   {
