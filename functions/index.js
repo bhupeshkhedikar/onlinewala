@@ -9058,3 +9058,349 @@ exports.notifyAdminAndCustomerNewBooking = onDocumentCreated(
     return results;
   }
 );
+
+
+// ============================================================
+// ONLINEWALAA MOBILE RECHARGE (PARIPRINT)
+// Append this block at the END of functions/index.js.
+// Secrets: PARIPRINT_RC_KEY_ID and PARIPRINT_RC_SECRET
+// ============================================================
+const PARIPRINT_RC_KEY_ID = defineSecret("PARIPRINT_RC_KEY_ID");
+const PARIPRINT_RC_SECRET = defineSecret("PARIPRINT_RC_SECRET");
+const RC_API_URL = "https://pariprint.in/recharge/api.php";
+const RC_CUSTOMER_DISCOUNT = 3; // Customer discount in INR (admin-configured)
+const RC_REGION = "asia-south1";
+
+function rcNonce() {
+  return crypto.randomBytes(16).toString("hex");
+}
+
+async function callPariPrintRecharge(body) {
+  const rawBody = JSON.stringify(body);
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const nonce = rcNonce();
+  const signature = crypto
+    .createHmac("sha256", PARIPRINT_RC_SECRET.value())
+    .update(`${timestamp}\n${nonce}\n${rawBody}`, "utf8")
+    .digest("hex");
+
+  const response = await fetch(RC_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-RC-Key": PARIPRINT_RC_KEY_ID.value(),
+      "X-RC-Timestamp": timestamp,
+      "X-RC-Nonce": nonce,
+      "X-RC-Signature": signature,
+    },
+    body: rawBody,
+    signal: AbortSignal.timeout(25000),
+  });
+
+  const text = await response.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch { throw new Error(`Recharge provider returned invalid JSON (HTTP ${response.status}).`); }
+
+  if (!response.ok || data?.success === false) {
+    const err = new Error(data?.message || data?.error || `Provider HTTP ${response.status}`);
+    err.providerDefinitive = response.status >= 400 && response.status < 500;
+    err.providerData = data;
+    throw err;
+  }
+  return data;
+}
+
+function rcCleanMobile(value) {
+  const mobile = String(value || "").replace(/\D/g, "");
+  if (!/^[6-9]\d{9}$/.test(mobile)) {
+    throw new HttpsError("invalid-argument", "Valid 10 digit mobile number required.");
+  }
+  return mobile;
+}
+
+async function rcRefundCustomer(orderRef, orderData, reason) {
+  return db.runTransaction(async (tx) => {
+    const orderSnap = await tx.get(orderRef);
+    if (!orderSnap.exists) return;
+    const current = orderSnap.data();
+    if (current.refundStatus === "refunded" || current.status === "success") return;
+    const userRef = db.collection("users").doc(current.userId);
+    const userSnap = await tx.get(userRef);
+    if (!userSnap.exists) throw new Error("Customer profile missing during refund.");
+    const user = userSnap.data() || {};
+    const debit = Number(current.customerPayable || 0);
+    const wallet = Number(user.walletBalance ?? user.wallet ?? 0);
+    const available = Number(user.availableBalance ?? wallet);
+    tx.update(userRef, {
+      walletBalance: wallet + debit,
+      availableBalance: available + debit,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    tx.set(db.collection("walletTransactions").doc(), {
+      uid: current.userId,
+      userId: current.userId,
+      type: "CREDIT",
+      direction: "CREDIT",
+      service: "MOBILE_RECHARGE_REFUND",
+      amount: debit,
+      isCredit: true,
+      referenceId: orderRef.id,
+      description: `Mobile recharge refund: ${current.mobile}`,
+      balanceBefore: wallet,
+      balanceAfter: wallet + debit,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    tx.update(orderRef, {
+      status: "failed",
+      refundStatus: "refunded",
+      refundReason: String(reason || "Recharge failed"),
+      refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  });
+}
+
+async function rcApplyProviderStatus(orderRef, providerData) {
+  const providerStatus = String(providerData?.status || "pending").toLowerCase();
+  if (providerStatus === "failed") {
+    await rcRefundCustomer(orderRef, null, providerData?.message || "Provider marked recharge failed");
+  } else {
+    await orderRef.set({
+      status: providerStatus === "success" ? "success" : "pending",
+      transactionId: providerData?.transaction_id || "",
+      operatorRef: providerData?.operator_ref || "",
+      providerRefunded: Boolean(providerData?.refunded),
+      providerMessage: providerData?.message || "",
+      providerUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  }
+  return providerStatus;
+}
+
+exports.getMobileRechargePlans = onCall({
+  region: RC_REGION,
+  invoker: "public",
+  timeoutSeconds: 40,
+  secrets: [PARIPRINT_RC_KEY_ID, PARIPRINT_RC_SECRET],
+}, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Please login first.");
+  const mobile = rcCleanMobile(request.data?.mobile);
+  try {
+    const data = await callPariPrintRecharge({ action: "plans", mobile });
+    if (!Array.isArray(data.plans)) throw new Error("Provider did not return plans.");
+    return {
+      success: true,
+      mobile,
+      operator_code: Number(data.operator_code),
+      operator: data.operator || "",
+      circle: data.circle || "",
+      plans: data.plans.map((p) => ({
+        amount: String(p.amount),
+        type: p.type || "",
+        validity: String(p.validity || ""),
+        talk_time: p.talk_time || "",
+        description: p.description || "",
+        discount: String(p.discount || "0"),
+        wallet_debit: String(p.wallet_debit || p.amount),
+      })),
+    };
+  } catch (error) {
+    console.error("getMobileRechargePlans:", error.message);
+    throw new HttpsError("failed-precondition", error.message || "Plans unavailable.");
+  }
+});
+
+exports.submitMobileRecharge = onCall({
+  region: RC_REGION,
+  invoker: "public",
+  timeoutSeconds: 60,
+  memory: "256MiB",
+  secrets: [PARIPRINT_RC_KEY_ID, PARIPRINT_RC_SECRET],
+}, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Please login first.");
+  const mobile = rcCleanMobile(request.data?.mobile);
+  const amount = Number(request.data?.amount);
+  const operatorCode = Number(request.data?.operatorCode);
+  if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(operatorCode)) {
+    throw new HttpsError("invalid-argument", "Invalid recharge plan.");
+  }
+
+  const resolved = await resolveOnlineWalaaUser(request);
+  const userId = resolved.userId;
+  // Re-fetch plans server-side; do not trust price/operator values from browser.
+  let plansData;
+  try {
+    plansData = await callPariPrintRecharge({ action: "plans", mobile });
+  } catch (e) {
+    throw new HttpsError("failed-precondition", e.message || "Could not verify selected plan.");
+  }
+  const matchedPlan = (plansData.plans || []).find((p) =>
+    Math.abs(Number(p.amount) - amount) < 0.001
+  );
+  if (!matchedPlan || Number(plansData.operator_code) !== operatorCode) {
+    throw new HttpsError("failed-precondition", "Selected plan is no longer available. Please load plans again.");
+  }
+
+  const customerPayable = Math.max(0, Math.round((amount - RC_CUSTOMER_DISCOUNT) * 100) / 100);
+  const providerCost = Number(matchedPlan.wallet_debit);
+  if (!Number.isFinite(providerCost) || providerCost <= 0) {
+    throw new HttpsError("failed-precondition", "Provider cost could not be verified.");
+  }
+
+  const clientRef = `OW${Date.now().toString(36)}${crypto.randomBytes(5).toString("hex")}`.slice(0, 32);
+  const orderRef = db.collection("mobileRechargeOrders").doc();
+  const userRef = db.collection("users").doc(userId);
+  const walletTxnRef = db.collection("walletTransactions").doc();
+
+  await db.runTransaction(async (tx) => {
+    const userSnap = await tx.get(userRef);
+    if (!userSnap.exists) throw new HttpsError("not-found", "User profile not found.");
+    const user = userSnap.data() || {};
+    const wallet = Number(user.walletBalance ?? user.wallet ?? 0);
+    const available = Number(user.availableBalance ?? wallet);
+    if (customerPayable > available) {
+      throw new HttpsError("failed-precondition", `Insufficient wallet balance. Available: ₹${available.toFixed(2)}`);
+    }
+    tx.update(userRef, {
+      walletBalance: wallet - customerPayable,
+      availableBalance: available - customerPayable,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    tx.set(walletTxnRef, {
+      uid: userId, userId,
+      type: "DEBIT", direction: "DEBIT",
+      service: "MOBILE_RECHARGE",
+      amount: customerPayable,
+      isCredit: false,
+      referenceId: orderRef.id,
+      description: `Mobile recharge ${mobile} (${plansData.operator || ""})`,
+      balanceBefore: wallet,
+      balanceAfter: wallet - customerPayable,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    tx.create(orderRef, {
+      userId,
+      authUid: request.auth.uid,
+      mobile,
+      operator: plansData.operator || "",
+      circle: plansData.circle || "",
+      operatorCode,
+      amount,
+      providerCost,
+      providerDiscount: Number(matchedPlan.discount || 0),
+      customerDiscount: RC_CUSTOMER_DISCOUNT,
+      customerPayable,
+      estimatedProfitLoss: customerPayable - providerCost,
+      clientRef,
+      status: "processing",
+      refundStatus: "not_refunded",
+      walletTransactionId: walletTxnRef.id,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  });
+
+  try {
+    const provider = await callPariPrintRecharge({
+      action: "recharge",
+      mobile,
+      amount: amount.toFixed(2),
+      client_ref: clientRef,
+      operator_code: operatorCode,
+    });
+    const status = String(provider.status || "pending").toLowerCase();
+    await orderRef.set({
+      status: status === "success" ? "success" : status === "failed" ? "failed" : "pending",
+      transactionId: provider.transaction_id || "",
+      operatorRef: provider.operator_ref || "",
+      providerMessage: provider.message || "",
+      providerWalletDebit: Number(provider.wallet_debit || providerCost),
+      providerResponseAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    if (status === "failed") {
+      await rcRefundCustomer(orderRef, null, provider.message || "Provider rejected recharge");
+    }
+    return { success: true, orderId: orderRef.id, clientRef, status };
+  } catch (error) {
+    console.error("submitMobileRecharge provider error:", error.message);
+    // Definite provider rejection: refund customer. Network/timeout/5xx is ambiguous;
+    // keep debit reserved and use the SAME client_ref for status resolution.
+    if (error.providerDefinitive) {
+      await rcRefundCustomer(orderRef, null, error.message);
+      throw new HttpsError("failed-precondition", error.message || "Recharge rejected; wallet refunded.");
+    }
+    await orderRef.set({
+      status: "pending",
+      providerMessage: "Provider response uncertain. Check status; do not create a second recharge.",
+      lastProviderError: error.message || "Network timeout",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return { success: true, orderId: orderRef.id, clientRef, status: "pending" };
+  }
+});
+
+exports.checkMobileRechargeStatus = onCall({
+  region: RC_REGION,
+  invoker: "public",
+  timeoutSeconds: 40,
+  secrets: [PARIPRINT_RC_KEY_ID, PARIPRINT_RC_SECRET],
+}, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Please login first.");
+  const orderId = String(request.data?.orderId || "");
+  if (!orderId) throw new HttpsError("invalid-argument", "Order ID required.");
+  const resolved = await resolveOnlineWalaaUser(request);
+  const orderRef = db.collection("mobileRechargeOrders").doc(orderId);
+  const snap = await orderRef.get();
+  if (!snap.exists) throw new HttpsError("not-found", "Recharge order not found.");
+  const order = snap.data();
+  if (order.userId !== resolved.userId) throw new HttpsError("permission-denied", "Not your recharge order.");
+  if (order.status === "success" || order.status === "failed") {
+    return { success: true, status: order.status, refundStatus: order.refundStatus };
+  }
+  try {
+    const provider = await callPariPrintRecharge({ action: "status", client_ref: order.clientRef });
+    const status = String(provider.status || "pending").toLowerCase();
+    if (status === "failed") {
+      await rcRefundCustomer(orderRef, null, provider.message || "Provider failed");
+    } else {
+      await orderRef.set({
+        status: status === "success" ? "success" : "pending",
+        transactionId: provider.transaction_id || order.transactionId || "",
+        operatorRef: provider.operator_ref || "",
+        providerMessage: provider.message || "",
+        providerRefunded: Boolean(provider.refunded),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    }
+    return { success: true, status };
+  } catch (error) {
+    console.error("checkMobileRechargeStatus:", error.message);
+    throw new HttpsError("unavailable", "Status could not be checked. Please retry later.");
+  }
+});
+
+exports.getMobileRechargeAdminReport = onCall({
+  region: RC_REGION,
+  invoker: "public",
+}, async (request) => {
+  checkAdmin(request);
+  const snap = await db.collection("mobileRechargeOrders")
+    .orderBy("createdAt", "desc").limit(500).get();
+  const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const totals = orders.reduce((a, o) => {
+    if (o.status === "success") {
+      a.successCount += 1;
+      a.customerRevenue += Number(o.customerPayable || 0);
+      a.providerCost += Number(o.providerCost || 0);
+      a.profitLoss += Number(o.estimatedProfitLoss || 0);
+    }
+    if (o.status === "pending" || o.status === "processing") a.pendingCount += 1;
+    if (o.status === "failed") a.failedCount += 1;
+    return a;
+  }, { successCount: 0, pendingCount: 0, failedCount: 0, customerRevenue: 0, providerCost: 0, profitLoss: 0 });
+  return { success: true, totals, orders };
+});

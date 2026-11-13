@@ -64,6 +64,14 @@ const BiodataIcon = () => (
   </svg>
 );
 
+const MobileRechargeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
+    <path d="M10 18h4M9 6h6" />
+    <path d="m12 9-2 3h2l-1 3 3-4h-2l1-2" />
+  </svg>
+);
+
 const AgeIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -132,6 +140,12 @@ export default function MobileMenu() {
       name: "मुखपृष्ठ",
       path: "/",
       icon: <HomeIcon />,
+    },
+     {
+      name: "मोबाइल रिचार्ज",
+      path: "/mobile-recharge",
+      icon: <MobileRechargeIcon />,
+      isNew: true,
     },
     {
       name: "आधार वरून पॅन कार्ड शोधा",

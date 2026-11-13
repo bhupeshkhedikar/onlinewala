@@ -27,6 +27,7 @@ import AdminInvoiceDashboard from "./InvoiceDashboard";
 import AdminPayments from "./AdminPayments";
 import AdminUdhari from "./AdminUdhari";
 import AdminWalletManager from "./AdminWalletManager";
+import AdminMobileRecharge from "./AdminMobileRecharge";
 import "./Admin.css";
 
 
@@ -493,6 +494,11 @@ export default function AdminDashboard() {
   icon: "💰",
   label: "Wallet Manager"
 },
+    {
+      id: "mobile-recharge",
+      icon: "📱",
+      label: "Mobile Recharge"
+    },
     /* =================================================
        NEW UDHARI MENU
     ================================================= */
@@ -1142,6 +1148,23 @@ export default function AdminDashboard() {
 >
   <AdminWalletManager />
 </section>
+          {/* =================================================
+              MOBILE RECHARGE
+          ================================================= */}
+          <section
+            id="admin-mobile-recharge"
+            className="admin-section"
+          >
+            <div className="admin-module-header">
+              <div>
+                <span>FINANCE MANAGEMENT</span>
+                <h2>Mobile Recharge Management</h2>
+                <p>Monitor recharge transactions, customer collections, provider costs and profit/loss.</p>
+              </div>
+              <div className="invoice-header-icon">📱</div>
+            </div>
+            <AdminMobileRecharge />
+          </section>
           {/* =================================================
               UDHARI
           ================================================= */}

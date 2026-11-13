@@ -32,6 +32,7 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminReferrals from "./components/admin/AdminReferrals";
 import AdminWithdrawals from "./components/admin/AdminWithdrawals";
 import MobileMenu from "./components/MobileMenu";
+import MobileRecharge from "./components/MobileRecharge";
 import AdminPayments from "./components/admin/AdminPayments";
 import InstantPanFind from "./components/InstantPanFind";
 import InstantRCPdf from "./components/InstantRCPdf";
@@ -351,6 +352,18 @@ export default function App() {
   path="/referral"
   element={<Referral user={authUser} />}
 />
+
+
+      <Route
+        path="/mobile-recharge"
+        element={
+          authUser ? (
+            <MobileRecharge />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
 
       <Route
         path="/wallet"
