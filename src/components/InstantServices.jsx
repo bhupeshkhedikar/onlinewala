@@ -8,6 +8,34 @@ import InstantPanFind from "./InstantPanFind";
 import AadharToRationPdf from "./AadharToRationPdf";
 
 const services = [
+    {
+    id: "pan-find",
+    title: "आधार वरून पॅन कार्ड शोधा",
+    shortTitle: "आधारवरून पॅन",
+    icon: "💳",
+    badge: "उपयुक्त",
+    description: "आधार क्रमांकावरून पॅन कार्ड शोधा",
+    component: <InstantPanFind />,
+  },
+    {
+    id: "aadhar-ration-pdf",
+    title: "आधार वरून रेशन कार्ड पीडीएफ",
+    shortTitle: "आधारवरून रेशन पीडीएफ",
+    icon: "📋",
+    badge: "नवीन",
+    description:
+      "आधार क्रमांक वापरून रेशन कार्ड PDF मिळवा",
+    component: <AadharToRationPdf />,
+  },
+   {
+    id: "rc-pdf",
+    title: "आरसी पीडीएफ",
+    shortTitle: "आरसी पीडीएफ",
+    icon: "📄",
+    badge: "त्वरित",
+    description: "आरसी पीडीएफ मिळवा",
+    component: <InstantRcPdfWithoutChip />,
+  },
   {
     id: "number-voter",
     title: "मतदान कार्ड सोबत मो.नंबर लिंक",
@@ -18,15 +46,7 @@ const services = [
     component: <InstantNumberLinkWithVoter />,
   },
 
-  {
-    id: "rc-pdf",
-    title: "आरसी पीडीएफ",
-    shortTitle: "आरसी पीडीएफ",
-    icon: "📄",
-    badge: "त्वरित",
-    description: "आरसी पीडीएफ मिळवा",
-    component: <InstantRcPdfWithoutChip />,
-  },
+ 
 
   {
     id: "ll-pass",
@@ -38,30 +58,13 @@ const services = [
     component: <InstantLlPass />,
   },
 
-  {
-    id: "pan-find",
-    title: "आधार वरून पॅन कार्ड शोधा",
-    shortTitle: "आधारवरून पॅन",
-    icon: "💳",
-    badge: "उपयुक्त",
-    description: "आधार क्रमांकावरून पॅन कार्ड शोधा",
-    component: <InstantPanFind />,
-  },
+
 
   // ==========================================================
   // NEW - AADHAAR TO RATION PDF
   // ==========================================================
 
-  {
-    id: "aadhar-ration-pdf",
-    title: "आधार वरून रेशन कार्ड पीडीएफ",
-    shortTitle: "आधारवरून रेशन पीडीएफ",
-    icon: "📋",
-    badge: "नवीन",
-    description:
-      "आधार क्रमांक वापरून रेशन कार्ड PDF मिळवा",
-    component: <AadharToRationPdf />,
-  },
+
 ];
 
 export default function InstantServices() {
