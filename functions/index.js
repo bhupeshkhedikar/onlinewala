@@ -9071,6 +9071,11 @@ const RC_API_URL = "https://pariprint.in/recharge/api.php";
 const RC_CUSTOMER_DISCOUNT = 3; // Customer discount in INR (admin-configured)
 const RC_REGION = "asia-south1";
 
+// Serverless VPC Access connector for fixed Pariprint egress IP.
+// Cloud NAT must use the reserved external IP 34.93.97.18.
+const RC_VPC_CONNECTOR =
+  "projects/onlinewala-9fbb8/locations/asia-south1/connectors/onlinewalaa-connector";
+
 function rcNonce() {
   return crypto.randomBytes(16).toString("hex");
 }
@@ -9184,8 +9189,11 @@ exports.getMobileRechargePlans = onCall({
   invoker: "public",
   timeoutSeconds: 40,
   secrets: [PARIPRINT_RC_KEY_ID, PARIPRINT_RC_SECRET],
+  vpcConnector: RC_VPC_CONNECTOR,
+  vpcConnectorEgressSettings: "ALL_TRAFFIC",
 }, async (request) => {
-  if (!request.auth) throw new HttpsError("unauthenticated", "Please login first.");
+  // Public endpoint: customers can view available plans without logging in.
+  // Actual recharge remains protected by authentication in submitMobileRecharge.
   const mobile = rcCleanMobile(request.data?.mobile);
   try {
     const data = await callPariPrintRecharge({ action: "plans", mobile });
@@ -9218,6 +9226,8 @@ exports.submitMobileRecharge = onCall({
   timeoutSeconds: 60,
   memory: "256MiB",
   secrets: [PARIPRINT_RC_KEY_ID, PARIPRINT_RC_SECRET],
+  vpcConnector: RC_VPC_CONNECTOR,
+  vpcConnectorEgressSettings: "ALL_TRAFFIC",
 }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Please login first.");
   const mobile = rcCleanMobile(request.data?.mobile);
@@ -9348,6 +9358,8 @@ exports.checkMobileRechargeStatus = onCall({
   invoker: "public",
   timeoutSeconds: 40,
   secrets: [PARIPRINT_RC_KEY_ID, PARIPRINT_RC_SECRET],
+  vpcConnector: RC_VPC_CONNECTOR,
+  vpcConnectorEgressSettings: "ALL_TRAFFIC",
 }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Please login first.");
   const orderId = String(request.data?.orderId || "");
@@ -9403,4 +9415,24 @@ exports.getMobileRechargeAdminReport = onCall({
     return a;
   }, { successCount: 0, pendingCount: 0, failedCount: 0, customerRevenue: 0, providerCost: 0, profitLoss: 0 });
   return { success: true, totals, orders };
+});
+exports.verifyRechargeOutboundIp = onCall({
+  region: "asia-south1",
+  vpcConnector:
+    "projects/onlinewala-9fbb8/locations/asia-south1/connectors/onlinewalaa-connector",
+  vpcConnectorEgressSettings: "ALL_TRAFFIC",
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Please login first.");
+  }
+
+  const response = await fetch(
+    "https://api.ipify.org?format=json"
+  );
+
+  if (!response.ok) {
+    throw new HttpsError("unavailable", "IP verification failed.");
+  }
+
+  return await response.json();
 });

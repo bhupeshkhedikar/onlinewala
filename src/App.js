@@ -188,14 +188,20 @@ export default function App() {
     }
   };
 
+  const getPostAuthRedirect = () => {
+    const requested = new URLSearchParams(window.location.search).get("redirect");
+    // Allow only same-site absolute paths; avoid open redirects.
+    return requested && requested.startsWith("/") && !requested.startsWith("//")
+      ? requested
+      : "/dashboard";
+  };
+
   const handleAuthSuccess = async (user) => {
     if (!user?.uid) return;
 
     setAuthUser(user);
-
     await loadUserProfile(user);
-
-    window.location.href = "/dashboard";
+    window.location.href = getPostAuthRedirect();
   };
 
   if (loading) {
@@ -298,15 +304,12 @@ export default function App() {
         path="/login"
         element={
           authUser ? (
-            <Navigate
-              to="/dashboard"
-              replace
-            />
+            <Navigate to={getPostAuthRedirect()} replace />
           ) : (
             <Login
               onLoginSuccess={handleAuthSuccess}
               onSwitchToSignup={() =>
-                (window.location.href = "/signup")
+                (window.location.href = `/signup?redirect=${encodeURIComponent(getPostAuthRedirect())}`)
               }
             />
           )
@@ -317,15 +320,12 @@ export default function App() {
         path="/signup"
         element={
           authUser ? (
-            <Navigate
-              to="/dashboard"
-              replace
-            />
+            <Navigate to={getPostAuthRedirect()} replace />
           ) : (
             <Signup
               onLoginSuccess={handleAuthSuccess}
               onSwitchToLogin={() =>
-                (window.location.href = "/login")
+                (window.location.href = `/login?redirect=${encodeURIComponent(getPostAuthRedirect())}`)
               }
             />
           )
@@ -356,13 +356,7 @@ export default function App() {
 
       <Route
         path="/mobile-recharge"
-        element={
-          authUser ? (
-            <MobileRecharge />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
+        element={<MobileRecharge />}
       />
 
       <Route
