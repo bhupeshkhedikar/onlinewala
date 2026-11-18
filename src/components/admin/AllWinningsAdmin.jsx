@@ -9,6 +9,7 @@ import {
   where,
   increment
 } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../firebase";
 import "./AllWinningsAdmin.css";
 
@@ -282,69 +283,48 @@ export default function AllWinningsAdmin() {
   };
 
   const handleAddTicket = async () => {
-    if (
-      !ticketMobile.trim() ||
-      ticketAmount <= 0
-    ) {
-      alert(
-        "Please enter a valid mobile number and ticket amount."
-      );
+    const enteredPhone = String(ticketMobile || "").trim();
+    const amount = Number(ticketAmount);
+
+    if (!enteredPhone || !Number.isInteger(amount) || amount <= 0 || amount > 100) {
+      alert("Please enter a valid mobile number and ticket amount (1–100).");
+      return;
+    }
+
+    const digits = enteredPhone.replace(/\D/g, "");
+    const tenDigit = digits.length >= 10 ? digits.slice(-10) : digits;
+
+    if (!/^[6-9]\d{9}$/.test(tenDigit)) {
+      alert("Please enter a valid 10-digit Indian mobile number.");
       return;
     }
 
     setTicketLoading(true);
 
     try {
-      const usersQuery = query(
-        collection(db, "users"),
-        where(
-          "mobile",
-          "==",
-          ticketMobile.trim()
-        )
-      );
+      // Ticket credit is performed securely on the server, so it does not
+      // depend on client Firestore write permissions or exact phone formatting.
+      const functions = getFunctions(undefined, "asia-south1");
+      const addTickets = httpsCallable(functions, "adminAddLuckyTickets");
+      const response = await addTickets({
+        mobile: enteredPhone,
+        amount
+      });
 
-      const querySnapshot =
-        await getDocs(usersQuery);
-
-      if (querySnapshot.empty) {
-        alert(
-          "No user found with this mobile number."
-        );
-        setTicketLoading(false);
-        return;
-      }
-
-      const userDoc =
-        querySnapshot.docs[0];
-
-      await updateDoc(
-        doc(db, "users", userDoc.id),
-        {
-          tickets: increment(
-            Number(ticketAmount)
-          )
-        }
-      );
-
+      const data = response.data || {};
       alert(
-        `Successfully added ${ticketAmount} ticket(s) to ${
-          userDoc.data().name ||
-          "Customer"
-        }.`
+        `Successfully added ${amount} ticket(s) to ${data.userName || "Customer"}. ` +
+        `New ticket balance: ${Number(data.tickets ?? 0)}.`
       );
 
       setShowTicketModal(false);
       setTicketMobile("");
       setTicketAmount(1);
     } catch (error) {
-      console.error(
-        "Error adding tickets:",
-        error
-      );
-
+      console.error("Error adding tickets:", error);
       alert(
-        "Something went wrong. Please try again."
+        error?.message ||
+        "Unable to add tickets. Please check admin access and try again."
       );
     } finally {
       setTicketLoading(false);

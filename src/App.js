@@ -50,6 +50,7 @@ import ContactUs from "./components/ContactUs";
 import TermsConditions from "./components/TermsConditions";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
+import LuckyDrawAdmin from "./components/admin/LuckyDrawAdmin";
 
 const Home = ({ authUser, userData }) => (
   <>
@@ -256,7 +257,10 @@ export default function App() {
         path="/spin"
         element={<Lucky user={authUser} />}
       />
-
+<Route
+  path="/admin/lucky-draw"
+  element={<LuckyDrawAdmin />}
+/>
       <Route
         path="/invoice"
         element={

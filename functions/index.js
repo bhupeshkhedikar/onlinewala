@@ -9436,3 +9436,454 @@ exports.verifyRechargeOutboundIp = onCall({
 
   return await response.json();
 });
+
+// =============================================================
+// LUCKY DRAW TICKET MANAGEMENT
+// =============================================================
+
+// Deduct one ticket from the authenticated user's resolved profile.
+// Uses the same UID/verified-phone profile resolver as wallet operations.
+exports.spendLuckyTicket = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Please login first.");
+    }
+
+    const resolvedUser = await resolveOnlineWalaaUser(request);
+    const userRef = resolvedUser.ref;
+
+    const remainingTickets = await db.runTransaction(async (transaction) => {
+      const userSnap = await transaction.get(userRef);
+
+      if (!userSnap.exists) {
+        throw new HttpsError("not-found", "User profile not found.");
+      }
+
+      const currentTickets = Number(userSnap.data().tickets ?? 0);
+
+      if (!Number.isFinite(currentTickets) || currentTickets < 1) {
+        throw new HttpsError(
+          "failed-precondition",
+          "No spin tickets available."
+        );
+      }
+
+      const nextTickets = currentTickets - 1;
+
+      transaction.update(userRef, {
+        tickets: nextTickets,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return nextTickets;
+    });
+
+    return {
+      success: true,
+      remainingTickets,
+      userId: resolvedUser.userId,
+    };
+  }
+);
+
+// Admin-only ticket credit. Phone number formatting is normalized so
+// 9876543210, +919876543210 and +91 9876543210 resolve to the same profile.
+exports.adminAddLuckyTickets = onCall(
+  {
+    region: "asia-south1",
+    invoker: "public",
+  },
+  async (request) => {
+    checkAdmin(request);
+
+    const enteredPhone = String(request.data?.mobile || "").trim();
+    const amount = Number(request.data?.amount);
+
+    if (!Number.isInteger(amount) || amount < 1 || amount > 100) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Ticket amount must be a whole number between 1 and 100."
+      );
+    }
+
+    const digits = enteredPhone.replace(/\D/g, "");
+    const tenDigitPhone = digits.length >= 10
+      ? digits.slice(-10)
+      : digits;
+
+    if (!/^[6-9]\d{9}$/.test(tenDigitPhone)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Please enter a valid 10-digit Indian mobile number."
+      );
+    }
+
+    const phoneValues = [
+      tenDigitPhone,
+      `+91${tenDigitPhone}`,
+      `+91 ${tenDigitPhone}`,
+    ];
+
+    const phoneFields = ["mobile", "phoneNumber", "mobileNumber"];
+    const matchedUsers = new Map();
+
+    for (const field of phoneFields) {
+      for (const value of phoneValues) {
+        const snap = await db
+          .collection("users")
+          .where(field, "==", value)
+          .limit(3)
+          .get();
+
+        snap.docs.forEach((userDoc) => {
+          matchedUsers.set(userDoc.id, userDoc);
+        });
+      }
+    }
+
+    // Legacy profiles may have mobile saved as a numeric value.
+    const numericSnap = await db
+      .collection("users")
+      .where("mobile", "==", Number(tenDigitPhone))
+      .limit(3)
+      .get();
+
+    numericSnap.docs.forEach((userDoc) => {
+      matchedUsers.set(userDoc.id, userDoc);
+    });
+
+    if (matchedUsers.size === 0) {
+      throw new HttpsError(
+        "not-found",
+        "No user profile found for this mobile number."
+      );
+    }
+
+    if (matchedUsers.size > 1) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Multiple user profiles match this mobile number. Please check duplicate profiles before crediting tickets."
+      );
+    }
+
+    const userDoc = matchedUsers.values().next().value;
+    const userRef = userDoc.ref;
+
+    const result = await db.runTransaction(async (transaction) => {
+      const userSnap = await transaction.get(userRef);
+
+      if (!userSnap.exists) {
+        throw new HttpsError("not-found", "User profile no longer exists.");
+      }
+
+      const userData = userSnap.data();
+      const currentTickets = Number(userData.tickets ?? 0);
+
+      if (!Number.isFinite(currentTickets) || currentTickets < 0) {
+        throw new HttpsError(
+          "failed-precondition",
+          "Existing ticket balance is invalid. Please check this user profile."
+        );
+      }
+
+      const nextTickets = currentTickets + amount;
+
+      transaction.update(userRef, {
+        tickets: nextTickets,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {
+        userName: userData.name || "Customer",
+        tickets: nextTickets,
+        userId: userSnap.id,
+      };
+    });
+
+    console.log("Admin credited lucky draw tickets:", {
+      adminUid: request.auth.uid,
+      userId: result.userId,
+      amount,
+      newBalance: result.tickets,
+    });
+
+    return {
+      success: true,
+      ...result,
+    };
+  }
+);
+
+
+
+
+// =============================================================
+// LUCKY DRAW ADMIN + SERVER-AUTHORITATIVE SPIN SYSTEM
+// =============================================================
+
+const DEFAULT_LUCKY_DRAW_PRIZES = [
+  { id: "shoes", name: "पोलीस भरती शूज – ₹४९९ फ्री", type: "high", image: "/shoes.png", sliceColor: "#2563eb", textCol: "#ffffff", weight: 1, enabled: true },
+  { id: "scan", name: "५ पाने मोफत स्कॅन", type: "high", sliceColor: "#ff9a9e", textCol: "#881337", weight: 1, enabled: true },
+  { id: "bw-prints", name: "५ मोफत B&W प्रिंट्स", type: "mid", sliceColor: "#a18cd1", textCol: "#4c1d95", weight: 1, enabled: true },
+  { id: "book", name: "पोलीस भरती बुक – ₹४९९ फ्री", type: "high", image: "/policebhartibook.jpg", sliceColor: "#7c3aed", textCol: "#ffffff", weight: 1, enabled: true },
+  { id: "color-prints", name: "५ मोफत कलर प्रिंट्स", type: "low", sliceColor: "#84fab0", textCol: "#065f46", weight: 1, enabled: true },
+  { id: "wifi", name: "३० मिनिट फ्री WiFi", type: "mid", sliceColor: "#f6d365", textCol: "#78350f", weight: 1, enabled: true },
+  { id: "try-again", name: "पुन्हा प्रयत्न करा", type: "none", sliceColor: "#cfd9df", textCol: "#475569", weight: 2, enabled: true },
+  { id: "discount", name: "कोणत्याही फॉर्मवर १०% सूट", type: "low", sliceColor: "#a8edea", textCol: "#1e3a8a", weight: 1, enabled: true },
+];
+
+exports.adminSaveLuckyDrawConfig = onCall(
+  { region: "asia-south1", invoker: "public" },
+  async (request) => {
+    checkAdmin(request);
+
+    const incomingPrizes = request.data?.prizes;
+    const incomingRules = request.data?.customWinners;
+    const customRulesEnabled = request.data?.customRulesEnabled !== false;
+
+    if (!Array.isArray(incomingPrizes) || incomingPrizes.length < 2 || incomingPrizes.length > 12) {
+      throw new HttpsError("invalid-argument", "Add between 2 and 12 prize slices.");
+    }
+
+    const ids = new Set();
+    const prizes = incomingPrizes.map((item, index) => {
+      const id = String(item?.id || `prize-${index + 1}`).trim();
+      const name = String(item?.name || "").trim();
+      const type = ["none", "low", "mid", "high"].includes(item?.type) ? item.type : "low";
+      const weight = Number(item?.weight ?? 1);
+      if (!id || !name || ids.has(id)) {
+        throw new HttpsError("invalid-argument", "Every prize needs a unique ID and a name.");
+      }
+      if (!Number.isFinite(weight) || weight < 1 || weight > 1000) {
+        throw new HttpsError("invalid-argument", `Invalid random weight for ${name}.`);
+      }
+      ids.add(id);
+      return {
+        id,
+        name,
+        type,
+        image: String(item?.image || "").trim(),
+        sliceColor: /^#[0-9a-fA-F]{6}$/.test(String(item?.sliceColor || "")) ? item.sliceColor : "#64748b",
+        textCol: /^#[0-9a-fA-F]{6}$/.test(String(item?.textCol || "")) ? item.textCol : "#ffffff",
+        weight,
+        enabled: item?.enabled !== false,
+      };
+    });
+
+    if (prizes.filter((p) => p.enabled).length < 2) {
+      throw new HttpsError("invalid-argument", "At least two prizes must be enabled.");
+    }
+
+    const customWinners = [];
+    const seenNumbers = new Set();
+    if (Array.isArray(incomingRules)) {
+      for (const rule of incomingRules) {
+        const spinNumber = Number(rule?.spinNumber);
+        const prizeId = String(rule?.prizeId || "");
+        if (!Number.isInteger(spinNumber) || spinNumber < 1 || !ids.has(prizeId)) {
+          throw new HttpsError("invalid-argument", "Each custom winner needs a valid spin number and prize.");
+        }
+        if (seenNumbers.has(spinNumber)) {
+          throw new HttpsError("invalid-argument", `Spin number ${spinNumber} is assigned more than once.`);
+        }
+        seenNumbers.add(spinNumber);
+        customWinners.push({ spinNumber, prizeId, enabled: rule?.enabled !== false });
+      }
+    }
+
+    await db.collection("settings").doc("luckyDraw").set({
+      prizes,
+      customWinners,
+      customRulesEnabled,
+      configUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      configUpdatedBy: request.auth.uid,
+    }, { merge: true });
+
+    return { success: true, prizeCount: prizes.length, customWinnerCount: customWinners.length };
+  }
+);
+
+exports.startLuckyDrawSpin = onCall(
+  { region: "asia-south1", invoker: "public" },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Please login first.");
+    }
+
+    const resolvedUser = await resolveOnlineWalaaUser(request);
+    const userRef = resolvedUser.ref;
+    const settingsRef = db.collection("settings").doc("luckyDraw");
+    const spinRef = db.collection("luckyDrawSpins").doc();
+
+    const spinResult = await db.runTransaction(async (transaction) => {
+      const userSnap = await transaction.get(userRef);
+      const settingsSnap = await transaction.get(settingsRef);
+
+      if (!userSnap.exists) {
+        throw new HttpsError("not-found", "User profile not found.");
+      }
+
+      const userData = userSnap.data();
+      const currentTickets = Math.max(0, Number(userData.tickets || 0));
+      if (currentTickets < 1) {
+        throw new HttpsError("failed-precondition", "तुमच्याकडे स्पिन तिकीट उपलब्ध नाही.");
+      }
+
+      const config = settingsSnap.exists ? settingsSnap.data() : {};
+      const allPrizes = Array.isArray(config.prizes) && config.prizes.length
+        ? config.prizes
+        : DEFAULT_LUCKY_DRAW_PRIZES;
+      const enabledPrizes = allPrizes.filter((prize) => prize.enabled !== false);
+      if (enabledPrizes.length < 2) {
+        throw new HttpsError("failed-precondition", "Lucky draw prizes are not configured.");
+      }
+
+      const spinNumber = Math.max(0, Number(config.spinCount || 0)) + 1;
+      let selectedPrize = null;
+      let selectionType = "random";
+
+      if (config.customRulesEnabled !== false && Array.isArray(config.customWinners)) {
+        const customRule = config.customWinners.find((rule) =>
+          rule.enabled !== false && Number(rule.spinNumber) === spinNumber
+        );
+        if (customRule) {
+          selectedPrize = enabledPrizes.find((prize) => prize.id === customRule.prizeId) || null;
+          if (selectedPrize) selectionType = "custom";
+        }
+      }
+
+      if (!selectedPrize) {
+        const totalWeight = enabledPrizes.reduce((sum, prize) => sum + Math.max(1, Number(prize.weight || 1)), 0);
+        let pick = Math.random() * totalWeight;
+        selectedPrize = enabledPrizes[enabledPrizes.length - 1];
+        for (const prize of enabledPrizes) {
+          pick -= Math.max(1, Number(prize.weight || 1));
+          if (pick <= 0) {
+            selectedPrize = prize;
+            break;
+          }
+        }
+      }
+
+      const remainingTickets = currentTickets - 1;
+      transaction.update(userRef, {
+        tickets: remainingTickets,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      transaction.set(settingsRef, {
+        spinCount: spinNumber,
+        activeSpinNumber: spinNumber,
+        activeSpinStatus: "spinning",
+        activeSpinUser: userData.name || "Customer",
+        activeSpinMobile: String(userData.mobile || userData.phoneNumber || ""),
+        activeSpinPrize: selectedPrize.name,
+        lastSpinStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      transaction.set(spinRef, {
+        spinNumber,
+        spinId: spinRef.id,
+        userId: resolvedUser.userId,
+        userName: userData.name || "Customer",
+        userMobile: String(userData.mobile || userData.phoneNumber || ""),
+        prizeId: selectedPrize.id,
+        prize: selectedPrize,
+        prizeName: selectedPrize.name,
+        selectionType,
+        status: "spinning",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {
+        spinId: spinRef.id,
+        spinNumber,
+        prize: selectedPrize,
+        remainingTickets,
+        userId: resolvedUser.userId,
+      };
+    });
+
+    return spinResult;
+  }
+);
+
+exports.completeLuckyDrawSpin = onCall(
+  { region: "asia-south1", invoker: "public" },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Please login first.");
+    }
+
+    const resolvedUser = await resolveOnlineWalaaUser(request);
+    const spinId = String(request.data?.spinId || "").trim();
+    if (!spinId) {
+      throw new HttpsError("invalid-argument", "Spin ID is required.");
+    }
+
+    const spinRef = db.collection("luckyDrawSpins").doc(spinId);
+    const settingsRef = db.collection("settings").doc("luckyDraw");
+    const winningsRef = db.collection("winnings").doc();
+    const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (transaction) => {
+      const spinSnap = await transaction.get(spinRef);
+      if (!spinSnap.exists) {
+        throw new HttpsError("not-found", "Spin record not found.");
+      }
+
+      const spin = spinSnap.data();
+      const settingsSnap = await transaction.get(settingsRef);
+      if (spin.userId !== resolvedUser.userId) {
+        throw new HttpsError("permission-denied", "This spin does not belong to you.");
+      }
+      if (spin.status === "completed") {
+        return { alreadyCompleted: true, userId: resolvedUser.userId };
+      }
+
+      const isWinningPrize = spin.prize?.type !== "none";
+      let winningId = null;
+      if (isWinningPrize) {
+        winningId = winningsRef.id;
+        transaction.set(winningsRef, {
+          userId: resolvedUser.userId,
+          userName: spin.userName || "Customer",
+          userMobile: spin.userMobile || "",
+          prizeName: spin.prizeName,
+          prizeImage: spin.prize?.image || null,
+          prizeId: spin.prizeId,
+          status: "active",
+          wonAt: admin.firestore.FieldValue.serverTimestamp(),
+          expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+          winningSpinNumber: spin.spinNumber,
+          selectionType: spin.selectionType || "random",
+        });
+      }
+
+      transaction.update(spinRef, {
+        status: "completed",
+        completedAt: admin.firestore.FieldValue.serverTimestamp(),
+        winningId,
+      });
+
+      if (Number(settingsSnap.data()?.activeSpinNumber) === Number(spin.spinNumber)) {
+        transaction.set(settingsRef, {
+          activeSpinStatus: "completed",
+          lastSpinNumber: spin.spinNumber,
+          lastPrizeName: spin.prizeName,
+          lastSpinAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+
+      return { success: true, userId: resolvedUser.userId, winningId };
+    });
+
+    return result;
+  }
+);

@@ -2355,3 +2355,15 @@ body {
     flex: 0 0 20px;
   }
 }
+
+/* Start the wheel instantly while Firebase verifies the spin result. */
+.wheel-body.wheel-preview-spinning {
+  animation: luckyWheelPreviewSpin 0.9s linear infinite;
+  transition: none !important;
+  will-change: transform;
+}
+
+@keyframes luckyWheelPreviewSpin {
+  from { transform: rotate(var(--wheel-start-angle, 0deg)); }
+  to { transform: rotate(calc(var(--wheel-start-angle, 0deg) + 360deg)); }
+}
