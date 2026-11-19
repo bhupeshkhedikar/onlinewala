@@ -48,15 +48,15 @@ const services = [
 
  
 
-  {
-    id: "ll-pass",
-    title: "एलएल पास",
-    shortTitle: "एलएल पास",
-    icon: "🪪",
-    badge: "नवीन",
-    description: "लर्निंग लायसन्स पास सेवा",
-    component: <InstantLlPass />,
-  },
+  // {
+  //   id: "ll-pass",
+  //   title: "एलएल पास",
+  //   shortTitle: "एलएल पास",
+  //   icon: "🪪",
+  //   badge: "नवीन",
+  //   description: "लर्निंग लायसन्स पास सेवा",
+  //   component: <InstantLlPass />,
+  // },
 
 
 
