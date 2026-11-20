@@ -1,184 +1,1871 @@
-/* OnlineWalaa Mobile Recharge — premium responsive UI */
-.ow-recharge-page{--ow-blue:#005ce6;--ow-blue-dark:#123b83;--ow-orange:#ff8c00;--ow-ink:#14213a;--ow-muted:#75839a;--ow-line:#e7edf5;min-height:calc(100vh - 100px);padding:30px 16px 58px;background:linear-gradient(180deg,#f4f7fc 0%,#f8faff 55%,#f4f7fc 100%);color:var(--ow-ink);font-family:inherit}
-.ow-recharge-shell{width:100%;max-width:1080px;margin:0 auto}
-.ow-recharge-heading{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;min-height:210px;padding:30px 38px;border-radius:25px;background:linear-gradient(115deg,#082c70 0%,#005ce6 58%,#2878d4 100%);color:#fff;box-shadow:0 18px 40px #0648a629}
-.ow-recharge-heading:before,.ow-recharge-heading:after{content:"";position:absolute;z-index:-1;border:1px solid #ffffff20;border-radius:50%}
-.ow-recharge-heading:before{width:310px;height:310px;right:90px;top:-190px}
-.ow-recharge-heading:after{width:240px;height:240px;right:-65px;bottom:-170px}
-.ow-recharge-heading-copy{position:relative;z-index:2}
-.ow-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:850;letter-spacing:1.7px;color:#cfe1ff}
-.ow-recharge-heading h1{font-size:clamp(28px,4vw,39px);line-height:1.12;margin:12px 0 8px;font-weight:850;letter-spacing:-.8px}
-.ow-recharge-heading p{margin:0;color:#e0ebff;font-size:14px}
-.ow-trust-points{display:flex;flex-wrap:wrap;gap:18px;margin-top:20px;color:#eaf2ff;font-size:11px;font-weight:650}
-.ow-trust-points span{display:flex;align-items:center;gap:6px}.ow-trust-points i{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#ffffff24;color:#fff;font-style:normal;font-size:10px}
-.ow-recharge-hero-art{position:relative;display:grid;place-items:center;width:240px;height:180px;flex:0 0 240px}
-.ow-hero-orbit{position:absolute;border:1px solid #ffffff26;border-radius:50%;transform:rotate(-22deg)}
-.ow-hero-orbit.orbit-one{width:205px;height:120px}.ow-hero-orbit.orbit-two{width:155px;height:165px;transform:rotate(34deg)}
-.ow-hero-phone{position:relative;width:84px;height:145px;border:4px solid #dceaff;border-radius:20px;background:linear-gradient(160deg,#fff,#eaf3ff);box-shadow:0 15px 35px #001b4b66;display:flex;flex-direction:column;align-items:center;padding-top:13px;color:#0756ca;transform:rotate(8deg)}
-.ow-phone-speaker{width:25px;height:4px;border-radius:5px;background:#b8c9e3}
-.ow-phone-signal{font-size:9px;letter-spacing:2px;margin-top:12px;color:#83a4d5}
-.ow-phone-check{display:grid;place-items:center;width:43px;height:43px;margin-top:7px;border-radius:50%;background:#e3f8ec;color:#12a35a;font-size:24px;font-weight:900}
-.ow-hero-phone small{margin-top:8px;text-align:center;font-size:8px;line-height:1.25;font-weight:800}
-.ow-hero-spark{position:absolute;right:28px;top:17px;color:#ffb44c;font-size:28px}
-.ow-recharge-tabs{display:flex;gap:8px;margin:20px 0 18px;padding:5px;width:max-content;max-width:100%;border:1px solid #e5ebf4;border-radius:14px;background:#fff;box-shadow:0 5px 18px #1d35570a}
-.ow-recharge-tabs button{display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#65738a;border-radius:10px;padding:11px 17px;font-size:13px;font-weight:750;cursor:pointer;transition:.2s}
-.ow-recharge-tabs button>span{font-size:17px;line-height:1}
-.ow-recharge-tabs button.active{background:var(--ow-blue);color:#fff;box-shadow:0 5px 13px #005ce633}
-.ow-recharge-tabs em{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:20px;background:#ff8c00;color:#fff;font-style:normal;font-size:10px}
-.ow-recharge-alert{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;margin:12px 0;font-size:12px;font-weight:650}
-.ow-recharge-alert>span{display:grid;place-items:center;width:20px;height:20px;flex:0 0 20px;border-radius:50%;background:#ffffffa8;font-weight:900}
-.ow-recharge-alert button{margin-left:auto;border:0;background:transparent;color:inherit;font-size:19px;cursor:pointer}
-.ow-recharge-alert.success{background:#e9f8ef;color:#137b45;border:1px solid #d2f0dd}.ow-recharge-alert.error{background:#fff0ef;color:#bd3030;border:1px solid #ffddda}
-.ow-recharge-card,.ow-history-card,.ow-recharge-summary{background:#fff;border:1px solid var(--ow-line);border-radius:19px;padding:24px;box-shadow:0 8px 25px #152b4d08}
-.ow-section-heading{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.ow-step-number,.ow-summary-step{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:12px;background:#eaf2ff;color:var(--ow-blue);font-size:12px;font-weight:900}
-.ow-section-heading h2,.ow-summary-heading h2{margin:0;color:var(--ow-ink);font-size:17px;font-weight:800;letter-spacing:-.2px}
-.ow-section-heading p,.ow-summary-heading p{margin:4px 0 0;color:var(--ow-muted);font-size:12px}
-.ow-mobile-form{display:flex;align-items:center;gap:10px;min-height:58px;padding:6px 7px 6px 14px;border:1.5px solid #dce5f1;border-radius:13px;background:#fbfcff;transition:.2s}
-.ow-mobile-form:focus-within{border-color:#76a9f4;box-shadow:0 0 0 3px #005ce610;background:#fff}
-.ow-input-prefix{display:flex;align-items:center;gap:7px;padding-right:12px;border-right:1px solid #e0e7f0;color:#35445b;font-size:13px;font-weight:800;white-space:nowrap}
-.ow-input-prefix span{letter-spacing:.2px}
-.ow-mobile-form input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:10px 2px;color:#182943;font-size:15px;font-weight:650;letter-spacing:.6px}
-.ow-mobile-form input::placeholder{color:#a0aabb;font-size:13px;font-weight:450;letter-spacing:0}
-.ow-clear-number{width:25px;height:25px;border:0;border-radius:50%;background:#e9eef6;color:#718096;font-size:18px;cursor:pointer}
-.ow-view-plans-btn{display:flex;align-items:center;justify-content:center;gap:13px;min-height:44px;padding:0 18px;border:0;border-radius:10px;background:linear-gradient(110deg,#005ce6,#2878d4);color:#fff;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer;box-shadow:0 5px 12px #005ce629;transition:.2s}
-.ow-view-plans-btn:hover:not(:disabled),.ow-confirm-recharge:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 18px #005ce638}
-.ow-view-plans-btn:disabled,.ow-confirm-recharge:disabled{opacity:.48;cursor:not-allowed;box-shadow:none}
-.ow-view-plans-btn>span:last-child{font-size:18px;line-height:1}
-.ow-btn-spinner{width:14px;height:14px;border:2px solid #ffffff70;border-top-color:#fff;border-radius:50%;display:inline-block;animation:ow-spin .7s linear infinite}
-@keyframes ow-spin{to{transform:rotate(360deg)}}
-.ow-number-hint{display:flex;align-items:center;gap:6px;margin-top:11px;color:#8a96a8;font-size:10px}
-.ow-operator-card{display:flex;align-items:center;gap:12px;margin:15px 0 22px;padding:13px 16px;border:1px solid #e5edf7;border-radius:14px;background:#fff;box-shadow:0 4px 14px #152b4d05}
-.ow-operator-logo,.ow-history-sim,.ow-summary-sim{display:grid;place-items:center;width:43px;height:43px;flex:0 0 43px;border-radius:13px;background:#eaf2ff;color:#1766bd;font-size:17px;font-weight:900}
-.ow-operator-logo.airtel{background:#fff0f0;color:#e32937}.ow-operator-logo.jio{background:#eaf3ff;color:#0868d7}.ow-operator-logo.vi{background:#fff0f7;color:#c21870}.ow-operator-logo.bsnl{background:#edf7ff;color:#0876a9}
-.ow-operator-details{display:flex;flex-direction:column;gap:4px;min-width:0}.ow-operator-details strong{font-size:13px;color:#1b2b45}.ow-operator-details span{font-size:11px;color:#8490a2}.ow-operator-details b{padding:0 3px;color:#b4bfcd}
-.ow-detected-pill{display:flex;align-items:center;gap:5px;margin-left:auto;padding:6px 9px;border-radius:20px;background:#eaf8ef;color:#16834b;font-size:10px;font-weight:800;white-space:nowrap}.ow-detected-pill i{font-style:normal}
-.ow-plans-section{margin-top:23px}
-.ow-plans-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px}
-.ow-section-kicker{margin-bottom:5px;color:#f08a00;font-size:9px;font-weight:900;letter-spacing:1.4px}
-.ow-plans-title h2,.ow-history-heading h2{margin:0;color:#172943;font-size:20px;font-weight:850;letter-spacing:-.4px}
-.ow-plans-title p,.ow-history-heading p{margin:5px 0 0;color:#8490a2;font-size:11px}.ow-plans-title p span{padding:0 3px;color:#c2cad5}
-.ow-plan-count,.ow-history-total{padding:7px 10px;border:1px solid #e5edf7;border-radius:9px;background:#fff;color:#6c7b91;font-size:10px;font-weight:750;white-space:nowrap}
-.ow-plan-tools{display:flex;align-items:center;gap:10px;margin-bottom:13px}
-.ow-plan-search{display:flex;align-items:center;gap:9px;flex:1;min-width:0;height:43px;padding:0 12px;border:1px solid #e0e7f0;border-radius:11px;background:#fff;color:#7f8da2}
-.ow-plan-search>span{font-size:23px;line-height:1;transform:rotate(-20deg)}
-.ow-plan-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#24344c;font-size:12px}
-.ow-plan-search input::placeholder{color:#a0aaba}
-.ow-plan-search button{border:0;background:transparent;color:#8390a3;font-size:18px;cursor:pointer}
-.ow-sort-control{display:flex;align-items:center;gap:6px;height:43px;padding:0 10px;border:1px solid #e0e7f0;border-radius:11px;background:#fff;color:#8793a5;font-size:10px;white-space:nowrap}
-.ow-sort-control select{max-width:145px;border:0;outline:0;background:transparent;color:#40516a;font-size:11px;font-weight:700;cursor:pointer}
-.ow-category-filters{display:flex;gap:7px;overflow-x:auto;padding:1px 1px 10px;margin-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.ow-category-filters::-webkit-scrollbar{display:none}
-.ow-category-filters button{flex:0 0 auto;padding:8px 13px;border:1px solid #e2e9f2;border-radius:30px;background:#fff;color:#68778e;font-size:10px;font-weight:750;cursor:pointer;transition:.18s}
-.ow-category-filters button.active{border-color:#005ce6;background:#eaf2ff;color:#0055d8;box-shadow:0 3px 9px #005ce610}
-.ow-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.ow-plan-card{position:relative;display:block;width:100%;min-width:0;text-align:left;padding:16px;border:1px solid #e4eaf2;border-radius:15px;background:#fff;color:inherit;cursor:pointer;transition:border-color .18s,box-shadow .18s,transform .18s}
-.ow-plan-card:hover{border-color:#9fc2f3;transform:translateY(-2px);box-shadow:0 8px 20px #164b9010}
-.ow-plan-card.selected{border:1.5px solid #005ce6;background:linear-gradient(180deg,#f8fbff,#fff);box-shadow:0 0 0 3px #005ce610}
-.ow-plan-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.ow-plan-card-top>div{display:flex;flex-direction:column;gap:5px}.ow-plan-type{color:#8996a8;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}.ow-plan-card-top strong{color:#172b4a;font-size:24px;line-height:1.1;font-weight:900;letter-spacing:-.5px}
-.ow-plan-select-mark{padding:5px 9px;border:1px solid #dfe8f5;border-radius:7px;color:#4774b0;font-size:9px;font-weight:800}
-.ow-plan-selected-mark{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#005ce6;color:#fff;font-size:12px;font-weight:900}
-.ow-plan-description{min-height:34px;margin:13px 0 12px;color:#53647d;font-size:11px;line-height:1.5}
-.ow-plan-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 0;border-top:1px solid #edf1f6;border-bottom:1px solid #edf1f6}
-.ow-plan-facts span{display:flex;flex-direction:column;gap:4px;min-width:0}.ow-plan-facts small{color:#9aa5b4;font-size:8px;font-weight:850;letter-spacing:.7px}.ow-plan-facts b{overflow:hidden;color:#33445d;font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
-.ow-plan-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:11px;color:#6b7b92;font-size:10px}.ow-plan-card-bottom b{color:#005ce6;font-size:13px;font-weight:900}
-.ow-plan-card-bottom small{padding:5px 7px;border-radius:6px;background:#fff3e3;color:#d97706;font-size:8px;font-weight:900;letter-spacing:.3px}
-.ow-show-more{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:14px;padding:12px;border:1px solid #dfe9f7;border-radius:11px;background:#f8fbff;color:#075bd3;font-size:11px;font-weight:800;cursor:pointer}
-.ow-show-more span{font-size:15px}
-.ow-no-plans{display:flex;align-items:center;flex-direction:column;padding:35px 15px;border:1px dashed #dce5f0;border-radius:14px;background:#fff;text-align:center}
-.ow-no-plans>span{font-size:28px;color:#8ca1bf}.ow-no-plans strong{margin-top:8px;color:#33445d;font-size:13px}.ow-no-plans p{margin:5px 0 12px;color:#8a96a8;font-size:11px}.ow-no-plans button{border:0;background:transparent;color:#005ce6;font-size:11px;font-weight:800;cursor:pointer}
-.ow-recharge-summary{position:sticky;bottom:12px;z-index:5;max-width:570px;margin:20px 0 0 auto;padding:20px;border-color:#dce8f8;box-shadow:0 14px 38px #102b501b}
-.ow-summary-heading{display:flex;align-items:center;gap:11px}.ow-summary-heading>div:nth-child(2){flex:1}.ow-summary-heading>button{width:28px;height:28px;border:0;border-radius:8px;background:#f0f4fa;color:#708096;font-size:19px;cursor:pointer}
-.ow-summary-mobile{display:flex;align-items:center;gap:10px;margin:17px 0 10px;padding:11px;border-radius:12px;background:#f7f9fd}
-.ow-summary-mobile>div{display:flex;flex:1;flex-direction:column;gap:4px}.ow-summary-mobile strong{color:#263953;font-size:12px}.ow-summary-mobile small{color:#8a96a8;font-size:10px}.ow-summary-plan{padding:5px 8px;border-radius:7px;background:#eaf2ff;color:#1766bd;font-size:9px;font-weight:800}
-.ow-summary-lines>div{display:flex;justify-content:space-between;gap:12px;padding:9px 1px;color:#77859a;font-size:12px}.ow-summary-lines b{color:#34445c;font-weight:800}.ow-summary-lines .ow-saving{color:#15945b}
-.ow-summary-lines .ow-summary-total{margin-top:4px;padding-top:14px;border-top:1px solid #e9eef5;color:#24354e}.ow-summary-total strong{color:#005ce6;font-size:22px;font-weight:900}
-.ow-confirm-recharge{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:48px;margin-top:10px;border:0;border-radius:11px;background:linear-gradient(105deg,#005ce6,#2878d4);color:#fff;font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 7px 16px #005ce62b;transition:.2s}
-.ow-confirm-recharge>span:last-child{font-size:18px}
-.ow-secure-note{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:11px;color:#8b97a8;font-size:9px;text-align:center}
-.ow-history-card{padding:24px}.ow-history-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:16px}
-.ow-history-list{border-top:1px solid #edf1f6}
-.ow-history-row{display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid #edf1f6}
-.ow-history-main{flex:1;min-width:0}.ow-history-main strong,.ow-history-main>span,.ow-history-main small{display:block}
-.ow-history-main strong{overflow:hidden;color:#263852;font-size:12px;text-overflow:ellipsis;white-space:nowrap}.ow-history-main strong span{display:inline;color:#aeb8c6}
-.ow-history-main>span{margin-top:5px;color:#718097;font-size:11px}.ow-history-main>span i{font-style:normal;color:#b4bfcd}
-.ow-history-main small{margin-top:5px;overflow-wrap:anywhere;color:#9aa5b4;font-size:9px}.ow-history-main .ow-refund-note{color:#15945b;font-weight:750}
-.ow-history-side{display:flex;align-items:flex-end;flex-direction:column;gap:7px;flex:0 0 auto}
-.ow-status{padding:6px 9px;border-radius:20px;background:#fff5df;color:#a46a00;font-size:9px;font-weight:850;white-space:nowrap}
-.ow-status.success{background:#e7f8ed;color:#16824b}.ow-status.failed{background:#ffeded;color:#c52d2d}.ow-status.processing,.ow-status.pending,.ow-status.unknown{background:#fff5df;color:#a46a00}
-.ow-history-side button{border:1px solid #dce8f8;border-radius:8px;background:#f5f9ff;color:#1766bd;padding:7px 9px;font-size:9px;font-weight:800;white-space:nowrap;cursor:pointer}
-.ow-history-side button:disabled{opacity:.5;cursor:not-allowed}
-.ow-empty{display:flex;align-items:center;flex-direction:column;padding:45px 12px;text-align:center}.ow-empty-icon{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:#edf4ff;font-size:28px}.ow-empty strong{margin-top:13px;color:#2a3b55;font-size:14px}.ow-empty p{max-width:300px;margin:6px 0 15px;color:#8995a7;font-size:11px;line-height:1.5}.ow-empty button{display:flex;align-items:center;gap:9px;border:0;border-radius:9px;background:#005ce6;color:#fff;padding:11px 15px;font-size:11px;font-weight:800;cursor:pointer}
-.ow-recharge-footnote{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:19px;color:#8b97a9;font-size:9px;text-align:center}
-@media(max-width:700px){
- .ow-recharge-page{padding:13px 10px 38px;min-height:calc(100vh - 80px)}
- .ow-recharge-heading{min-height:155px;padding:22px 19px;border-radius:19px}
- .ow-recharge-heading h1{font-size:26px;margin:9px 0 6px}.ow-recharge-heading p{max-width:230px;font-size:11px}
- .ow-eyebrow{font-size:8px;letter-spacing:1.2px}.ow-trust-points{gap:9px;margin-top:13px;font-size:9px}
- .ow-recharge-hero-art{width:112px;height:125px;flex-basis:112px;margin-right:-9px}
- .ow-hero-orbit.orbit-one{width:112px;height:72px}.ow-hero-orbit.orbit-two{width:92px;height:100px}
- .ow-hero-phone{width:58px;height:102px;border-width:3px;border-radius:14px;padding-top:8px}
- .ow-phone-speaker{width:18px;height:3px}.ow-phone-signal{font-size:6px;margin-top:8px}.ow-phone-check{width:29px;height:29px;margin-top:5px;font-size:17px}.ow-hero-phone small{font-size:6px;margin-top:5px}.ow-hero-spark{right:4px;top:5px;font-size:19px}
- .ow-recharge-tabs{width:100%;margin:13px 0 14px}.ow-recharge-tabs button{flex:1;justify-content:center;padding:10px 8px;font-size:11px}
- .ow-recharge-card,.ow-history-card{padding:16px;border-radius:16px}.ow-section-heading{gap:9px;margin-bottom:14px}.ow-step-number,.ow-summary-step{width:33px;height:33px;flex-basis:33px;border-radius:10px;font-size:10px}
- .ow-section-heading h2,.ow-summary-heading h2{font-size:14px}.ow-section-heading p,.ow-summary-heading p{font-size:10px}
- .ow-mobile-form{min-height:54px;gap:7px;padding:5px 5px 5px 10px}.ow-input-prefix{gap:4px;padding-right:8px;font-size:11px}.ow-mobile-form input{font-size:14px}.ow-mobile-form input::placeholder{font-size:10px}
- .ow-view-plans-btn{min-height:42px;padding:0 11px;gap:5px;font-size:10px}.ow-clear-number{width:21px;height:21px;font-size:15px}
- .ow-number-hint{font-size:9px;line-height:1.4}
- .ow-operator-card{margin:12px 0 18px;padding:11px 12px}.ow-operator-logo{width:38px;height:38px;flex-basis:38px}.ow-operator-details strong{font-size:11px}.ow-operator-details span{font-size:9px}.ow-detected-pill{font-size:8px;padding:5px 7px}
- .ow-plans-title{align-items:center;margin-bottom:12px}.ow-plans-title h2,.ow-history-heading h2{font-size:17px}.ow-plans-title p{font-size:9px}.ow-plan-count{font-size:9px;padding:6px 7px}
- .ow-plan-tools{align-items:stretch;flex-direction:column;gap:8px;margin-bottom:10px}.ow-plan-search{height:42px}.ow-sort-control{height:37px;justify-content:space-between}.ow-sort-control select{max-width:none;flex:1;text-align:right}
- .ow-category-filters{gap:6px;margin-right:-16px;padding-right:16px}.ow-category-filters button{padding:8px 11px;font-size:9px}
- .ow-plan-grid{grid-template-columns:1fr;gap:9px}
- .ow-plan-card{padding:13px;border-radius:13px}
- .ow-plan-card-top strong{font-size:22px}.ow-plan-description{min-height:0;margin:9px 0 10px;font-size:10px}
- .ow-plan-facts{padding:8px 0}.ow-plan-facts small{font-size:7px}.ow-plan-facts b{font-size:9px}
- .ow-plan-card-bottom{padding-top:9px}.ow-plan-card-bottom b{font-size:12px}
- .ow-recharge-summary{position:sticky;bottom:8px;margin-top:14px;padding:15px;border-radius:16px;box-shadow:0 10px 28px #102b5024}
- .ow-summary-mobile{margin:12px 0 7px;padding:9px}.ow-summary-sim{width:37px;height:37px;flex-basis:37px}.ow-summary-mobile strong{font-size:11px}.ow-summary-mobile small{font-size:9px}
- .ow-summary-lines>div{padding:7px 1px;font-size:11px}.ow-summary-total strong{font-size:20px}.ow-confirm-recharge{min-height:45px;font-size:12px}.ow-secure-note{font-size:8px;line-height:1.4}
- .ow-history-card{padding:16px}.ow-history-heading{align-items:center;margin-bottom:12px}.ow-history-heading p{font-size:9px}.ow-history-total{font-size:8px;padding:6px 7px}
- .ow-history-row{gap:9px;padding:12px 0;align-items:flex-start}.ow-history-sim{width:35px;height:35px;flex-basis:35px;border-radius:11px;font-size:14px}
- .ow-history-main strong{font-size:10px}.ow-history-main>span{font-size:9px}.ow-history-main small{font-size:8px}
- .ow-history-side{gap:6px}.ow-status{font-size:8px;padding:5px 7px}.ow-history-side button{font-size:8px;padding:6px 7px}
- .ow-recharge-footnote{font-size:8px;line-height:1.4;padding:0 8px}
-}
-@media(max-width:370px){
- .ow-recharge-heading{padding:18px 14px}.ow-recharge-heading h1{font-size:23px}.ow-recharge-hero-art{width:92px;flex-basis:92px}
- .ow-trust-points{font-size:8px}.ow-mobile-form{gap:5px}.ow-view-plans-btn{padding:0 8px}
- .ow-history-row{gap:7px}.ow-history-side{min-width:70px}
+/* OnlineWalaa Mobile Recharge — App-like Fully Responsive UI */
+.ow-recharge-page {
+  --ow-blue: #005ce6;
+  --ow-blue-dark: #123b83;
+  --ow-orange: #ff8c00;
+  --ow-ink: #14213a;
+  --ow-muted: #6e7d95;
+  --ow-line: #e6ecf5;
+  min-height: calc(100vh - 100px);
+  padding: 28px 16px 64px;
+  background: linear-gradient(180deg, #f3f7fd 0%, #f9fbff 55%, #f3f7fd 100%);
+  color: var(--ow-ink);
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
-
-/* Recharge plan price-range chips */
-.ow-price-range-wrap{margin:2px 0 15px}
-.ow-price-range-heading{margin:0 0 7px;color:#75839a;font-size:10px;font-weight:800;letter-spacing:.25px}
-.ow-price-range-filters{display:flex;gap:7px;overflow-x:auto;padding:1px 1px 9px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.ow-price-range-filters::-webkit-scrollbar{display:none}
-.ow-price-range-filters button{flex:0 0 auto;padding:8px 13px;border:1px solid #e2e9f2;border-radius:30px;background:#fff;color:#68778e;font-size:10px;font-weight:750;white-space:nowrap;cursor:pointer;transition:.18s}
-.ow-price-range-filters button.active{border-color:#005ce6;background:#eaf2ff;color:#0055d8;box-shadow:0 3px 9px #005ce610}
-@media(max-width:700px){
- .ow-price-range-wrap{margin-bottom:12px}
- .ow-price-range-heading{font-size:9px}
- .ow-price-range-filters{gap:6px;margin-right:-16px;padding-right:16px}
- .ow-price-range-filters button{padding:8px 11px;font-size:9px}
+.ow-recharge-page *,
+.ow-recharge-page *::before,
+.ow-recharge-page *::after {
+  box-sizing: border-box;
 }
 
+.ow-recharge-shell {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+}
 
-/* Global popup system for every Mobile Recharge alert and confirmation */
-.ow-modal-overlay{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(10,24,48,.66);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);animation:ow-modal-fade .18s ease}
-.ow-notice-modal{position:relative;width:100%;max-width:430px;max-height:calc(100vh - 36px);overflow-y:auto;padding:34px 28px 27px;border:1px solid #e7edf5;border-radius:23px;background:#fff;text-align:center;box-shadow:0 25px 80px rgba(0,0,0,.25);animation:ow-modal-pop .22s ease}
-.ow-modal-close{position:absolute;top:12px;right:13px;width:32px;height:32px;border:0;border-radius:50%;background:#f0f3f8;color:#64748b;font-size:23px;line-height:1;cursor:pointer}
-.ow-modal-icon{display:grid;place-items:center;width:68px;height:68px;margin:0 auto 16px;border-radius:20px;background:#eaf2ff;color:#075ce0;font-size:30px;font-weight:900}
-.ow-modal-icon.is-error{background:#fff0ef;color:#c83c35}.ow-modal-icon.is-success{background:#e9f8ef;color:#16824b}
-.ow-notice-modal h2{margin:0 0 10px;color:#172943;font-size:23px;font-weight:850;letter-spacing:-.4px}
-.ow-notice-modal>p{margin:0 auto 20px;max-width:345px;color:#68778e;font-size:13px;line-height:1.7;white-space:pre-line}
-.ow-modal-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
-.ow-modal-primary,.ow-modal-secondary{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;padding:10px 16px;border:0;border-radius:11px;text-decoration:none!important;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:.2s}
-.ow-modal-primary{background:linear-gradient(110deg,#005ce6,#2878d4);color:#fff!important;box-shadow:0 6px 15px #005ce630}.ow-modal-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 9px 20px #005ce640}.ow-modal-primary:disabled{opacity:.55;cursor:not-allowed}.ow-modal-primary span{font-size:18px}
-.ow-modal-secondary{border:1px solid #dce6f3;background:#fff;color:#1766bd!important}.ow-modal-secondary:hover{background:#f3f7ff}.ow-modal-single{margin-top:8px}
-.ow-confirm-intro{margin-bottom:14px!important}.ow-confirm-details{padding:12px 15px;border-radius:13px;background:#f6f9ff;text-align:left}
-.ow-confirm-details>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;color:#75839a;font-size:12px}.ow-confirm-details b{color:#263953;font-size:12px;font-weight:800;text-align:right}.ow-confirm-details .ow-saving{color:#15945b}.ow-confirm-details .ow-confirm-total{margin-top:4px;padding-top:13px;border-top:1px solid #e2eaf5;color:#24354e}.ow-confirm-total strong{color:#005ce6;font-size:20px;font-weight:900}
-@keyframes ow-modal-fade{from{opacity:0}to{opacity:1}}@keyframes ow-modal-pop{from{opacity:0;transform:translateY(13px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:480px){.ow-notice-modal{max-width:370px;padding:31px 20px 23px;border-radius:20px}.ow-notice-modal h2{font-size:21px}.ow-notice-modal>p{font-size:12px}.ow-confirm-details>div{font-size:11px}.ow-confirm-details b{font-size:11px}}
+/* Hero Banner */
+.ow-recharge-heading {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 205px;
+  padding: 30px 38px;
+  border-radius: 26px;
+  background: linear-gradient(120deg, #072766 0%, #005ce6 58%, #2b7de0 100%);
+  color: #fff;
+  box-shadow: 0 18px 42px rgba(6, 72, 166, 0.18);
+}
+
+.ow-recharge-heading::before,
+.ow-recharge-heading::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+}
+
+.ow-recharge-heading::before {
+  width: 320px;
+  height: 320px;
+  right: 85px;
+  top: -195px;
+}
+
+.ow-recharge-heading::after {
+  width: 240px;
+  height: 240px;
+  right: -65px;
+  bottom: -170px;
+}
+
+.ow-recharge-heading-copy {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+
+.ow-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: #dbe9ff;
+}
+
+.ow-recharge-heading h1 {
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.12;
+  margin: 12px 0 8px;
+  font-weight: 850;
+  letter-spacing: -0.7px;
+}
+
+.ow-recharge-heading p {
+  margin: 0;
+  color: #e2edff;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.ow-trust-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 18px;
+  color: #eef5ff;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.ow-trust-points span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ow-trust-points i {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-style: normal;
+  font-size: 10px;
+}
+
+/* Hero Phone Art */
+.ow-recharge-hero-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 230px;
+  height: 175px;
+  flex: 0 0 230px;
+}
+
+.ow-hero-orbit {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  transform: rotate(-22deg);
+}
+
+.ow-hero-orbit.orbit-one {
+  width: 200px;
+  height: 115px;
+}
+
+.ow-hero-orbit.orbit-two {
+  width: 150px;
+  height: 160px;
+  transform: rotate(34deg);
+}
+
+.ow-hero-phone {
+  position: relative;
+  width: 84px;
+  height: 144px;
+  border: 4px solid #dceaff;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #ffffff, #eaf3ff);
+  box-shadow: 0 15px 35px rgba(0, 27, 75, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 12px;
+  color: #0756ca;
+  transform: rotate(8deg);
+}
+
+.ow-phone-speaker {
+  width: 25px;
+  height: 4px;
+  border-radius: 5px;
+  background: #b8c9e3;
+}
+
+.ow-phone-signal {
+  font-size: 9px;
+  letter-spacing: 2px;
+  margin-top: 11px;
+  color: #83a4d5;
+}
+
+.ow-phone-check {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: #e3f8ec;
+  color: #12a35a;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.ow-hero-phone small {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 8px;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.ow-hero-spark {
+  position: absolute;
+  right: 26px;
+  top: 16px;
+  color: #ffb44c;
+  font-size: 26px;
+}
+
+/* Segmented App Tabs */
+.ow-recharge-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 20px 0 18px;
+  padding: 5px;
+  width: max-content;
+  max-width: 100%;
+  border: 1px solid #e3eaf4;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(29, 53, 87, 0.05);
+}
+
+.ow-recharge-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: #5f6e86;
+  border-radius: 11px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ow-recharge-tabs button > span {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ow-recharge-tabs button.active {
+  background: var(--ow-blue);
+  color: #fff;
+  box-shadow: 0 5px 14px rgba(0, 92, 230, 0.24);
+}
+
+.ow-recharge-tabs em {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 20px;
+  background: #ff8c00;
+  color: #fff;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* Cards */
+.ow-recharge-card,
+.ow-history-card,
+.ow-recharge-summary {
+  background: #fff;
+  border: 1px solid var(--ow-line);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 28px rgba(21, 43, 77, 0.04);
+}
+
+.ow-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ow-step-number,
+.ow-summary-step {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 12px;
+  background: #eaf2ff;
+  color: var(--ow-blue);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ow-section-heading h2,
+.ow-summary-heading h2 {
+  margin: 0;
+  color: var(--ow-ink);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.ow-section-heading p,
+.ow-summary-heading p {
+  margin: 3px 0 0;
+  color: var(--ow-muted);
+  font-size: 12px;
+}
+
+/* Mobile Input Form (Desktop inline, Mobile stacked below input) */
+.ow-mobile-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 6px 7px 6px 14px;
+  border: 1.5px solid #d9e3f0;
+  border-radius: 14px;
+  background: #fafcff;
+  transition: all 0.2s ease;
+}
+
+.ow-mobile-form:focus-within {
+  border-color: #5b9bf3;
+  box-shadow: 0 0 0 4px rgba(0, 92, 230, 0.09);
+  background: #fff;
+}
+
+.ow-input-prefix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 12px;
+  border-right: 1px solid #dfe7f2;
+  color: #35445b;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ow-mobile-form input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 10px 2px;
+  color: #182943;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+.ow-mobile-form input::placeholder {
+  color: #9da8ba;
+  font-size: 13.5px;
+  font-weight: 450;
+  letter-spacing: 0;
+}
+
+.ow-clear-number {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 0;
+  border-radius: 50%;
+  background: #e9eef6;
+  color: #64748b;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ow-view-plans-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(110deg, #005ce6, #2878d4);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(0, 92, 230, 0.22);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ow-view-plans-btn:hover:not(:disabled),
+.ow-confirm-recharge:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 92, 230, 0.3);
+}
+
+.ow-view-plans-btn:disabled,
+.ow-confirm-recharge:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ow-view-plans-btn > span:last-child {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.ow-btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: ow-spin 0.7s linear infinite;
+}
+
+@keyframes ow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ow-number-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 11px;
+  color: #8492a6;
+  font-size: 11px;
+}
+
+/* Operator Detected Banner */
+.ow-operator-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 22px;
+  padding: 14px 16px;
+  border: 1px solid #e2ebf6;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(21, 43, 77, 0.04);
+}
+
+.ow-operator-logo,
+.ow-history-sim,
+.ow-summary-sim {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 13px;
+  background: #eaf2ff;
+  color: #1766bd;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.ow-operator-logo.airtel {
+  background: #fff0f0;
+  color: #e32937;
+}
+.ow-operator-logo.jio {
+  background: #eaf3ff;
+  color: #0868d7;
+}
+.ow-operator-logo.vi {
+  background: #fff0f7;
+  color: #c21870;
+}
+.ow-operator-logo.bsnl {
+  background: #edf7ff;
+  color: #0876a9;
+}
+
+.ow-operator-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ow-operator-details strong {
+  font-size: 14px;
+  color: #1b2b45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ow-operator-details span {
+  font-size: 11.5px;
+  color: #7c899d;
+}
+
+.ow-operator-details b {
+  padding: 0 3px;
+  color: #b4bfcd;
+}
+
+.ow-detected-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eaf8ef;
+  color: #16834b;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ow-detected-pill i {
+  font-style: normal;
+}
+
+/* Plans Section */
+.ow-plans-section {
+  margin-top: 24px;
+  scroll-margin-top: 16px;
+}
+
+.ow-plans-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ow-section-kicker {
+  margin-bottom: 4px;
+  color: #f08a00;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+}
+
+.ow-plans-title h2,
+.ow-history-heading h2 {
+  margin: 0;
+  color: #172943;
+  font-size: 20px;
+  font-weight: 850;
+  letter-spacing: -0.4px;
+}
+
+.ow-plans-title p,
+.ow-history-heading p {
+  margin: 4px 0 0;
+  color: #7c899d;
+  font-size: 12px;
+}
+
+.ow-plans-title p span {
+  padding: 0 3px;
+  color: #c2cad5;
+}
+
+.ow-plan-count,
+.ow-history-total {
+  padding: 7px 11px;
+  border: 1px solid #e2ebf6;
+  border-radius: 10px;
+  background: #fff;
+  color: #5f6f87;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+/* Search & Sort */
+.ow-plan-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ow-plan-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 13px;
+  border: 1px solid #dce5f1;
+  border-radius: 12px;
+  background: #fff;
+  color: #7f8da2;
+  transition: border-color 0.2s;
+}
+
+.ow-plan-search:focus-within {
+  border-color: #6aa4f5;
+}
+
+.ow-plan-search > span {
+  font-size: 22px;
+  line-height: 1;
+  transform: rotate(-20deg);
+}
+
+.ow-plan-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #24344c;
+  font-size: 13px;
+}
+
+.ow-plan-search input::placeholder {
+  color: #9da8ba;
+}
+
+.ow-plan-search button {
+  border: 0;
+  background: transparent;
+  color: #8390a3;
+  font-size: 19px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.ow-sort-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #dce5f1;
+  border-radius: 12px;
+  background: #fff;
+  color: #7d8a9e;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.ow-sort-control select {
+  max-width: 155px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #364761;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Filter Pills */
+.ow-category-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  margin-bottom: 6px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ow-category-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.ow-category-filters button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 8px 15px;
+  border: 1px solid #dfe7f2;
+  border-radius: 999px;
+  background: #fff;
+  color: #5e6d84;
+  font-size: 11.5px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ow-category-filters button.active {
+  border-color: #005ce6;
+  background: #eaf2ff;
+  color: #0055d8;
+  box-shadow: 0 3px 10px rgba(0, 92, 230, 0.1);
+}
+
+/* Price Range Chips */
+.ow-price-range-wrap {
+  margin: 2px 0 16px;
+}
+
+.ow-price-range-heading {
+  margin: 0 0 8px;
+  color: #6e7d95;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.25px;
+}
+
+.ow-price-range-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ow-price-range-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.ow-price-range-filters button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 14px;
+  border: 1px solid #dfe7f2;
+  border-radius: 999px;
+  background: #fff;
+  color: #5e6d84;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ow-price-range-filters button.active {
+  border-color: #005ce6;
+  background: #eaf2ff;
+  color: #0055d8;
+  box-shadow: 0 3px 10px rgba(0, 92, 230, 0.1);
+}
+
+/* Plans Grid */
+.ow-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ow-plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  padding: 18px;
+  border: 1.5px solid #e3eaf3;
+  border-radius: 17px;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.ow-plan-card:hover {
+  border-color: #9fc2f3;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(22, 75, 144, 0.08);
+}
+
+.ow-plan-card.selected {
+  border-color: #005ce6;
+  background: linear-gradient(180deg, #f6faff, #ffffff);
+  box-shadow: 0 0 0 3px rgba(0, 92, 230, 0.12);
+}
+
+.ow-plan-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ow-plan-card-top > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ow-plan-type {
+  color: #8290a4;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.ow-plan-card-top strong {
+  color: #172b4a;
+  font-size: 25px;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.ow-plan-select-mark {
+  padding: 6px 11px;
+  border: 1px solid #dbe6f5;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #2c65b3;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.ow-plan-selected-mark {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #005ce6;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ow-plan-description {
+  flex: 1;
+  min-height: 36px;
+  margin: 12px 0;
+  color: #4f6079;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ow-plan-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #edf1f7;
+  border-bottom: 1px solid #edf1f7;
+}
+
+.ow-plan-facts span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ow-plan-facts small {
+  color: #93a0b2;
+  font-size: 8.5px;
+  font-weight: 850;
+  letter-spacing: 0.7px;
+}
+
+.ow-plan-facts b {
+  overflow: hidden;
+  color: #2f4059;
+  font-size: 11px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ow-plan-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 11px;
+  color: #63738b;
+  font-size: 11px;
+}
+
+.ow-plan-card-bottom b {
+  color: #005ce6;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.ow-plan-card-bottom small {
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #fff3e3;
+  color: #d97706;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+}
+
+.ow-show-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #dce7f7;
+  border-radius: 13px;
+  background: #f6faff;
+  color: #075bd3;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ow-show-more span {
+  font-size: 15px;
+}
+
+.ow-no-plans {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 38px 16px;
+  border: 1.5px dashed #d8e2f0;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.ow-no-plans > span {
+  font-size: 30px;
+  color: #8ca1bf;
+}
+
+.ow-no-plans strong {
+  margin-top: 8px;
+  color: #33445d;
+  font-size: 14px;
+}
+
+.ow-no-plans p {
+  margin: 5px 0 14px;
+  color: #8a96a8;
+  font-size: 12px;
+}
+
+.ow-no-plans button {
+  padding: 9px 16px;
+  border: 1px solid #d5e3f7;
+  border-radius: 10px;
+  background: #f5f9ff;
+  color: #005ce6;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Sticky App Summary Card */
+.ow-recharge-summary {
+  position: sticky;
+  bottom: 14px;
+  z-index: 20;
+  max-width: 560px;
+  margin: 22px 0 0 auto;
+  padding: 20px;
+  border: 1.5px solid #d4e3f8;
+  box-shadow: 0 16px 42px rgba(16, 43, 80, 0.16);
+}
+
+.ow-summary-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.ow-summary-heading > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.ow-summary-heading > button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: #f0f4fa;
+  color: #64748b;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.ow-summary-mobile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0 10px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  background: #f6f9fe;
+}
+
+.ow-summary-mobile > div {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ow-summary-mobile strong {
+  color: #263953;
+  font-size: 13px;
+}
+
+.ow-summary-mobile small {
+  color: #7c899d;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ow-summary-plan {
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #eaf2ff;
+  color: #1766bd;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ow-summary-lines > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 2px;
+  color: #6d7c92;
+  font-size: 12.5px;
+}
+
+.ow-summary-lines b {
+  color: #34445c;
+  font-weight: 800;
+}
+
+.ow-summary-lines .ow-saving {
+  color: #15945b;
+}
+
+.ow-summary-lines .ow-summary-total {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #e8eef6;
+  color: #24354e;
+  align-items: center;
+}
+
+.ow-summary-total strong {
+  color: #005ce6;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.ow-confirm-recharge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 50px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 13px;
+  background: linear-gradient(105deg, #005ce6, #2878d4);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 92, 230, 0.24);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ow-confirm-recharge > span:last-child {
+  font-size: 18px;
+}
+
+.ow-secure-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: #8492a6;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* History Section */
+.ow-history-card {
+  padding: 24px;
+}
+
+.ow-history-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ow-history-list {
+  border-top: 1px solid #edf1f6;
+}
+
+.ow-history-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 16px 0;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.ow-history-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ow-history-main > strong {
+  display: block;
+  overflow: hidden;
+  color: #22344e;
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ow-history-main > strong span {
+  color: #aeb8c6;
+}
+
+.ow-history-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.ow-history-amounts strong {
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.ow-history-main small {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: #8b97a8;
+  font-size: 10.5px;
+}
+
+.ow-history-main .ow-refund-note {
+  color: #15945b;
+  font-weight: 750;
+}
+
+.ow-history-side {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 7px;
+  flex: 0 0 auto;
+  max-width: 190px;
+  text-align: right;
+}
+
+.ow-pending-note {
+  color: #9a6700;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.ow-status {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff5df;
+  color: #a46a00;
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.ow-status.success {
+  background: #e7f8ed;
+  color: #16824b;
+}
+.ow-status.failed {
+  background: #ffeded;
+  color: #c52d2d;
+}
+.ow-status.processing,
+.ow-status.pending,
+.ow-status.unknown {
+  background: #fff5df;
+  color: #a46a00;
+}
+
+.ow-history-side button {
+  border: 1px solid #dce8f8;
+  border-radius: 9px;
+  background: #f5f9ff;
+  color: #1766bd;
+  padding: 7px 11px;
+  font-size: 10.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ow-history-side button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ow-empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 46px 14px;
+  text-align: center;
+}
+
+.ow-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: #edf4ff;
+  font-size: 28px;
+}
+
+.ow-empty strong {
+  margin-top: 13px;
+  color: #2a3b55;
+  font-size: 15px;
+}
+
+.ow-empty p {
+  max-width: 310px;
+  margin: 6px 0 16px;
+  color: #7c899d;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ow-empty button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 11px;
+  background: #005ce6;
+  color: #fff;
+  padding: 11px 18px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ow-recharge-footnote {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 22px;
+  color: #8492a6;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Global Modal System */
+.ow-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 24, 48, 0.65);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  animation: ow-modal-fade 0.18s ease;
+}
+
+.ow-notice-modal {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 32px 26px 26px;
+  border: 1px solid #e7edf5;
+  border-radius: 24px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  animation: ow-modal-pop 0.22s ease;
+}
+
+.ow-modal-close {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f3f8;
+  color: #64748b;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ow-modal-icon {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 15px;
+  border-radius: 20px;
+  background: #eaf2ff;
+  color: #075ce0;
+  font-size: 29px;
+  font-weight: 900;
+}
+
+.ow-modal-icon.is-error {
+  background: #fff0ef;
+  color: #c83c35;
+}
+
+.ow-modal-icon.is-success {
+  background: #e9f8ef;
+  color: #16824b;
+}
+
+.ow-notice-modal h2 {
+  margin: 0 0 9px;
+  color: #172943;
+  font-size: 22px;
+  font-weight: 850;
+  letter-spacing: -0.4px;
+}
+
+.ow-notice-modal > p {
+  margin: 0 auto 18px;
+  max-width: 345px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.ow-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.ow-modal-primary,
+.ow-modal-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 12px;
+  text-decoration: none !important;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ow-modal-primary {
+  background: linear-gradient(110deg, #005ce6, #2878d4);
+  color: #fff !important;
+  box-shadow: 0 6px 15px rgba(0, 92, 230, 0.24);
+}
+
+.ow-modal-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 9px 20px rgba(0, 92, 230, 0.32);
+}
+
+.ow-modal-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ow-modal-primary span {
+  font-size: 18px;
+}
+
+.ow-modal-secondary {
+  border: 1px solid #dce6f3;
+  background: #fff;
+  color: #1766bd !important;
+}
+
+.ow-modal-secondary:hover {
+  background: #f3f7ff;
+}
+
+.ow-modal-single {
+  margin-top: 8px;
+}
+
+.ow-confirm-intro {
+  margin-bottom: 14px !important;
+}
+
+.ow-confirm-details {
+  padding: 12px 15px;
+  border-radius: 14px;
+  background: #f6f9ff;
+  text-align: left;
+}
+
+.ow-confirm-details > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  color: #6e7d95;
+  font-size: 12.5px;
+}
+
+.ow-confirm-details b {
+  color: #263953;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.ow-confirm-details .ow-saving {
+  color: #15945b;
+}
+
+.ow-confirm-details .ow-confirm-total {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #e2eaf5;
+  color: #24354e;
+}
+
+.ow-confirm-total strong {
+  color: #005ce6;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+@keyframes ow-modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ow-modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Tablet & Mobile App Experience */
+@media (max-width: 768px) {
+  .ow-recharge-page {
+    padding: 14px 12px 42px;
+    min-height: calc(100dvh - 70px);
+  }
+
+  .ow-recharge-page.has-sticky-summary {
+    padding-bottom: 24px;
+  }
+
+  .ow-recharge-heading {
+    min-height: 156px;
+    padding: 20px 18px;
+    border-radius: 20px;
+    gap: 10px;
+  }
+
+  .ow-eyebrow {
+    font-size: 8.5px;
+    letter-spacing: 1.1px;
+    padding: 4px 8px;
+  }
+
+  .ow-recharge-heading h1 {
+    font-size: 25px;
+    margin: 9px 0 5px;
+  }
+
+  .ow-recharge-heading p {
+    font-size: 12px;
+    max-width: 230px;
+  }
+
+  .ow-trust-points {
+    gap: 10px;
+    margin-top: 13px;
+    font-size: 10px;
+  }
+
+  .ow-trust-points i {
+    width: 15px;
+    height: 15px;
+    font-size: 9px;
+  }
+
+  .ow-recharge-hero-art {
+    width: 108px;
+    height: 124px;
+    flex: 0 0 108px;
+    margin-right: -6px;
+  }
+
+  .ow-hero-orbit.orbit-one {
+    width: 108px;
+    height: 70px;
+  }
+
+  .ow-hero-orbit.orbit-two {
+    width: 88px;
+    height: 96px;
+  }
+
+  .ow-hero-phone {
+    width: 58px;
+    height: 100px;
+    border-width: 3px;
+    border-radius: 14px;
+    padding-top: 8px;
+  }
+
+  .ow-phone-speaker {
+    width: 18px;
+    height: 3px;
+  }
+
+  .ow-phone-signal {
+    font-size: 6px;
+    margin-top: 7px;
+  }
+
+  .ow-phone-check {
+    width: 28px;
+    height: 28px;
+    margin-top: 5px;
+    font-size: 16px;
+  }
+
+  .ow-hero-phone small {
+    font-size: 6px;
+    margin-top: 5px;
+  }
+
+  .ow-hero-spark {
+    right: 4px;
+    top: 4px;
+    font-size: 18px;
+  }
+
+  .ow-recharge-tabs {
+    width: 100%;
+    margin: 14px 0;
+  }
+
+  .ow-recharge-tabs button {
+    flex: 1;
+    padding: 10px 10px;
+    font-size: 12.5px;
+  }
+
+  .ow-recharge-card,
+  .ow-history-card {
+    padding: 17px;
+    border-radius: 18px;
+  }
+
+  .ow-section-heading {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .ow-step-number,
+  .ow-summary-step {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .ow-section-heading h2,
+  .ow-summary-heading h2 {
+    font-size: 15.5px;
+  }
+
+  .ow-section-heading p,
+  .ow-summary-heading p {
+    font-size: 11px;
+  }
+
+  /* Input row on top, View Plans button full-width below on mobile */
+  .ow-mobile-form {
+    flex-wrap: wrap;
+    min-height: auto;
+    gap: 8px;
+    padding: 8px 10px 10px 12px;
+  }
+
+  .ow-input-prefix {
+    gap: 5px;
+    padding-right: 10px;
+    font-size: 13.5px;
+  }
+
+  /* 16px prevents iOS auto-zoom on input focus */
+  .ow-mobile-form input {
+    flex: 1 1 140px;
+    min-height: 40px;
+    padding: 6px 2px;
+    font-size: 16px;
+  }
+
+  .ow-mobile-form input::placeholder {
+    font-size: 13px;
+  }
+
+  .ow-view-plans-btn {
+    flex: 1 0 100%;
+    width: 100%;
+    min-height: 46px;
+    padding: 0 16px;
+    gap: 8px;
+    font-size: 13.5px;
+    border-radius: 11px;
+  }
+
+  .ow-number-hint {
+    font-size: 10px;
+  }
+
+  .ow-operator-card {
+    margin: 13px 0 18px;
+    padding: 12px 13px;
+  }
+
+  .ow-operator-logo {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    font-size: 16px;
+  }
+
+  .ow-operator-details strong {
+    font-size: 13px;
+  }
+
+  .ow-operator-details span {
+    font-size: 10.5px;
+  }
+
+  .ow-plans-title {
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .ow-plans-title h2,
+  .ow-history-heading h2 {
+    font-size: 18px;
+  }
+
+  .ow-plans-title p,
+  .ow-history-heading p {
+    font-size: 10.5px;
+  }
+
+  .ow-plan-tools {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* 16px prevents iOS zoom on search input */
+  .ow-plan-search input {
+    font-size: 16px;
+  }
+
+  .ow-plan-search input::placeholder {
+    font-size: 12.5px;
+  }
+
+  .ow-sort-control {
+    height: 40px;
+    justify-content: space-between;
+  }
+
+  .ow-sort-control select {
+    max-width: none;
+    flex: 1;
+    text-align: right;
+  }
+
+  .ow-category-filters,
+  .ow-price-range-filters {
+    margin-right: -12px;
+    padding-right: 12px;
+  }
+
+  .ow-plan-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .ow-plan-card {
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  .ow-plan-card-top strong {
+    font-size: 23px;
+  }
+
+  .ow-plan-description {
+    min-height: 0;
+    margin: 10px 0;
+    font-size: 11.5px;
+  }
+
+  /* App-like Bottom Card for Summary on Mobile */
+  .ow-recharge-summary {
+    position: sticky;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    max-width: 100%;
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(10, 28, 58, 0.2);
+  }
+
+  .ow-summary-mobile {
+    margin: 12px 0 8px;
+    padding: 9px 10px;
+  }
+
+  .ow-summary-sim {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .ow-summary-lines > div {
+    padding: 6px 2px;
+    font-size: 12px;
+  }
+
+  .ow-summary-total strong {
+    font-size: 20px;
+  }
+
+  .ow-confirm-recharge {
+    min-height: 46px;
+    font-size: 13.5px;
+  }
+
+  /* History Mobile Layout */
+  .ow-history-row {
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .ow-history-sim {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    font-size: 15px;
+  }
+
+  .ow-history-main > strong {
+    font-size: 12.5px;
+  }
+
+  .ow-history-amounts {
+    font-size: 11px;
+    gap: 3px 10px;
+  }
+
+  .ow-history-side {
+    max-width: 135px;
+  }
+}
+
+/* Extra Small Phones (e.g., 320px - 375px) */
+@media (max-width: 375px) {
+  .ow-recharge-heading {
+    padding: 18px 14px;
+  }
+
+  .ow-recharge-heading h1 {
+    font-size: 22px;
+  }
+
+  .ow-recharge-hero-art {
+    width: 88px;
+    flex-basis: 88px;
+  }
+
+  .ow-input-prefix {
+    padding-right: 8px;
+    font-size: 12.5px;
+  }
+
+  .ow-notice-modal {
+    padding: 28px 18px 22px;
+    border-radius: 20px;
+  }
+
+  .ow-notice-modal h2 {
+    font-size: 19px;
+  }
+}
