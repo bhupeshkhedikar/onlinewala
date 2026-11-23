@@ -51,6 +51,7 @@ import TermsConditions from "./components/TermsConditions";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
 import LuckyDrawAdmin from "./components/admin/LuckyDrawAdmin";
+import OnlinewalaQuickPrint from "./components/OnlinewalaQuickPrint";
 
 const Home = ({ authUser, userData }) => (
   <>
@@ -284,6 +285,10 @@ export default function App() {
 <Route
   path="/contact"
   element={<ContactUs />}
+/>
+<Route
+  path="/print"
+  element={<OnlinewalaQuickPrint />}
 />
 <Route
   path="/terms"
