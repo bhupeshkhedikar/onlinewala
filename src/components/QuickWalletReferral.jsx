@@ -383,6 +383,18 @@ export default function QuickWalletReferral({ user }) {
     navigate("/wallet");
   };
 
+  /* =========================================================
+   * WHATSAPP JOB UPDATES GROUP
+   * ========================================================= */
+
+  const handleWhatsAppGroup = () => {
+    window.open(
+      "https://chat.whatsapp.com/CpQxCJpwZvyKHokL65LLoL?s=qt&p=a&iam=2",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   /*
    * =========================================================
    * UI
@@ -486,6 +498,41 @@ export default function QuickWalletReferral({ user }) {
           ›
         </div>
 
+      </button>
+
+      {/* =====================================================
+          WHATSAPP JOB UPDATES GROUP
+      ===================================================== */}
+
+      <button
+        type="button"
+        className="quick-whatsapp-card"
+        onClick={handleWhatsAppGroup}
+        aria-label="WhatsApp Job Updates Group join करा"
+      >
+        <div className="quick-action-icon quick-whatsapp-icon">
+          <img
+            src="https://assets-v2.lottiefiles.com/a/6714a4c8-1189-11ee-972f-07a080a7e288/xCCzZogf9Q.gif"
+            alt="WhatsApp"
+            loading="lazy"
+          />
+        </div>
+
+        <div className="quick-action-content">
+          <span>ONLINEWALA COMMUNITY</span>
+
+          <strong>रोजगार अपडेट्स ग्रुपमध्ये Join व्हा!</strong>
+
+          <small>
+            रोजच्या सरकारी व खाजगी नोकऱ्या, भरती, परीक्षा,
+            ऑनलाइन फॉर्म आणि महत्त्वाच्या अपडेट्स थेट WhatsApp वर.
+          </small>
+        </div>
+
+        <div className="quick-whatsapp-join">
+          <span>JOIN NOW</span>
+          <strong>›</strong>
+        </div>
       </button>
 
     </div>
