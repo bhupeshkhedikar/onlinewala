@@ -10,8 +10,8 @@ import AadharToRationPdf from "./AadharToRationPdf";
 const services = [
     {
     id: "pan-find",
-    title: "आधार वरून पॅन कार्ड शोधा",
-    shortTitle: "आधारवरून पॅन",
+    title: "हरवलेले पॅन कार्ड शोधा",
+    shortTitle: "हरवलेले पॅन कार्ड शोधा",
     icon: "💳",
     badge: "उपयुक्त",
     description: "आधार क्रमांकावरून पॅन कार्ड शोधा",
