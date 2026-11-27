@@ -716,6 +716,26 @@ export default function InstantPanFind() {
 
             </div>
 
+
+            {/* PAN NUMBER NOTE & REPRINT LINK */}
+
+            <div className="pan-reprint-notice">
+              <p>
+                <strong>महत्त्वाची सूचना:</strong> कृपया तुमचा PAN Card Number
+                नोंद करून सुरक्षित ठेवा. भविष्यात PAN Card ची Reprint प्रत
+                काढायची असल्यास खालील बटणावर क्लिक करा.
+              </p>
+
+              <a
+                href="https://onlineservices.proteantech.in/paam/ReprintEPan.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pan-reprint-button"
+              >
+                PAN Card Reprint करा
+              </a>
+            </div>
+
             {/* PAYMENT INFO */}
 
             <div className="pan-success-payment">

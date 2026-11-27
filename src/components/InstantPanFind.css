@@ -1820,3 +1820,34 @@
     font-size: 16px;
   }
 }
+
+.pan-reprint-notice {
+  margin-top: 20px;
+  padding: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.pan-reprint-notice p {
+  color: #1e3a8a;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+
+.pan-reprint-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #2878D4;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.pan-reprint-button:hover {
+  background: #1d5fae;
+}
