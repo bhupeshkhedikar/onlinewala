@@ -52,7 +52,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
 import LuckyDrawAdmin from "./components/admin/LuckyDrawAdmin";
 import OnlinewalaQuickPrint from "./components/OnlinewalaQuickPrint";
-import WeddingInvitation from "./components/Wedding/WeddingInvitation";
+// import WeddingInvitation from "./components/Wedding/WeddingInvitation";
 
 const Home = ({ authUser, userData }) => (
   <>
@@ -291,10 +291,10 @@ export default function App() {
   path="/print"
   element={<OnlinewalaQuickPrint />}
 />
-<Route
+{/* <Route
   path="/shadi"
   element={<WeddingInvitation />}
-/>
+/> */}
 <Route
   path="/terms"
   element={<TermsConditions />}
